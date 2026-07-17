@@ -14,7 +14,7 @@ Test uncertain identity between two records without merging them prematurely.
 ## Expected claims
 
 - The Kunstkamera source `refers_to` Item A.
-- The documentary source `refers_to` Item B.
+- The documentary source `depicts` Item B.
 - Item A `possibly_same_as` Item B.
 - Item A has external identifier `МАЭ № 736-205`.
 - Any shared descriptive similarities are recorded as separate sourced claims.
@@ -35,7 +35,7 @@ The database preserves two item identities and records their possible equivalenc
 - Two provisional item identities remained separate.
 - Their possible equivalence was represented as an entity-valued claim rather than a merge.
 - One identity hypothesis can have evidence from multiple sources.
-- A null `asserted_by_agent_id` can represent a current MoSA research hypothesis.
+- The identity hypothesis is attributed to the specific team member who recorded it.
 - `possibly_same_as` is conceptually symmetric, although it is stored in one direction.
 - Queries must therefore inspect both the subject and object sides of identity claims.
 

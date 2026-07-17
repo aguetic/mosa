@@ -19,8 +19,10 @@ Baseline case for a well-documented item with several names, sources, agents and
 - The item is `classified_as` a moai.
 - The item is `made_of` basalt.
 - The material is identified as `maʻea pupura`, attributed to the relevant source.
-- The item is `associated_with_agent` the British Museum.
-- The item is `associated_with_place` London.
+- The item is `held_by` the British Museum.
+- The item is `located_at` London.
+- The British Museum catalogue record is `published_by` the British Museum.
+- Paula’s note is `authored_by` Paula Rossetti.
 
 ## Questions
 

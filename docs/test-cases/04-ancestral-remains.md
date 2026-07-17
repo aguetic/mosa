@@ -14,11 +14,11 @@ Test the distinction between an ancestral person and physical remains held in a 
 
 ## Expected claims
 
-- The item `physical_remains_of` the ancestral person.
+- The item `physical_remains_of` the ancestral person, attributed to the team member who recorded the interpretation.
 - Each source `refers_to` the relevant item or agent.
-- The item is `associated_with_agent` the museum.
-- The item is `associated_with_place` Santiago.
-- Paula's note `described_as` return discussions or promises having occurred.
+- The item is `held_by` the museum, meaning physical custody rather than ownership.
+- The item is `located_at` Santiago.
+- Paula’s note `described_as` return discussions or promises having occurred.
 
 ## Questions
 
@@ -36,7 +36,7 @@ The ancestral person and physical remains have separate identities, connected by
 - The ancestral person and the physical remains were represented as separate entities.
 - The remains are an item; the ancestral person is an agent.
 - Their relationship is represented through `physical_remains_of`.
-- A null `asserted_by_agent_id` can represent a MoSA structural interpretation.
+- The structural interpretation is attributed to the specific team member who recorded it.
 - `held_by` must mean physical custody and must not imply ownership.
 - Source-language descriptions should normally be preserved as written.
 
