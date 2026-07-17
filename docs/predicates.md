@@ -9,3 +9,4 @@
 | `made_of`       | Literal | A source or agent identifies a material                              |
 | `held_by`       | Agent   | A source states that an agent holds an item                          |
 | `located_at`    | Place   | A source states that an entity is at a place                         |
+| `described_as`  | Literal | A source or agent provides a descriptive interpretation of an entity |
