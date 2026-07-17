@@ -29,3 +29,16 @@ Test uncertain identity between two records without merging them prematurely.
 ## Pass condition
 
 The database preserves two item identities and records their possible equivalence as a claim rather than a merge.
+
+## Implementation findings
+
+- Two provisional item identities remained separate.
+- Their possible equivalence was represented as an entity-valued claim rather than a merge.
+- One identity hypothesis can have evidence from multiple sources.
+- A null `asserted_by_agent_id` can represent a current MoSA research hypothesis.
+- `possibly_same_as` is conceptually symmetric, although it is stored in one direction.
+- Queries must therefore inspect both the subject and object sides of identity claims.
+
+## Result
+
+Pass. No schema change required.
