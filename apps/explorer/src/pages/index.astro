@@ -1,0 +1,92 @@
+---
+import Layout from "../layouts/Layout.astro";
+import {
+  ENTITY_TYPES,
+  isEntityType,
+  searchEntities,
+  type EntitySummary,
+} from "../lib/queries";
+
+const searchText = Astro.url.searchParams.get("q")?.trim() ?? "";
+const requestedType = Astro.url.searchParams.get("type") ?? "";
+const entityType = isEntityType(requestedType) ? requestedType : null;
+
+let entities: EntitySummary[] = [];
+let loadFailed = false;
+
+try {
+  entities = await searchEntities(searchText, entityType);
+} catch (error) {
+  loadFailed = true;
+  console.error("Unable to load Phase 1 entities", error);
+}
+---
+
+<Layout title="Entities">
+  <p class="eyebrow">Model inspection</p>
+  <h1>Explore the Phase 1 data</h1>
+  <p class="lede">
+    Search the current synthetic entities, then follow their claims, attribution,
+    relationships, and evidence. This interface does not modify the database.
+  </p>
+
+  <form class="search-form" method="get" action="/">
+    <label>
+      Label or identifier
+      <input name="q" type="search" value={searchText} placeholder="MPE 32571" />
+    </label>
+    <label>
+      Entity type
+      <select name="type">
+        <option value="">All types</option>
+        {ENTITY_TYPES.map((type) => <option value={type} selected={type === entityType}>{type}</option>)}
+      </select>
+    </label>
+    <button type="submit">Search</button>
+  </form>
+
+  {
+    loadFailed ? (
+      <div class="notice">
+        The local database could not be read. Start Supabase with <code>pnpm run db:start</code>,
+        load the fixtures with <code>pnpm run db:fixtures</code>, and reload this page.
+      </div>
+    ) : (
+      <>
+        <p class="muted">
+          Showing {entities.length} {entities.length === 1 ? "entity" : "entities"}
+          {entities.length === 100 ? " (result limit reached)" : ""}.
+        </p>
+        <section class="results" aria-label="Entity results">
+          {
+            entities.length === 0 ? (
+              <div class="empty">No entities match this search.</div>
+            ) : (
+              entities.map((entity) => (
+                <article class="result-card">
+                  <div class="result-card__top">
+                    <h2><a href={`/entities/${entity.id}`}>{entity.workingLabel}</a></h2>
+                    <div class="badges">
+                      <span class="badge">{entity.entityType}</span>
+                      {entity.subtypeKind && <span class="badge">{entity.subtypeKind}</span>}
+                    </div>
+                  </div>
+                  {entity.notes && <p class="muted">{entity.notes}</p>}
+                  {
+                    entity.identifiers.length > 0 && (
+                      <ul class="identifier-list">
+                        {entity.identifiers.map((identifier) => (
+                          <li><code>{identifier.namespace}:{identifier.value}</code></li>
+                        ))}
+                      </ul>
+                    )
+                  }
+                </article>
+              ))
+            )
+          }
+        </section>
+      </>
+    )
+  }
+</Layout>

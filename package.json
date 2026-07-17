@@ -14,7 +14,10 @@
     "db:lint": "supabase db lint --local --level error",
     "db:test": "supabase test db supabase/tests/database/phase-1-cases.test.sql --local",
     "db:verify": "pnpm run scripts:typecheck && tsx scripts/verify-phase-1.ts",
-    "scripts:typecheck": "tsc --project tsconfig.scripts.json"
+    "scripts:typecheck": "tsc --project tsconfig.scripts.json",
+    "explorer:dev": "pnpm --filter @mosa/explorer dev",
+    "explorer:check": "pnpm --filter @mosa/explorer check",
+    "explorer:build": "pnpm --filter @mosa/explorer build"
   },
   "keywords": [],
   "author": "",

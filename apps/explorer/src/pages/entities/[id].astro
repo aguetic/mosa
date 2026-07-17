@@ -1,0 +1,119 @@
+---
+import ClaimCard from "../../components/ClaimCard.astro";
+import Layout from "../../layouts/Layout.astro";
+import { formatDate, isHttpReference } from "../../lib/presentation";
+import {
+  getClaimsForEntity,
+  getEntity,
+  isUuid,
+  type ClaimDetail,
+  type EntityDetail,
+} from "../../lib/queries";
+
+const id = Astro.params.id ?? "";
+let entity: EntityDetail | null = null;
+let claims: ClaimDetail[] = [];
+let loadFailed = false;
+
+if (isUuid(id)) {
+  try {
+    [entity, claims] = await Promise.all([getEntity(id), getClaimsForEntity(id)]);
+  } catch (error) {
+    loadFailed = true;
+    console.error(`Unable to load entity ${id}`, error);
+  }
+}
+
+if (!entity && !loadFailed) {
+  Astro.response.status = 404;
+}
+
+const outgoingClaims = entity
+  ? claims.filter((claim) => claim.subjectId === entity?.id)
+  : [];
+const incomingClaims = entity
+  ? claims.filter((claim) => claim.objectEntityId === entity?.id)
+  : [];
+const retrievedAt = entity ? formatDate(entity.retrievedAt) : null;
+---
+
+<Layout title={entity?.workingLabel ?? "Entity not found"}>
+  <p class="breadcrumb"><a href="/">← Entity search</a></p>
+
+  {
+    loadFailed ? (
+      <div class="notice">The local database could not be read. Check the Astro server console for details.</div>
+    ) : !entity ? (
+      <>
+        <h1>Entity not found</h1>
+        <p class="lede">No Phase 1 entity exists with this identifier.</p>
+      </>
+    ) : (
+      <>
+        <p class="eyebrow">{entity.entityType}</p>
+        <h1>{entity.workingLabel}</h1>
+        <div class="badges">
+          <span class="badge">{entity.entityType}</span>
+          {entity.subtypeKind && <span class="badge">{entity.subtypeKind}</span>}
+        </div>
+
+        <dl class="metadata panel">
+          <div>
+            <dt>Entity ID</dt>
+            <dd><code>{entity.id}</code></dd>
+          </div>
+          <div>
+            <dt>Subtype</dt>
+            <dd>{entity.subtypeKind ?? "Not recorded"}</dd>
+          </div>
+          {
+            entity.reference && (
+              <div>
+                <dt>Source reference</dt>
+                <dd>
+                  {isHttpReference(entity.reference) ? (
+                    <a href={entity.reference} rel="noreferrer">{entity.reference}</a>
+                  ) : (
+                    <span>{entity.reference}</span>
+                  )}
+                </dd>
+              </div>
+            )
+          }
+          {retrievedAt && <div><dt>Retrieved</dt><dd>{retrievedAt}</dd></div>}
+          {entity.notes && <div><dt>Notes</dt><dd>{entity.notes}</dd></div>}
+        </dl>
+
+        <h2>External identifiers</h2>
+        {
+          entity.identifiers.length === 0 ? (
+            <div class="empty">No external identifiers are recorded.</div>
+          ) : (
+            <div class="panel">
+              <ul class="identifier-list">
+                {entity.identifiers.map((identifier) => (
+                  <li>
+                    <code>{identifier.namespace}:{identifier.value}</code>
+                    {identifier.sourceId && identifier.sourceLabel && (
+                      <> · source <a href={`/entities/${identifier.sourceId}`}>{identifier.sourceLabel}</a></>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        <h2>Claims about this entity</h2>
+        <section class="claims" aria-label="Outgoing claims">
+          {outgoingClaims.length === 0 ? <div class="empty">No outgoing claims.</div> : outgoingClaims.map((claim) => <ClaimCard claim={claim} />)}
+        </section>
+
+        <h2>Claims pointing to this entity</h2>
+        <section class="claims" aria-label="Incoming claims">
+          {incomingClaims.length === 0 ? <div class="empty">No incoming claims.</div> : incomingClaims.map((claim) => <ClaimCard claim={claim} />)}
+        </section>
+      </>
+    )
+  }
+</Layout>

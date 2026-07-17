@@ -1,0 +1,120 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { formatDate, literalLabel } from "../../lib/presentation";
+import { getClaim, isUuid, type ClaimDetail } from "../../lib/queries";
+
+const id = Astro.params.id ?? "";
+let claim: ClaimDetail | null = null;
+let loadFailed = false;
+
+if (isUuid(id)) {
+  try {
+    claim = await getClaim(id);
+  } catch (error) {
+    loadFailed = true;
+    console.error(`Unable to load claim ${id}`, error);
+  }
+}
+
+if (!claim && !loadFailed) {
+  Astro.response.status = 404;
+}
+
+const createdAt = claim ? formatDate(claim.createdAt) : null;
+---
+
+<Layout title={claim ? claim.predicate : "Claim not found"}>
+  <p class="breadcrumb">
+    <a href="/">Entity search</a>
+    {claim && <> · <a href={`/entities/${claim.subjectId}`}>{claim.subjectLabel}</a></>}
+  </p>
+
+  {
+    loadFailed ? (
+      <div class="notice">The local database could not be read. Check the Astro server console for details.</div>
+    ) : !claim ? (
+      <>
+        <h1>Claim not found</h1>
+        <p class="lede">No Phase 1 claim exists with this identifier.</p>
+      </>
+    ) : (
+      <>
+        <p class="eyebrow">Claim</p>
+        <h1>{claim.predicate}</h1>
+        <div class="badges">
+          <span class="badge">{claim.valueKind}</span>
+          <span class="badge">{claim.status}</span>
+        </div>
+
+        <dl class="metadata panel">
+          <div>
+            <dt>Subject</dt>
+            <dd><a href={`/entities/${claim.subjectId}`}>{claim.subjectLabel}</a></dd>
+          </div>
+          <div>
+            <dt>Predicate</dt>
+            <dd><code>{claim.predicate}</code></dd>
+          </div>
+          <div>
+            <dt>Value</dt>
+            <dd>
+              {claim.valueKind === "entity" && claim.objectEntityId ? (
+                <a href={`/entities/${claim.objectEntityId}`}>
+                  {claim.objectEntityLabel ?? claim.objectEntityId}
+                </a>
+              ) : (
+                <span class="literal">{literalLabel(claim)}</span>
+              )}
+              {claim.literalLanguage && <span class="muted"> ({claim.literalLanguage})</span>}
+            </dd>
+          </div>
+          <div>
+            <dt>Asserted by</dt>
+            <dd>
+              {claim.assertedByAgentId ? (
+                <a href={`/entities/${claim.assertedByAgentId}`}>
+                  {claim.assertedByLabel ?? claim.assertedByAgentId}
+                </a>
+              ) : "Not recorded"}
+            </dd>
+          </div>
+          <div><dt>Claim ID</dt><dd><code>{claim.id}</code></dd></div>
+          {createdAt && <div><dt>Created</dt><dd>{createdAt}</dd></div>}
+          {claim.supersedesClaimId && <div><dt>Supersedes</dt><dd><a href={`/claims/${claim.supersedesClaimId}`}>{claim.supersedesClaimId}</a></dd></div>}
+          {claim.notes && <div><dt>Notes</dt><dd>{claim.notes}</dd></div>}
+        </dl>
+
+        {
+          claim.valueKind === "literal" && claim.literalValue !== null && (
+            <>
+              <h2>Structured literal</h2>
+              <pre class="literal-json">{JSON.stringify(claim.literalValue, null, 2)}</pre>
+            </>
+          )
+        }
+
+        <h2>Evidence</h2>
+        {
+          claim.evidence.length === 0 ? (
+            <div class="empty">No evidence links are attached to this claim.</div>
+          ) : (
+            <section class="claims" aria-label="Claim evidence">
+              {claim.evidence.map((evidence) => (
+                <article class="claim-card">
+                  <div class="claim-card__top">
+                    <h3>{evidence.relationship}</h3>
+                    <span class="badge">evidence</span>
+                  </div>
+                  <p><a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a></p>
+                  {evidence.locator && <p><strong>Locator:</strong> {evidence.locator}</p>}
+                  {evidence.excerpt && <blockquote>{evidence.excerpt}</blockquote>}
+                  {evidence.notes && <p class="muted">{evidence.notes}</p>}
+                </article>
+              ))}
+            </section>
+          )
+        }
+      </>
+    )
+  }
+</Layout>

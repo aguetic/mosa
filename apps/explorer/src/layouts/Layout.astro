@@ -1,0 +1,150 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content="Read-only explorer for the MoSA Phase 1 data model" />
+    <title>{title} · MoSA explorer</title>
+    <style is:global>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #20201d;
+        background: #f4f1e9;
+        --paper: #fffdf7;
+        --ink-muted: #67645d;
+        --line: #d9d4c8;
+        --accent: #2f5f55;
+        --accent-soft: #e1ece7;
+        --warning: #7a4b14;
+        --warning-soft: #f5e7ce;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; }
+      a { color: var(--accent); text-underline-offset: 0.18em; }
+      a:hover { text-decoration-thickness: 2px; }
+      code { font-size: 0.92em; }
+
+      .site-header {
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 253, 247, 0.94);
+      }
+      .site-header__inner, main {
+        width: min(1120px, calc(100% - 2rem));
+        margin-inline: auto;
+      }
+      .site-header__inner {
+        min-height: 4.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+      .brand { font-weight: 760; text-decoration: none; color: #20201d; }
+      .mode-label { font-size: 0.78rem; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+      main { padding-block: 2rem 4rem; }
+
+      h1, h2, h3 { line-height: 1.15; }
+      h1 { margin: 0 0 0.5rem; font-size: clamp(2rem, 5vw, 3.2rem); letter-spacing: -0.035em; }
+      h2 { margin-top: 2.25rem; }
+      p { line-height: 1.6; }
+      .lede { color: var(--ink-muted); max-width: 72ch; }
+      .muted { color: var(--ink-muted); }
+      .eyebrow { color: var(--ink-muted); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; }
+      .breadcrumb { margin-bottom: 1.25rem; font-size: 0.9rem; }
+
+      .panel, .claim-card, .result-card, .notice {
+        border: 1px solid var(--line);
+        border-radius: 0.65rem;
+        background: var(--paper);
+      }
+      .panel { padding: 1.25rem; }
+      .notice { padding: 1rem 1.1rem; color: var(--warning); background: var(--warning-soft); }
+      .notice code { overflow-wrap: anywhere; }
+
+      .search-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(9rem, 13rem) auto;
+        gap: 0.75rem;
+        align-items: end;
+        margin-block: 1.5rem;
+      }
+      label { display: grid; gap: 0.35rem; color: var(--ink-muted); font-size: 0.84rem; font-weight: 650; }
+      input, select, button {
+        min-height: 2.7rem;
+        border: 1px solid #aaa497;
+        border-radius: 0.45rem;
+        padding: 0.6rem 0.72rem;
+        font: inherit;
+        background: white;
+      }
+      button { cursor: pointer; border-color: var(--accent); color: white; background: var(--accent); font-weight: 700; }
+      button:hover { filter: brightness(0.94); }
+
+      .results, .claims { display: grid; gap: 0.8rem; }
+      .result-card, .claim-card { padding: 1rem 1.1rem; }
+      .result-card__top, .claim-card__top {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: start;
+      }
+      .result-card h2, .claim-card h3 { margin: 0; font-size: 1.05rem; }
+      .result-card h2 a, .claim-card h3 a { color: inherit; }
+      .badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 1.65rem;
+        border-radius: 999px;
+        padding: 0.2rem 0.58rem;
+        color: #24483f;
+        background: var(--accent-soft);
+        font-size: 0.76rem;
+        font-weight: 720;
+      }
+      .identifier-list { display: flex; flex-wrap: wrap; gap: 0.4rem 0.8rem; margin: 0.75rem 0 0; padding: 0; list-style: none; color: var(--ink-muted); font-size: 0.85rem; }
+
+      .metadata { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+      .metadata div { min-width: 0; }
+      .metadata dt { color: var(--ink-muted); font-size: 0.77rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+      .metadata dd { margin: 0.35rem 0 0; overflow-wrap: anywhere; }
+
+      .claim-expression { margin: 0.8rem 0 0; font-size: 1rem; }
+      .predicate { display: inline-block; margin-inline: 0.3rem; color: #563f17; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88em; }
+      .claim-meta { margin: 0.75rem 0 0; color: var(--ink-muted); font-size: 0.86rem; }
+      .evidence-list { margin: 0.8rem 0 0; padding-left: 1.2rem; color: var(--ink-muted); font-size: 0.86rem; }
+      .evidence-list li + li { margin-top: 0.45rem; }
+
+      .empty { padding: 1.2rem; border: 1px dashed #aaa497; border-radius: 0.65rem; color: var(--ink-muted); }
+      .literal { white-space: pre-wrap; overflow-wrap: anywhere; }
+      .literal-json { max-height: 18rem; overflow: auto; padding: 0.8rem; border-radius: 0.45rem; background: #f0eee7; }
+
+      @media (max-width: 720px) {
+        .search-form { grid-template-columns: 1fr; }
+        .site-header__inner { align-items: flex-start; flex-direction: column; justify-content: center; padding-block: 0.8rem; }
+        .result-card__top, .claim-card__top { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="brand" href="/">MoSA Phase 1 explorer</a>
+        <span class="mode-label">Local · synthetic · read-only</span>
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

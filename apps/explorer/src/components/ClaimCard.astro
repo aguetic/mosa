@@ -1,0 +1,61 @@
+---
+import type { ClaimDetail } from "../lib/queries";
+import { literalLabel } from "../lib/presentation";
+
+interface Props {
+  claim: ClaimDetail;
+}
+
+const { claim } = Astro.props;
+---
+
+<article class="claim-card">
+  <div class="claim-card__top">
+    <h3><a href={`/claims/${claim.id}`}>{claim.predicate}</a></h3>
+    <div class="badges">
+      <span class="badge">{claim.valueKind}</span>
+      <span class="badge">{claim.status}</span>
+    </div>
+  </div>
+
+  <p class="claim-expression">
+    <a href={`/entities/${claim.subjectId}`}>{claim.subjectLabel}</a>
+    <span class="predicate">{claim.predicate}</span>
+    {
+      claim.valueKind === "entity" && claim.objectEntityId ? (
+        <a href={`/entities/${claim.objectEntityId}`}>
+          {claim.objectEntityLabel ?? claim.objectEntityId}
+        </a>
+      ) : (
+        <span class="literal">{literalLabel(claim)}</span>
+      )
+    }
+    {claim.literalLanguage && <span class="muted"> ({claim.literalLanguage})</span>}
+  </p>
+
+  <p class="claim-meta">
+    Asserted by {
+      claim.assertedByAgentId ? (
+        <a href={`/entities/${claim.assertedByAgentId}`}>
+          {claim.assertedByLabel ?? claim.assertedByAgentId}
+        </a>
+      ) : (
+        <span>unrecorded agent</span>
+      )
+    } · {claim.evidence.length} evidence {claim.evidence.length === 1 ? "link" : "links"}
+  </p>
+
+  {
+    claim.evidence.length > 0 && (
+      <ul class="evidence-list">
+        {claim.evidence.map((evidence) => (
+          <li>
+            <strong>{evidence.relationship}</strong> ·{" "}
+            <a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a>
+            {evidence.locator ? ` · ${evidence.locator}` : ""}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</article>
