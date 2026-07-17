@@ -32,3 +32,16 @@ Baseline case for a well-documented item with several names, sources, agents and
 ## Pass condition
 
 The item has one stable identity, while all names, descriptions and associations remain distinct, sourced claims.
+
+## Implementation findings
+
+- The schema represented multiple names, classifications, sources and entity relationships without overwriting information.
+- Sources remained distinct from the item they describe.
+- Item-centred queries work cleanly.
+- Some institutional claims are currently known only through Paula's note.
+- Secondary references use `mentions`; direct source evidence uses `supports`.
+- Direct catalogue field locators should replace or supplement secondary references when available.
+
+## Result
+
+Pass. No schema change required.
