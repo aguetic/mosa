@@ -7,14 +7,26 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "pnpm run db:verify",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset --local --no-seed",
+    "db:fixtures": "tsx scripts/load-phase-1-fixtures.ts",
+    "db:lint": "supabase db lint --local --level error",
+    "db:test": "supabase test db supabase/tests/database/phase-1-cases.test.sql --local",
+    "db:verify": "pnpm run scripts:typecheck && tsx scripts/verify-phase-1.ts",
+    "scripts:typecheck": "tsc --project tsconfig.scripts.json"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "supabase": "^2.109.1"
+    "@types/node": "^22.20.1",
+    "@types/pg": "^8.20.0",
+    "pg": "^8.22.0",
+    "supabase": "^2.109.1",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7"
