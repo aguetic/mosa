@@ -30,3 +30,16 @@ Test the distinction between an ancestral person and physical remains held in a 
 ## Pass condition
 
 The ancestral person and physical remains have separate identities, connected by a sourced claim.
+
+## Implementation findings
+
+- The ancestral person and the physical remains were represented as separate entities.
+- The remains are an item; the ancestral person is an agent.
+- Their relationship is represented through `physical_remains_of`.
+- A null `asserted_by_agent_id` can represent a MoSA structural interpretation.
+- `held_by` must mean physical custody and must not imply ownership.
+- Source-language descriptions should normally be preserved as written.
+
+## Result
+
+Pass. No schema change required.
