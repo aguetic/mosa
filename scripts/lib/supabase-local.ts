@@ -1,11 +1,8 @@
 import { runCommand } from "./run-command";
 
-const DATABASE_URL_ENV_KEYS = [
-  "LOCAL_DATABASE_URL",
-  "SUPABASE_DB_URL",
-] as const;
+const DATABASE_URL_ENV_KEYS = ["LOCAL_DATABASE_URL", "SUPABASE_DB_URL"] as const;
 
-function parseEnvironmentOutput(output: string): Map<string, string> {
+export function parseEnvironmentOutput(output: string): Map<string, string> {
   const values = new Map<string, string>();
 
   for (const rawLine of output.split(/\r?\n/u)) {
@@ -52,14 +49,10 @@ export async function getLocalDatabaseUrl(projectRoot: string): Promise<string> 
     }
   }
 
-  const output = await runCommand(
-    getSupabaseExecutable(),
-    ["status", "--output", "env"],
-    {
-      cwd: projectRoot,
-      captureOutput: true,
-    },
-  );
+  const output = await runCommand(getSupabaseExecutable(), ["status", "--output", "env"], {
+    cwd: projectRoot,
+    captureOutput: true,
+  });
 
   const values = parseEnvironmentOutput(output);
   const databaseUrl = values.get("DB_URL");

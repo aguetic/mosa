@@ -1,8 +1,7 @@
 import { LOCAL_DATABASE_URL } from "astro:env/server";
 import { Pool, type QueryResultRow } from "pg";
 
-const DEFAULT_LOCAL_DATABASE_URL =
-  "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
+const DEFAULT_LOCAL_DATABASE_URL = "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 const LOOPBACK_HOSTS = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
 
 function resolveConnectionString(): string {
@@ -14,9 +13,7 @@ function resolveConnectionString(): string {
   }
 
   if (!LOOPBACK_HOSTS.has(url.hostname.toLowerCase())) {
-    throw new Error(
-      "The Phase 1 explorer only connects to a loopback PostgreSQL host.",
-    );
+    throw new Error("The Phase 1 explorer only connects to a loopback PostgreSQL host.");
   }
 
   return connectionString;
@@ -37,8 +34,7 @@ function createPool(): Pool {
     connectionTimeoutMillis: 3_000,
     allowExitOnIdle: true,
     ssl: false,
-    options:
-      "-c default_transaction_read_only=on -c statement_timeout=5000 -c lock_timeout=1000",
+    options: "-c default_transaction_read_only=on -c statement_timeout=5000 -c lock_timeout=1000",
   });
 }
 

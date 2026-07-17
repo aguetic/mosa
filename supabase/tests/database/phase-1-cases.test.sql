@@ -3,9 +3,25 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(38);
+select plan(67);
 
 -- Schema and API surface.
+select has_table('entities', 'entity', 'entities.entity exists');
+select has_table('entities', 'item', 'entities.item exists');
+select has_table('entities', 'agent', 'entities.agent exists');
+select has_table('entities', 'place', 'entities.place exists');
+select has_table('entities', 'source', 'entities.source exists');
+select has_table(
+    'entities',
+    'external_identifier',
+    'entities.external_identifier exists'
+);
+select has_table('knowledge', 'claim', 'knowledge.claim exists');
+select has_table(
+    'knowledge',
+    'claim_evidence',
+    'knowledge.claim_evidence exists'
+);
 select ok(
     to_regclass('knowledge.claim_details') is not null,
     'claim_details view exists'
@@ -29,6 +45,219 @@ select ok(
 select ok(
     to_regprocedure('entities.create_source(text,text,text,timestamp with time zone,text)') is not null,
     'create_source helper exists'
+);
+
+select col_is_pk('entities', 'item', 'id', 'item.id is primary key');
+select col_is_pk('entities', 'agent', 'id', 'agent.id is primary key');
+select col_is_pk('entities', 'place', 'id', 'place.id is primary key');
+select col_is_pk('entities', 'source', 'id', 'source.id is primary key');
+
+select fk_ok(
+    'entities', 'item', 'id',
+    'entities', 'entity', 'id',
+    'item.id references entity.id'
+);
+select fk_ok(
+    'entities', 'agent', 'id',
+    'entities', 'entity', 'id',
+    'agent.id references entity.id'
+);
+select fk_ok(
+    'entities', 'place', 'id',
+    'entities', 'entity', 'id',
+    'place.id references entity.id'
+);
+select fk_ok(
+    'entities', 'source', 'id',
+    'entities', 'entity', 'id',
+    'source.id references entity.id'
+);
+
+-- Constraint and access-control behaviour (fixture IDs).
+select throws_ok(
+    $$
+    insert into entities.item (id, item_kind)
+    values ('10000000-0000-4000-8000-000000000001', 'artefact')
+    $$,
+    'P0001',
+    'Entity 10000000-0000-4000-8000-000000000001 has type agent, but this table requires type item',
+    'item row cannot reference an agent entity'
+);
+
+select throws_ok(
+    $$
+    insert into knowledge.claim (subject_id, predicate)
+    values (
+        '30000000-0000-4000-8000-000000000001',
+        'has_name'
+    )
+    $$,
+    '23514',
+    NULL,
+    'claim without object or literal is rejected'
+);
+
+select throws_ok(
+    $$
+    insert into knowledge.claim (
+        subject_id,
+        predicate,
+        object_entity_id,
+        literal_value
+    )
+    values (
+        '30000000-0000-4000-8000-000000000001',
+        'related_to',
+        '10000000-0000-4000-8000-000000000002',
+        '{"type":"text","value":"invalid second value"}'
+    )
+    $$,
+    '23514',
+    NULL,
+    'claim with both object and literal is rejected'
+);
+
+select throws_ok(
+    $$
+    insert into knowledge.claim (
+        subject_id,
+        predicate,
+        literal_value
+    )
+    values (
+        '30000000-0000-4000-8000-000000000001',
+        'has_name',
+        '"not-an-object"'::jsonb
+    )
+    $$,
+    '23514',
+    NULL,
+    'literal claim value must be a JSON object'
+);
+
+select throws_ok(
+    $$
+    insert into knowledge.claim_evidence (
+        claim_id,
+        source_id,
+        relationship,
+        locator
+    )
+    values (
+        '50000000-0000-4000-8000-000000000001',
+        '40000000-0000-4000-8000-000000000001',
+        'supports',
+        '   '
+    )
+    $$,
+    '23514',
+    NULL,
+    'evidence locator must be non-blank'
+);
+
+select col_not_null(
+    'knowledge',
+    'claim_evidence',
+    'source_id',
+    'claim_evidence.source_id is required'
+);
+select col_not_null(
+    'knowledge',
+    'claim_evidence',
+    'locator',
+    'claim_evidence.locator is required'
+);
+
+set local role anon;
+select throws_ok(
+    $$ select count(*) from entities.entity $$,
+    '42501',
+    NULL,
+    'anonymous users cannot read entities.entity'
+);
+reset role;
+
+set local role authenticated;
+select lives_ok(
+    $$ select count(*) from entities.entity $$,
+    'authenticated users can read entities.entity'
+);
+select lives_ok(
+    $$
+    select entities.create_item(
+        'pgTAP temporary item',
+        'artefact',
+        'authenticated write probe'
+    )
+    $$,
+    'authenticated users can write entities via create_item'
+);
+reset role;
+
+select throws_ok(
+    $$
+    delete from entities.entity
+    where id = '30000000-0000-4000-8000-000000000001'
+    $$,
+    '23503',
+    NULL,
+    'deleting an entity referenced by claims is restricted'
+);
+
+create temporary table phase_1_cascade_probe (
+    claim_id uuid primary key
+) on commit drop;
+
+with inserted_claim as (
+    insert into knowledge.claim (
+        subject_id,
+        predicate,
+        object_entity_id
+    )
+    values (
+        '40000000-0000-4000-8000-000000000001',
+        'refers_to',
+        '30000000-0000-4000-8000-000000000002'
+    )
+    returning id
+)
+insert into phase_1_cascade_probe (claim_id)
+select id from inserted_claim;
+
+insert into knowledge.claim_evidence (
+    claim_id,
+    source_id,
+    relationship,
+    locator
+)
+select
+    claim_id,
+    '40000000-0000-4000-8000-000000000001',
+    'supports',
+    'pgTAP cascade locator'
+from phase_1_cascade_probe;
+
+select is(
+    (
+        select count(*)::int
+        from knowledge.claim_evidence as ce
+        join phase_1_cascade_probe as probe on probe.claim_id = ce.claim_id
+    ),
+    1,
+    'temporary claim has one evidence link before delete'
+);
+
+delete from knowledge.claim
+where id in (select claim_id from phase_1_cascade_probe);
+
+select is(
+    (
+        select count(*)::int
+        from knowledge.claim_evidence as ce
+        join phase_1_cascade_probe as probe on probe.claim_id = ce.claim_id
+    ),
+    0,
+    'deleting a claim cascades to its evidence links'
 );
 
 -- General fixture invariants.

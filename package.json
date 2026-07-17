@@ -1,37 +1,50 @@
 {
   "name": "mosa-db",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
+  "private": true,
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=11 <12"
   },
+  "type": "commonjs",
   "scripts": {
-    "test": "pnpm run db:verify",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "typecheck:scripts": "tsc --project tsconfig.scripts.json",
+    "typecheck:explorer": "pnpm --filter @mosa/explorer check",
+    "typecheck": "pnpm run typecheck:scripts && pnpm run typecheck:explorer",
+    "test:unit": "vitest run",
+    "test:db": "pnpm run db:verify",
+    "test": "pnpm run test:unit && pnpm run test:db",
+    "dev": "pnpm --filter @mosa/explorer dev",
+    "build": "pnpm --filter @mosa/explorer build",
+    "verify:static": "pnpm run check && pnpm run typecheck && pnpm run test:unit && pnpm run build",
+    "verify": "pnpm run verify:static && pnpm run test:db && pnpm run db:types:check",
     "db:start": "supabase start",
     "db:reset": "supabase db reset --local --no-seed",
     "db:fixtures": "tsx scripts/load-phase-1-fixtures.ts",
     "db:lint": "supabase db lint --local --level error",
     "db:test": "supabase test db supabase/tests/database/phase-1-cases.test.sql --local",
-    "db:verify": "pnpm run scripts:typecheck && tsx scripts/verify-phase-1.ts",
-    "scripts:typecheck": "tsc --project tsconfig.scripts.json",
+    "db:verify": "tsx scripts/verify-phase-1.ts",
+    "db:types": "tsx scripts/generate-database-types.ts",
+    "db:types:check": "tsx scripts/generate-database-types.ts --check",
     "explorer:dev": "pnpm --filter @mosa/explorer dev",
     "explorer:check": "pnpm --filter @mosa/explorer check",
     "explorer:build": "pnpm --filter @mosa/explorer build"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "devDependencies": {
-    "@types/node": "^22.20.1",
-    "@types/pg": "^8.20.0",
-    "pg": "^8.22.0",
+    "@biomejs/biome": "2.5.4",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "lefthook": "^2.1.10",
+    "pg": "catalog:",
     "supabase": "^2.109.1",
     "tsx": "^4.23.1",
-    "typescript": "^7.0.2"
-  },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.110.7"
+    "typescript": "catalog:",
+    "vitest": "^4.1.10"
   }
 }

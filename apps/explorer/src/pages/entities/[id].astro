@@ -3,12 +3,12 @@ import ClaimCard from "../../components/ClaimCard.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate, isHttpReference } from "../../lib/presentation";
 import {
-  getClaimsForEntity,
-  getEntity,
-  isUuid,
   type ClaimDetail,
   type EntityDetail,
+  getClaimsForEntity,
+  getEntity,
 } from "../../lib/queries";
+import { isUuid } from "../../lib/values";
 
 const id = Astro.params.id ?? "";
 let entity: EntityDetail | null = null;

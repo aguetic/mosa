@@ -2,9 +2,9 @@
 import Layout from "../layouts/Layout.astro";
 import {
   ENTITY_TYPES,
+  type EntitySummary,
   isEntityType,
   searchEntities,
-  type EntitySummary,
 } from "../lib/queries";
 
 const searchText = Astro.url.searchParams.get("q")?.trim() ?? "";

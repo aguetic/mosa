@@ -4,12 +4,7 @@ import { Client } from "pg";
 import { getLocalDatabaseUrl } from "./lib/supabase-local";
 
 const projectRoot = path.resolve(__dirname, "..");
-const fixturePath = path.join(
-  projectRoot,
-  "supabase",
-  "fixtures",
-  "phase-1-cases.sql",
-);
+const fixturePath = path.join(projectRoot, "supabase", "fixtures", "phase-1-cases.sql");
 
 export async function loadPhase1Fixtures(): Promise<void> {
   const [databaseUrl, fixtureSql] = await Promise.all([

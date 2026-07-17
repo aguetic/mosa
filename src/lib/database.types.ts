@@ -187,7 +187,40 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      create_agent: {
+        Args: {
+          p_agent_kind?: string
+          p_notes?: string
+          p_working_label: string
+        }
+        Returns: string
+      }
+      create_item: {
+        Args: {
+          p_item_kind?: string
+          p_notes?: string
+          p_working_label: string
+        }
+        Returns: string
+      }
+      create_place: {
+        Args: {
+          p_notes?: string
+          p_place_kind?: string
+          p_working_label: string
+        }
+        Returns: string
+      }
+      create_source: {
+        Args: {
+          p_notes?: string
+          p_reference?: string
+          p_retrieved_at?: string
+          p_source_kind: string
+          p_working_label: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
@@ -252,6 +285,13 @@ export type Database = {
             referencedRelation: "claim"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "claim_supersedes_claim_id_fkey"
+            columns: ["supersedes_claim_id"]
+            isOneToOne: false
+            referencedRelation: "claim_details"
+            referencedColumns: ["claim_id"]
+          },
         ]
       }
       claim_evidence: {
@@ -296,11 +336,102 @@ export type Database = {
             referencedRelation: "claim"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "claim_evidence_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claim_details"
+            referencedColumns: ["claim_id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      claim_details: {
+        Row: {
+          asserted_by_agent_id: string | null
+          asserted_by_label: string | null
+          claim_id: string | null
+          created_at: string | null
+          created_by: string | null
+          literal_display_value: string | null
+          literal_language: string | null
+          literal_value: Json | null
+          notes: string | null
+          object_entity_id: string | null
+          object_entity_label: string | null
+          object_entity_type: string | null
+          predicate: string | null
+          status: string | null
+          subject_id: string | null
+          subject_label: string | null
+          subject_type: string | null
+          supersedes_claim_id: string | null
+          updated_at: string | null
+          updated_by: string | null
+          value_kind: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_supersedes_claim_id_fkey"
+            columns: ["supersedes_claim_id"]
+            isOneToOne: false
+            referencedRelation: "claim"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_supersedes_claim_id_fkey"
+            columns: ["supersedes_claim_id"]
+            isOneToOne: false
+            referencedRelation: "claim_details"
+            referencedColumns: ["claim_id"]
+          },
+        ]
+      }
+      claim_evidence_details: {
+        Row: {
+          asserted_by_agent_id: string | null
+          asserted_by_label: string | null
+          claim_evidence_id: string | null
+          claim_id: string | null
+          claim_status: string | null
+          evidence_created_at: string | null
+          evidence_created_by: string | null
+          evidence_notes: string | null
+          excerpt: string | null
+          literal_display_value: string | null
+          literal_language: string | null
+          literal_value: Json | null
+          locator: string | null
+          object_entity_id: string | null
+          object_entity_label: string | null
+          object_entity_type: string | null
+          predicate: string | null
+          relationship: string | null
+          source_id: string | null
+          source_label: string | null
+          subject_id: string | null
+          subject_label: string | null
+          subject_type: string | null
+          value_kind: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_evidence_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claim"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "claim_evidence_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: false
+            referencedRelation: "claim_details"
+            referencedColumns: ["claim_id"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never
@@ -439,4 +570,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

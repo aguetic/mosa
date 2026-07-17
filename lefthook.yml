@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,json,jsonc,astro,css}"
+      run: mise x -- pnpm exec biome check --write {staged_files}
+      stage_fixed: true
+
+pre-push:
+  commands:
+    typecheck:
+      run: mise x -- pnpm run typecheck
+    unit:
+      run: mise x -- pnpm run test:unit

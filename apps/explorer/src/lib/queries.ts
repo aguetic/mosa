@@ -1,15 +1,11 @@
 import type { QueryResultRow } from "pg";
 import { query } from "./database";
+import { type ExternalIdentifier, parseIdentifiers } from "./values";
+
+export type { ExternalIdentifier };
 
 export const ENTITY_TYPES = ["item", "agent", "place", "source"] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
-
-export interface ExternalIdentifier {
-  namespace: string;
-  value: string;
-  sourceId: string | null;
-  sourceLabel: string | null;
-}
 
 export interface EntitySummary {
   id: string;
@@ -98,34 +94,6 @@ interface EvidenceRow extends QueryResultRow {
   locator: string | null;
   excerpt: string | null;
   evidence_notes: string | null;
-}
-
-function parseIdentifiers(value: unknown): ExternalIdentifier[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.flatMap((entry) => {
-    if (!entry || typeof entry !== "object") {
-      return [];
-    }
-
-    const record = entry as Record<string, unknown>;
-    if (typeof record.namespace !== "string" || typeof record.value !== "string") {
-      return [];
-    }
-
-    return [
-      {
-        namespace: record.namespace,
-        value: record.value,
-        sourceId:
-          typeof record.source_id === "string" ? record.source_id : null,
-        sourceLabel:
-          typeof record.source_label === "string" ? record.source_label : null,
-      },
-    ];
-  });
 }
 
 function toEntitySummary(row: EntityRow): EntitySummary {
@@ -325,9 +293,7 @@ export async function getClaimsForEntity(id: string): Promise<ClaimDetail[]> {
      order by created_at, claim_id`,
     [id],
   );
-  const evidenceByClaim = await getEvidenceForClaims(
-    rows.map((row) => row.claim_id),
-  );
+  const evidenceByClaim = await getEvidenceForClaims(rows.map((row) => row.claim_id));
 
   return rows.map((row) => toClaim(row, evidenceByClaim));
 }
@@ -350,10 +316,4 @@ export async function getClaim(id: string): Promise<ClaimDetail | null> {
 
 export function isEntityType(value: string): value is EntityType {
   return (ENTITY_TYPES as readonly string[]).includes(value);
-}
-
-export function isUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
-    value,
-  );
 }

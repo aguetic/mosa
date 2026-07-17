@@ -1,7 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { formatDate, literalLabel } from "../../lib/presentation";
-import { getClaim, isUuid, type ClaimDetail } from "../../lib/queries";
+import { type ClaimDetail, getClaim } from "../../lib/queries";
+import { isUuid } from "../../lib/values";
 
 const id = Astro.params.id ?? "";
 let claim: ClaimDetail | null = null;

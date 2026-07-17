@@ -4,25 +4,30 @@ Local Supabase development environment for the MoSA entities, claims and evidenc
 
 ## Requirements
 
-- Node.js 20+
-- pnpm
+- [mise](https://mise.jdx.dev/)
+- Node.js 24, provisioned by mise
+- pnpm 11, provisioned by mise
 - Docker or another Docker-compatible container runtime
 - Git
 
 ## Set up
 
 ```sh
-pnpm install
-pnpm db:start
-pnpm exec supabase db reset
+mise install
+mise x -- pnpm install --frozen-lockfile
+mise x -- pnpm run db:start
+mise x -- pnpm run db:reset
+mise x -- pnpm run db:fixtures
 ```
+
+`db:reset` applies migrations without loading `seed.sql`. `db:fixtures` then loads the Phase 1 competency cases used by local exploration and database tests.
 
 Local Supabase Studio: http://localhost:54323
 
 View local service URLs and keys:
 
 ```sh
-pnpm exec supabase status
+mise x -- pnpm exec supabase status
 ```
 
 ## Development
@@ -30,25 +35,38 @@ pnpm exec supabase status
 Create a migration:
 
 ```sh
-pnpm exec supabase migration new describe_the_change
+mise x -- pnpm exec supabase migration new describe_the_change
 ```
 
-Rebuild the local database:
+Rebuild the local database and reload Phase 1 fixtures:
 
 ```sh
-pnpm exec supabase db reset
+mise x -- pnpm run db:reset
+mise x -- pnpm run db:fixtures
 ```
 
-Run database tests and linting:
+Run static checks (format, types, unit tests, build):
 
 ```sh
-pnpm test
+mise x -- pnpm run verify:static
+```
+
+Run the full verification packet, including database tests and generated-type checking:
+
+```sh
+mise x -- pnpm run verify
+```
+
+Regenerate TypeScript types from the local database:
+
+```sh
+mise x -- pnpm run db:types
 ```
 
 Stop Supabase:
 
 ```sh
-pnpm exec supabase stop
+mise x -- pnpm exec supabase stop
 ```
 
 ## Development principles

@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: Static checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
+
+      - name: Resolve pnpm store path
+        run: echo "PNPM_STORE_PATH=$(mise x -- pnpm store path)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: mise x -- pnpm install --frozen-lockfile
+
+      - name: Format and lint
+        run: mise x -- pnpm run check
+
+      - name: Typecheck
+        run: mise x -- pnpm run typecheck
+
+      - name: Unit tests
+        run: mise x -- pnpm run test:unit
+
+      - name: Build
+        run: mise x -- pnpm run build
+
+  database:
+    name: Database verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
+
+      - name: Resolve pnpm store path
+        run: echo "PNPM_STORE_PATH=$(mise x -- pnpm store path)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: mise x -- pnpm install --frozen-lockfile
+
+      - name: Verify database
+        run: mise x -- pnpm run test:db
+
+      - name: Check generated database types
+        run: mise x -- pnpm run db:types:check
