@@ -35,6 +35,9 @@
 - Distinguish event location from institutional recipient: for example, `occurred_at → Paris` and `transferred_to → Missionary Museum` answer different questions.
 - An organisation may separately have a sourced `located_at` claim. Do not infer a historical event location from an organisation's current or undated location claim.
 - Event details remain ordinary `knowledge.claim` rows. Explorer labels are projections of claims and should link back to claim identity, status, attribution and evidence.
+- When several claims about one event are reported together, retain each atomic claim and attach its own evidence. Claims sharing an exact `source_id + locator + excerpt` tuple with a non-empty excerpt may be grouped in the explorer.
+- Evidence-context grouping is a display convention, not a stable source-statement, account, evidence-unit or claim-group identity. Claims remain independently attributable and reviewable.
+- Use one event anchor when the evidence explicitly presents alternative details for the same occurrence. Use separate provisional events when it is unresolved whether sources describe the same occurrence.
 - Do not infer ownership, title, legality, authority or consent from a transfer or relocation event.
 
 ## Evidence relationships

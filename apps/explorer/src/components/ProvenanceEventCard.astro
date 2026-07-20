@@ -1,5 +1,9 @@
 ---
 import type { ProvenanceEvent, ProvenanceStatement } from "../lib/provenance";
+import {
+  evidenceContextKey,
+  groupProvenanceStatementsByEvidenceContext,
+} from "../lib/provenance-evidence-context";
 import { provenanceStatementValue } from "../lib/provenance-presentation";
 
 interface Props {
@@ -43,12 +47,34 @@ const statements = event.statements
     return normalizedLeft - normalizedRight || left.predicate.localeCompare(right.predicate);
   });
 
+const { groups: evidenceGroups, ungrouped: ungroupedStatements } =
+  groupProvenanceStatementsByEvidenceContext(statements);
+const statementSections = [
+  ...(ungroupedStatements.length > 0
+    ? [
+        {
+          contextKey: null,
+          label: null,
+          evidence: null,
+          statements: ungroupedStatements,
+        },
+      ]
+    : []),
+  ...evidenceGroups,
+];
+
 function entityHref(id: string, entityType: string | null): string {
   return entityType === "event" ? `/events/${id}` : `/entities/${id}`;
 }
 
 function fieldLabel(statement: ProvenanceStatement): string {
   return FIELD_LABELS[statement.predicate] ?? statement.predicate;
+}
+
+function statementEvidence(statement: ProvenanceStatement, contextKey: string | null) {
+  return contextKey
+    ? statement.evidence.filter((evidence) => evidenceContextKey(evidence) !== contextKey)
+    : statement.evidence;
 }
 ---
 
@@ -66,46 +92,67 @@ function fieldLabel(statement: ProvenanceStatement): string {
     statements.length === 0 ? (
       <div class="empty">No attributed event statements.</div>
     ) : (
-      <dl class="metadata panel">
-        {statements.map((statement) => (
-          <div>
-            <dt>{fieldLabel(statement)}</dt>
-            <dd>
-              {statement.valueKind === "entity" && statement.objectEntityId ? (
-                <a href={entityHref(statement.objectEntityId, statement.objectEntityType)}>
-                  {provenanceStatementValue(statement)}
-                </a>
-              ) : (
-                <span class="literal">{provenanceStatementValue(statement)}</span>
-              )}
-              {statement.literalLanguage && <span class="muted"> ({statement.literalLanguage})</span>}
-              <p class="claim-meta">
-                <a href={`/claims/${statement.id}`}>View claim</a> · status {statement.status} · Asserted by{" "}
-                {statement.assertedByAgentId ? (
-                  <a href={`/entities/${statement.assertedByAgentId}`}>
-                    {statement.assertedByLabel ?? statement.assertedByAgentId}
+      <div>
+        {statementSections.map((section) => (
+          <section class={section.label ? "panel" : undefined}>
+            {section.label && section.evidence && (
+              <header>
+                <h4>{section.label}</h4>
+                <p class="claim-meta">
+                  <a href={`/entities/${section.evidence.sourceId}`}>
+                    {section.evidence.sourceLabel}
                   </a>
-                ) : (
-                  "unrecorded agent"
-                )}
-                {statement.notes ? ` · ${statement.notes}` : ""}
-              </p>
-              {statement.evidence.length > 0 && (
-                <ul class="evidence-list">
-                  {statement.evidence.map((evidence) => (
-                    <li>
-                      <strong>{evidence.relationship}</strong> ·{" "}
-                      <a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a>
-                      {evidence.locator ? ` · ${evidence.locator}` : ""}
-                      {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </dd>
-          </div>
+                  {section.evidence.locator ? ` · ${section.evidence.locator}` : ""}
+                  {section.evidence.excerpt ? ` · “${section.evidence.excerpt}”` : ""}
+                </p>
+              </header>
+            )}
+            <dl class={`metadata${section.label ? "" : " panel"}`}>
+              {section.statements.map((statement) => (
+                <div>
+                  <dt>{fieldLabel(statement)}</dt>
+                  <dd>
+                    {statement.valueKind === "entity" && statement.objectEntityId ? (
+                      <a href={entityHref(statement.objectEntityId, statement.objectEntityType)}>
+                        {provenanceStatementValue(statement)}
+                      </a>
+                    ) : (
+                      <span class="literal">{provenanceStatementValue(statement)}</span>
+                    )}
+                    {statement.literalLanguage && (
+                      <span class="muted"> ({statement.literalLanguage})</span>
+                    )}
+                    <p class="claim-meta">
+                      <a href={`/claims/${statement.id}`}>View claim</a> · status {statement.status} ·
+                      Asserted by{" "}
+                      {statement.assertedByAgentId ? (
+                        <a href={`/entities/${statement.assertedByAgentId}`}>
+                          {statement.assertedByLabel ?? statement.assertedByAgentId}
+                        </a>
+                      ) : (
+                        "unrecorded agent"
+                      )}
+                      {statement.notes ? ` · ${statement.notes}` : ""}
+                    </p>
+                    {statementEvidence(statement, section.contextKey).length > 0 && (
+                      <ul class="evidence-list">
+                        {statementEvidence(statement, section.contextKey).map((evidence) => (
+                          <li>
+                            <strong>{evidence.relationship}</strong> ·{" "}
+                            <a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a>
+                            {evidence.locator ? ` · ${evidence.locator}` : ""}
+                            {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         ))}
-      </dl>
+      </div>
     )
   }
 

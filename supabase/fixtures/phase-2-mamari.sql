@@ -100,7 +100,7 @@ values
     ('11000000-0000-4000-8000-000000000005', 'agent', 'French Navy', null),
     ('11000000-0000-4000-8000-000000000006', 'agent', 'Wikipedia contributors', null),
     ('11000000-0000-4000-8000-000000000007', 'agent', 'Steven Roger Fischer', null),
-    ('11000000-0000-4000-8000-000000000008', 'agent', 'Missionary Museum', 'Institution named as the destination of the reported Paris deposits'),
+    ('11000000-0000-4000-8000-000000000008', 'agent', 'Missionary Museum', 'Institution named as the destination of the reported Paris deposit'),
     ('21000000-0000-4000-8000-000000000001', 'place', 'Rapa Nui', null),
     ('21000000-0000-4000-8000-000000000002', 'place', 'Tahiti', null),
     ('21000000-0000-4000-8000-000000000003', 'place', 'Paris', null),
@@ -115,8 +115,7 @@ values
     ('81000000-0000-4000-8000-000000000002', 'event', 'Roussel transfer to Jaussen', 'Event anchor for the Roussel account'),
     ('81000000-0000-4000-8000-000000000003', 'event', 'Zumbohm departure from Rapa Nui', 'Event anchor for the Zumbohm account'),
     ('81000000-0000-4000-8000-000000000004', 'event', 'Zumbohm transfer to Tahiti and Jaussen', 'Event anchor for the Zumbohm account'),
-    ('81000000-0000-4000-8000-000000000005', 'event', 'Paris deposit — Jaussen account', 'Alternative Paris account; not merged with the 1892 account'),
-    ('81000000-0000-4000-8000-000000000006', 'event', 'Paris deposit — French Navy account', 'Alternative Paris account; not merged with the 1888 account'),
+    ('81000000-0000-4000-8000-000000000005', 'event', 'Mamari deposit in the Missionary Museum, Paris', 'Single event anchor with alternative evidence-backed actor and date claims'),
     ('81000000-0000-4000-8000-000000000007', 'event', 'Mamari relocation to Braine-le-Comte', null),
     ('81000000-0000-4000-8000-000000000008', 'event', 'Mamari relocation to Grottaferrata', null),
     ('81000000-0000-4000-8000-000000000009', 'event', 'Mamari relocation to Rome', null);
@@ -153,7 +152,6 @@ insert into provenance.event (id, event_kind) values
     ('81000000-0000-4000-8000-000000000003', 'unknown'),
     ('81000000-0000-4000-8000-000000000004', 'transfer'),
     ('81000000-0000-4000-8000-000000000005', 'transfer'),
-    ('81000000-0000-4000-8000-000000000006', 'transfer'),
     ('81000000-0000-4000-8000-000000000007', 'relocation'),
     ('81000000-0000-4000-8000-000000000008', 'relocation'),
     ('81000000-0000-4000-8000-000000000009', 'relocation');
@@ -195,19 +193,15 @@ values
     ('51000000-0000-4000-8000-000000000038', '81000000-0000-4000-8000-000000000004', 'preceded_by', '81000000-0000-4000-8000-000000000003', null, '11000000-0000-4000-8000-000000000006', null),
     ('51000000-0000-4000-8000-000000000039', '81000000-0000-4000-8000-000000000004', 'described_as', null, '{"type":"text","value":"sent to him in Tahiti","language":"en"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
 
-    -- Two incompatible Paris accounts remain separate event anchors.
+    -- One Paris deposit event with shared facts and two correlated actor/date alternatives.
     ('51000000-0000-4000-8000-000000000040', '81000000-0000-4000-8000-000000000005', 'moved_item', '31000000-0000-4000-8000-000000000001', null, '11000000-0000-4000-8000-000000000006', null),
     ('51000000-0000-4000-8000-000000000041', '81000000-0000-4000-8000-000000000005', 'occurred_at', '21000000-0000-4000-8000-000000000003', null, '11000000-0000-4000-8000-000000000006', null),
-    ('51000000-0000-4000-8000-000000000042', '81000000-0000-4000-8000-000000000005', 'carried_out_by', '11000000-0000-4000-8000-000000000003', null, '11000000-0000-4000-8000-000000000006', null),
-    ('51000000-0000-4000-8000-000000000043', '81000000-0000-4000-8000-000000000005', 'occurred_during', null, '{"type":"date_interval","earliest":"1888","latest":"1888","precision":"year","interpretation":"exact","verbatim":"1888"}'::jsonb, '11000000-0000-4000-8000-000000000006', 'Alternative Paris account'),
-    ('51000000-0000-4000-8000-000000000044', '81000000-0000-4000-8000-000000000005', 'described_as', null, '{"type":"text","value":"deposited in the Missionary Museum by Jaussen in 1888","language":"en"}'::jsonb, '11000000-0000-4000-8000-000000000006', 'Source account separated from the 1892 alternative'),
-    ('51000000-0000-4000-8000-000000000069', '81000000-0000-4000-8000-000000000005', 'transferred_to', '11000000-0000-4000-8000-000000000008', null, '11000000-0000-4000-8000-000000000006', 'Institutional destination named by the source'),
-    ('51000000-0000-4000-8000-000000000045', '81000000-0000-4000-8000-000000000006', 'moved_item', '31000000-0000-4000-8000-000000000001', null, '11000000-0000-4000-8000-000000000006', null),
-    ('51000000-0000-4000-8000-000000000046', '81000000-0000-4000-8000-000000000006', 'occurred_at', '21000000-0000-4000-8000-000000000003', null, '11000000-0000-4000-8000-000000000006', null),
-    ('51000000-0000-4000-8000-000000000047', '81000000-0000-4000-8000-000000000006', 'carried_out_by', '11000000-0000-4000-8000-000000000005', null, '11000000-0000-4000-8000-000000000006', null),
-    ('51000000-0000-4000-8000-000000000048', '81000000-0000-4000-8000-000000000006', 'occurred_during', null, '{"type":"date_interval","earliest":"1892","latest":"1892","precision":"year","interpretation":"exact","verbatim":"1892"}'::jsonb, '11000000-0000-4000-8000-000000000006', 'Alternative Paris account'),
-    ('51000000-0000-4000-8000-000000000049', '81000000-0000-4000-8000-000000000006', 'described_as', null, '{"type":"text","value":"deposited in the Missionary Museum by the French navy in 1892 after his death","language":"en"}'::jsonb, '11000000-0000-4000-8000-000000000006', 'Source account separated from the 1888 alternative'),
-    ('51000000-0000-4000-8000-000000000070', '81000000-0000-4000-8000-000000000006', 'transferred_to', '11000000-0000-4000-8000-000000000008', null, '11000000-0000-4000-8000-000000000006', 'Institutional destination named by the source'),
+    ('51000000-0000-4000-8000-000000000042', '81000000-0000-4000-8000-000000000005', 'transferred_to', '11000000-0000-4000-8000-000000000008', null, '11000000-0000-4000-8000-000000000006', 'Institutional destination named by the source'),
+    ('51000000-0000-4000-8000-000000000043', '81000000-0000-4000-8000-000000000005', 'described_as', null, '{"type":"text","value":"deposited in the Missionary Museum, either by Jaussen in 1888 or by the French navy in 1892 after his death","language":"en"}'::jsonb, '11000000-0000-4000-8000-000000000006', 'Source wording preserves the alternatives'),
+    ('51000000-0000-4000-8000-000000000044', '81000000-0000-4000-8000-000000000005', 'carried_out_by', '11000000-0000-4000-8000-000000000003', null, '11000000-0000-4000-8000-000000000006', null),
+    ('51000000-0000-4000-8000-000000000045', '81000000-0000-4000-8000-000000000005', 'occurred_during', null, '{"type":"date_interval","earliest":"1888","latest":"1888","precision":"year","interpretation":"exact","verbatim":"1888"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
+    ('51000000-0000-4000-8000-000000000046', '81000000-0000-4000-8000-000000000005', 'carried_out_by', '11000000-0000-4000-8000-000000000005', null, '11000000-0000-4000-8000-000000000006', null),
+    ('51000000-0000-4000-8000-000000000047', '81000000-0000-4000-8000-000000000005', 'occurred_during', null, '{"type":"date_interval","earliest":"1892","latest":"1892","precision":"year","interpretation":"exact","verbatim":"1892"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
 
     -- Supported later relocations. Origins are added only where the sequence states them.
     ('51000000-0000-4000-8000-000000000050', '81000000-0000-4000-8000-000000000007', 'moved_item', '31000000-0000-4000-8000-000000000001', null, '11000000-0000-4000-8000-000000000006', null),
@@ -215,8 +209,7 @@ values
     ('51000000-0000-4000-8000-000000000052', '81000000-0000-4000-8000-000000000007', 'moved_to', '21000000-0000-4000-8000-000000000004', null, '11000000-0000-4000-8000-000000000006', null),
     ('51000000-0000-4000-8000-000000000053', '81000000-0000-4000-8000-000000000007', 'carried_out_by', '11000000-0000-4000-8000-000000000004', null, '11000000-0000-4000-8000-000000000006', null),
     ('51000000-0000-4000-8000-000000000054', '81000000-0000-4000-8000-000000000007', 'occurred_during', null, '{"type":"date_interval","earliest":"1905","latest":"1905","precision":"year","interpretation":"exact","verbatim":"1905"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
-    ('51000000-0000-4000-8000-000000000055', '81000000-0000-4000-8000-000000000007', 'preceded_by', '81000000-0000-4000-8000-000000000005', null, '11000000-0000-4000-8000-000000000006', 'Ordering according to the 1888 account'),
-    ('51000000-0000-4000-8000-000000000056', '81000000-0000-4000-8000-000000000007', 'preceded_by', '81000000-0000-4000-8000-000000000006', null, '11000000-0000-4000-8000-000000000006', 'Ordering according to the 1892 account'),
+    ('51000000-0000-4000-8000-000000000055', '81000000-0000-4000-8000-000000000007', 'preceded_by', '81000000-0000-4000-8000-000000000005', null, '11000000-0000-4000-8000-000000000006', 'The Braine-le-Comte relocation follows the Paris deposit'),
     ('51000000-0000-4000-8000-000000000057', '81000000-0000-4000-8000-000000000008', 'moved_item', '31000000-0000-4000-8000-000000000001', null, '11000000-0000-4000-8000-000000000006', null),
     ('51000000-0000-4000-8000-000000000058', '81000000-0000-4000-8000-000000000008', 'moved_from', '21000000-0000-4000-8000-000000000004', null, '11000000-0000-4000-8000-000000000006', null),
     ('51000000-0000-4000-8000-000000000059', '81000000-0000-4000-8000-000000000008', 'moved_to', '21000000-0000-4000-8000-000000000005', null, '11000000-0000-4000-8000-000000000006', null),
@@ -251,16 +244,18 @@ select
             then 'apparently collected by Gaspar Zumbohm in 1870'
         when claim.id between '51000000-0000-4000-8000-000000000035'::uuid and '51000000-0000-4000-8000-000000000039'::uuid
             then 'sent to him in Tahiti'
+        when claim.id = '51000000-0000-4000-8000-000000000041'::uuid
+            then null
+        when claim.id between '51000000-0000-4000-8000-000000000040'::uuid and '51000000-0000-4000-8000-000000000043'::uuid
+            then 'deposited in the Missionary Museum, either by Jaussen in 1888 or by the French navy in 1892 after his death'
         when claim.id in (
-            '51000000-0000-4000-8000-000000000041'::uuid,
-            '51000000-0000-4000-8000-000000000046'::uuid
-        ) then null
-        when claim.id between '51000000-0000-4000-8000-000000000040'::uuid and '51000000-0000-4000-8000-000000000044'::uuid
-          or claim.id = '51000000-0000-4000-8000-000000000069'::uuid
-            then 'deposited in the Missionary Museum, either by Jaussen in 1888 or by the French navy in 1892 after his death'
-        when claim.id between '51000000-0000-4000-8000-000000000045'::uuid and '51000000-0000-4000-8000-000000000049'::uuid
-          or claim.id = '51000000-0000-4000-8000-000000000070'::uuid
-            then 'deposited in the Missionary Museum, either by Jaussen in 1888 or by the French navy in 1892 after his death'
+            '51000000-0000-4000-8000-000000000044'::uuid,
+            '51000000-0000-4000-8000-000000000045'::uuid
+        ) then 'either by Jaussen in 1888'
+        when claim.id in (
+            '51000000-0000-4000-8000-000000000046'::uuid,
+            '51000000-0000-4000-8000-000000000047'::uuid
+        ) then 'or by the French navy in 1892 after his death'
         else null
     end
 from knowledge.claim as claim

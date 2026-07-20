@@ -18,7 +18,7 @@ Names and scholarly designations, external identifiers, and classifications must
 
 ## Provenance pressure
 
-The source packet contains more than one account of how Mamari left Rapa Nui and reached Tahiti. It also reports two incompatible accounts of a later deposit in Paris and a subsequent sequence of institutional relocations.
+The source packet contains more than one account of how Mamari left Rapa Nui and reached Tahiti. It also reports one later deposit in Paris through two alternative actor-and-date reconstructions, followed by a sequence of institutional relocations.
 
 A generic participant role and a prose `described_as` value are not sufficient. The database must be able to answer, without parsing prose:
 
@@ -38,13 +38,12 @@ These are research anchors, not accepted historical facts:
 2. transfer to Jaussen according to the Roussel account;
 3. departure or collection from Rapa Nui involving Zumbohm around 1870;
 4. movement to Tahiti and transfer to Jaussen according to the Zumbohm account;
-5. deposit in the Missionary Museum in Paris by Jaussen in 1888;
-6. deposit in the Missionary Museum in Paris by the French Navy in 1892;
-7. relocation to Braine-le-Comte in 1905;
-8. relocation to Grottaferrata in 1953;
-9. relocation to Rome in 1964.
+5. deposit in the Missionary Museum in Paris, reported as either carried out by Jaussen in 1888 or by the French Navy in 1892;
+6. relocation to Braine-le-Comte in 1905;
+7. relocation to Grottaferrata in 1953;
+8. relocation to Rome in 1964.
 
-The Roussel and Zumbohm chains remain separate. The two Paris accounts remain separate. Their possible incompatibility must be visible from their structured actor and date claims rather than through a claim-group table.
+The Roussel and Zumbohm chains remain separate because the available material does not establish that their event anchors describe the same occurrences. The Paris alternatives instead describe one deposit event. Their actor-and-date pairings are preserved by the exact existing evidence contexts attached to the claims, without a claim-group or source-statement identity.
 
 A 1974 move by the congregation is not modelled as a Mamari event unless evidence directly connects the tablet or its holding collection to that move.
 
@@ -52,11 +51,13 @@ A 1974 move by the congregation is not modelled as a Mamari event unless evidenc
 
 - `moved_from` and `moved_to` must be independently queryable.
 - `carried_out_by` and `transferred_to` must be independently queryable.
-- For each Paris account, `occurred_at → Paris` and `transferred_to → Missionary Museum` must remain separate claims.
+- The single Paris event must contain one `moved_item → Mamari`, one `occurred_at → Paris`, and one `transferred_to → Missionary Museum` claim.
 - The Paris deposit wording does not by itself justify `moved_to → Paris`; a physical movement destination is asserted only where the source supports it.
 - Every provenance event must identify Mamari through `moved_item`.
 - The Roussel and Zumbohm account chains must not share an event merely because both end in Tahiti or mention Jaussen.
-- The Jaussen 1888 and French Navy 1892 Paris accounts must not be flattened into one event with cumulative participants and dates.
+- The Jaussen and 1888 claims must share one identical `source_id + locator + excerpt` evidence context.
+- The French Navy and 1892 claims must share a different identical evidence context, preventing unintended Jaussen–1892 or French Navy–1888 combinations in presentation.
+- Matching evidence contexts are a lightweight presentation convention, not stable account identities or formal claim groups.
 - `collected`, `removed`, `stolen`, `sold`, `sent`, and `deposited` remain source-attributed wording in `described_as` claims.
 - Source excerpts must contain source wording or be null; internal event labels are not evidence excerpts.
 - Later relocation claims do not imply ownership, lawful title, consent or authority.
@@ -64,22 +65,23 @@ A 1974 move by the congregation is not modelled as a Mamari event unless evidenc
 ## Questions
 
 - Can SQL retrieve item, origin, movement destination, event location, actor, recipient, date and source without inspecting `described_as` text?
-- Can separately attributed event accounts concern the same item without being merged?
-- Can incompatible actor-and-date combinations remain independently queryable?
+- Can uncertain event identity remain separate from uncertainty about an otherwise shared event?
+- Can the alternative Jaussen–1888 and French Navy–1892 pairs remain independently queryable on one event?
+- Can the explorer group correlated claims by existing evidence context without introducing a new ontology entity?
 - Can the original wording remain visible without carrying the only structured meaning?
 - Can later events be ordered while the earlier account chains remain unresolved?
 - Can the explorer show the structured roles and evidence for each event?
 
 ## Pass condition
 
-Mamari has one stable item identity. Nine event anchors represent two separate early account chains, two separate Paris accounts and three supported later relocations. The structured claims answer the competency questions without parsing descriptive prose. The Paris accounts distinguish the place of the deposit from the receiving institution. No event combines alternative actors or dates, and no unsupported 1974 object move, ownership, authority, consent or legal conclusion is introduced.
+Mamari has one stable item identity. Eight event anchors represent two separate early account chains, one Paris deposit event and three supported later relocations. The Paris event stores its shared item, location and recipient once while retaining two correlated actor-and-date alternatives through existing claim evidence. The structured claims answer the competency questions without parsing descriptive prose, and no unsupported 1974 object move, ownership, authority, consent or legal conclusion is introduced.
 
 ## Out of scope
 
 - deciding which early or Paris account is historically correct;
-- deciding whether separately modelled events describe the same real-world occurrence;
+- deciding whether the separately modelled early events describe the same real-world occurrences;
 - a general participant-role table or complete provenance predicate vocabulary;
-- explicit claim or conflict groups;
+- formal source statements, evidence-unit identities, or explicit claim and conflict groups;
 - resolving whether any transfer was lawful;
 - restitution or return workflows;
 - interpreting the rongorongo text.
@@ -93,11 +95,14 @@ Mamari has one stable item identity. Nine event anchors represent two separate e
   - `occurred_at` identifies where an event happened;
   - `moved_to` identifies the geographical destination of a physical movement;
   - `transferred_to` identifies the person or organisation reported as receiving the item.
-- The Missionary Museum and Paris must therefore be represented separately in the Paris deposit accounts.
-- Competing accounts are best represented as separate event anchors when their combinations of actors, dates, or actions are incompatible.
+- The Missionary Museum and Paris must therefore be represented as separate claims on the Paris deposit event.
+- Conflicting properties do not necessarily imply distinct events. When a source explicitly frames actor-and-date combinations as alternatives for one occurrence, one event anchor is more accurate.
 - The Roussel and Zumbohm accounts must remain separate event chains rather than converging on one assumed Tahiti event.
-- The Jaussen 1888 and French Navy 1892 Paris accounts must remain separate events rather than one event with cumulative participants and dates.
-- Differences and possible incompatibilities between accounts can emerge from their structured claims and attribution. A separate claim-group or conflict-group model was not required.
+- The Jaussen–1888 and French Navy–1892 pairings can be preserved by giving each pair the same exact `source_id`, `locator`, and `excerpt` values in existing claim evidence.
+- The explorer may group claims that share an exact evidence context under the generic label “Reported together”. This grouping is a derived presentation and has no formal identity; it does not infer semantic alternatives from English wording.
+- Claims with unique or incomplete evidence contexts remain visible as ordinary statements.
+- Exact-tuple grouping is intentionally provisional and presentational. A formal source-statement, evidence-unit, claim-group, or conflict-group model may be introduced only when another case proves it necessary.
+- Event identity must be decided separately from uncertainty about properties claimed of an event.
 - `described_as` remains useful for preserving original wording, uncertainty, and language, but it must not be the only place where queryable actors, places, recipients, or dates are recorded.
 - Event details remain claims with their own status, asserting agent, notes, and evidence. Friendly explorer headings are projections of those claims, not canonical event fields.
 - Evidence excerpts should contain source wording or be null. Internal entity labels and event labels must not be used as though they were quotations from a source.
@@ -106,4 +111,4 @@ Mamari has one stable item identity. Nine event anchors represent two separate e
 
 ## Result
 
-Pass. A minimal provenance schema extension and new competency-derived predicates were required. The resulting model can represent the separate Mamari accounts and retrieve their item, origin, destination, event location, actor, recipient, date, attribution, and evidence without parsing descriptive prose.
+Pass. No additional schema structure was required for correlated alternatives. The model represents the Paris deposit once, preserves its two actor-and-date pairings through existing claim evidence, and keeps the grouping explicitly provisional and presentational.
