@@ -1,54 +1,61 @@
-# Phase 2 provenance boundary
+# Phase 2 database boundary
 
-Status: defined for implementation and competency testing.
+Status: active vertical slice, validated through provenance competency cases.
 
 ## Goal
 
-Phase 2 adds a minimal provenance event model for representing what happened to an item, when, where, and involving whom, according to specific sources.
-
-Events are stable research anchors. Their dates, participants, places, sequence, and characterisation remain sourced claims and may conflict.
+Represent competing, incomplete and temporally ordered accounts of how an item moved between people, places and institutions without turning one account into canonical truth.
 
 ## Included
 
-- provenance events concerning Phase 1 items;
-- event participation by agents;
-- event places;
-- uncertain or approximate event dates;
-- ordering between events;
-- competing descriptions of the same event;
-- claim evidence and attribution using the Phase 1 knowledge model.
+### Provenance events
 
-## Design gate
+- stable event identities;
+- broad operational event kinds;
+- events as subjects and objects of ordinary claims;
+- event items, movement origins and destinations, event locations, active agents, recipient institutions, dates, descriptions and ordering expressed through attributed claims;
+- claim-level source evidence;
+- read-only exploration of an item's event sequence.
 
-Before implementation, record how events become valid subjects and objects of claims. Phase 2 must extend the existing claim-and-evidence model rather than create a second, incompatible assertion system.
+### Canonical storage
+
+- `provenance.event`
+- the Phase 1 entity, claim and evidence tables
+
+An event is also an `entities.entity` row with `entity_type = 'event'`. Phase 2 does not introduce separate provenance claim or provenance evidence tables.
+
+### Initial database API
+
+- `provenance.create_event(...)`
+- the existing `knowledge.claim_details`
+- the existing `knowledge.claim_evidence_details`
 
 ## Invariants
 
-- An event is distinct from the item, agent, place, or source involved in it.
-- Multiple sources may describe the same event differently.
-- Terms such as `gift`, `removal`, `collection`, `sale`, or `theft` are attributed characterisations, not canonical event types unless the evidence supports that conclusion.
-- Uncertain dates remain ranges or source wording; exact dates are not invented.
-- Participants have explicit roles where the evidence permits them to be identified.
-- Event order may be recorded without asserting unsupported exact dates.
-- Missing participants, places, dates, or authority do not prevent an event from being represented.
-- Provenance does not imply ownership, legality, consent, or lawful title.
+- Events are research anchors, not accepted historical facts.
+- Competing event accounts may coexist as separate event anchors whose structured details can be compared.
+- Historical and legal wording remains source-attributed; descriptive prose is not the only storage location for queryable event details.
+- Event dates may be exact, approximate, ranged or alternative and must not be normalised beyond the evidence.
+- Event ordering is partial and sourced; missing links are not inferred.
+- Relocation or transfer does not imply ownership, lawful title, consent or authority.
+- Claims and claim evidence remain the only assertion mechanism.
+- Event location, physical movement destination and recipient institution are distinct claim roles and are not inferred from one another.
 
-## Competency cases
+## Initial competency case
 
-- Mamari: competing provenance sequences and several later institutional relocations.
-- Te Papa moai kavakava: uncertain collection attribution and uncertain dates within one institutional account.
-- Hoa Hakananaiʻa: a documented naval removal with competing characterisations.
-- La Serena moai: a sparse 1952 transfer reported as a gift without clear authority or participants.
+- Case 05: Mamari provenance
+
+The first vertical slice must represent two unresolved early account chains, two incompatible Paris deposit accounts and a later sequence of institutional relocations while keeping one stable Mamari item identity. The Paris accounts distinguish `occurred_at → Paris` from `transferred_to → Missionary Museum`. The Mamari case introduces only the predicates its competency questions require: `moved_item`, `moved_from`, `moved_to`, `carried_out_by` and `transferred_to`.
 
 ## Deferred
 
-- restitution requests and case workflows;
-- legal ownership or title determinations;
-- consent and authority assessments;
-- publication projections;
-- import and reconciliation workflows;
-- provenance completeness scores;
-- automated timelines or route inference;
-- a comprehensive event ontology.
+- a complete provenance ontology;
+- fixed participant-role tables;
+- automated chronology reconciliation;
+- ownership and legal-title conclusions;
+- consent and authority determinations;
+- restitution workflows;
+- provenance editing interfaces;
+- general-purpose ingestion.
 
-New Phase 2 structures require a failing competency case or a recorded decision.
+New Phase 2 structures require a failing provenance competency test or a recorded decision.

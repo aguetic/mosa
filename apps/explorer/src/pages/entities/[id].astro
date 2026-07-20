@@ -1,7 +1,9 @@
 ---
 import ClaimCard from "../../components/ClaimCard.astro";
+import ProvenanceEventCard from "../../components/ProvenanceEventCard.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate, isHttpReference } from "../../lib/presentation";
+import { getProvenanceEventsForItem, type ProvenanceEvent } from "../../lib/provenance";
 import {
   type ClaimDetail,
   type EntityDetail,
@@ -13,11 +15,16 @@ import { isUuid } from "../../lib/values";
 const id = Astro.params.id ?? "";
 let entity: EntityDetail | null = null;
 let claims: ClaimDetail[] = [];
+let provenanceEvents: ProvenanceEvent[] = [];
 let loadFailed = false;
 
 if (isUuid(id)) {
   try {
-    [entity, claims] = await Promise.all([getEntity(id), getClaimsForEntity(id)]);
+    [entity, claims, provenanceEvents] = await Promise.all([
+      getEntity(id),
+      getClaimsForEntity(id),
+      getProvenanceEventsForItem(id),
+    ]);
   } catch (error) {
     loadFailed = true;
     console.error(`Unable to load entity ${id}`, error);
@@ -101,6 +108,23 @@ const retrievedAt = entity ? formatDate(entity.retrievedAt) : null;
                 ))}
               </ul>
             </div>
+          )
+        }
+
+        {
+          provenanceEvents.length > 0 && (
+            <>
+              <h2>Provenance events</h2>
+              <p class="lede">
+                Events are ordered only by sourced <code>preceded_by</code> claims.
+                Competing accounts remain separate; ties use label order and do not imply chronology.
+              </p>
+              <section class="claims" aria-label="Provenance events">
+                {provenanceEvents.map((event) => (
+                  <ProvenanceEventCard event={event} />
+                ))}
+              </section>
+            </>
           )
         }
 

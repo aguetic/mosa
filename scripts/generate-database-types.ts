@@ -15,7 +15,18 @@ async function generateDatabaseTypes(): Promise<string> {
   const supabase = getSupabaseExecutable();
   const output = await runCommand(
     supabase,
-    ["gen", "types", "typescript", "--local", "--schema", "entities", "--schema", "knowledge"],
+    [
+      "gen",
+      "types",
+      "typescript",
+      "--local",
+      "--schema",
+      "entities",
+      "--schema",
+      "knowledge",
+      "--schema",
+      "provenance",
+    ],
     {
       cwd: projectRoot,
       captureOutput: true,

@@ -14,6 +14,28 @@
 | `located_at`          | Place   | A source or agent states that an entity is at a place                                                             |
 | `possibly_same_as`    | Entity  | Two entities may represent the same real-world thing, but the identity has not been resolved                      |
 | `physical_remains_of` | Agent   | An item of physical human remains is associated with the person whose remains they are                            |
+| `moved_item`          | Item    | The item reported as physically moved or transferred in an event                                                   |
+| `moved_from`          | Place   | The reported origin of a movement                                                                                   |
+| `moved_to`            | Place   | The reported geographical destination of a physical movement                                                                              |
+| `carried_out_by`      | Agent   | The agent reported as actively carrying out an event                                                                |
+| `transferred_to`      | Agent   | The reported person or organisation receiving an item in a transfer, without implying custody, title or ownership            |
+| `occurred_at`         | Place   | A source or agent states where an event occurred; this is distinct from a movement destination                                                                    |
+| `occurred_during`     | Literal | A source or agent gives an exact, approximate, ranged or alternative date description for an event                |
+| `preceded_by`         | Event   | A source or agent places one event after another; this records partial ordering rather than a complete chronology |
+
+## Phase 2 provenance conventions
+
+- Provenance events are stable research anchors, not accepted historical conclusions.
+- Use `provenance.event.event_kind` only for broad operational grouping. Preserve wording such as “collected”, “removed”, “stolen”, “gift”, “sent” or “deposited” in attributed `described_as` claims.
+- Store event dates as structured literals so exact years, ranges and alternatives remain distinguishable.
+- Use `preceded_by` only where a source supports the ordering. Multiple alternative predecessors may coexist.
+- Event–item and participant relationships use competency-derived, role-bearing predicates. Phase 2 currently does not define generic event–item or participant predicates; later cases may introduce specific predicates they prove necessary.
+- Use `moved_item`, `moved_from`, `moved_to`, `carried_out_by` and `transferred_to` only with the narrow meanings established by the Mamari case.
+- Keep source wording in `described_as`, but do not leave an origin, destination, active agent or recipient only in prose when the source supports a structured claim.
+- Distinguish event location from institutional recipient: for example, `occurred_at → Paris` and `transferred_to → Missionary Museum` answer different questions.
+- An organisation may separately have a sourced `located_at` claim. Do not infer a historical event location from an organisation's current or undated location claim.
+- Event details remain ordinary `knowledge.claim` rows. Explorer labels are projections of claims and should link back to claim identity, status, attribution and evidence.
+- Do not infer ownership, title, legality, authority or consent from a transfer or relocation event.
 
 ## Evidence relationships
 

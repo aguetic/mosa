@@ -4,7 +4,7 @@ import { type ExternalIdentifier, parseIdentifiers } from "./values";
 
 export type { ExternalIdentifier };
 
-export const ENTITY_TYPES = ["item", "agent", "place", "source"] as const;
+export const ENTITY_TYPES = ["item", "agent", "place", "source", "event"] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
 export interface EntitySummary {
@@ -157,6 +157,7 @@ const ENTITY_SELECT = `
           when 'agent' then a.agent_kind
           when 'place' then p.place_kind
           when 'source' then s.source_kind
+          when 'event' then event.event_kind
       end as subtype_kind,
       s.reference,
       s.retrieved_at,
@@ -166,6 +167,7 @@ const ENTITY_SELECT = `
   left join entities.agent as a on a.id = e.id
   left join entities.place as p on p.id = e.id
   left join entities.source as s on s.id = e.id
+  left join provenance.event as event on event.id = e.id
   left join lateral (
       select jsonb_agg(
           jsonb_build_object(

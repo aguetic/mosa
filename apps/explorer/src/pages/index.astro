@@ -14,20 +14,23 @@ const entityType = isEntityType(requestedType) ? requestedType : null;
 let entities: EntitySummary[] = [];
 let loadFailed = false;
 
+const entityHref = (entity: EntitySummary): string =>
+  entity.entityType === "event" ? `/events/${entity.id}` : `/entities/${entity.id}`;
+
 try {
   entities = await searchEntities(searchText, entityType);
 } catch (error) {
   loadFailed = true;
-  console.error("Unable to load Phase 1 entities", error);
+  console.error("Unable to load entities", error);
 }
 ---
 
 <Layout title="Entities">
   <p class="eyebrow">Model inspection</p>
-  <h1>Explore the Phase 1 data</h1>
+  <h1>Explore the current model</h1>
   <p class="lede">
-    Search the current synthetic entities, then follow their claims, attribution,
-    relationships, and evidence. This interface does not modify the database.
+    Search the current synthetic entities and provenance events, then follow their claims,
+    attribution, relationships, and evidence. This interface does not modify the database.
   </p>
 
   <form class="search-form" method="get" action="/">
@@ -65,7 +68,7 @@ try {
               entities.map((entity) => (
                 <article class="result-card">
                   <div class="result-card__top">
-                    <h2><a href={`/entities/${entity.id}`}>{entity.workingLabel}</a></h2>
+                    <h2><a href={entityHref(entity)}>{entity.workingLabel}</a></h2>
                     <div class="badges">
                       <span class="badge">{entity.entityType}</span>
                       {entity.subtypeKind && <span class="badge">{entity.subtypeKind}</span>}

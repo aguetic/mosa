@@ -7,6 +7,10 @@ interface Props {
 }
 
 const { claim } = Astro.props;
+
+function entityHref(id: string, entityType: string | null): string {
+  return entityType === "event" ? `/events/${id}` : `/entities/${id}`;
+}
 ---
 
 <article class="claim-card">
@@ -19,11 +23,11 @@ const { claim } = Astro.props;
   </div>
 
   <p class="claim-expression">
-    <a href={`/entities/${claim.subjectId}`}>{claim.subjectLabel}</a>
+    <a href={entityHref(claim.subjectId, claim.subjectType)}>{claim.subjectLabel}</a>
     <span class="predicate">{claim.predicate}</span>
     {
       claim.valueKind === "entity" && claim.objectEntityId ? (
-        <a href={`/entities/${claim.objectEntityId}`}>
+        <a href={entityHref(claim.objectEntityId, claim.objectEntityType)}>
           {claim.objectEntityLabel ?? claim.objectEntityId}
         </a>
       ) : (

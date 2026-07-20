@@ -443,6 +443,44 @@ export type Database = {
       [_ in never]: never
     }
   }
+  provenance: {
+    Tables: {
+      event: {
+        Row: {
+          event_kind: string
+          id: string
+        }
+        Insert: {
+          event_kind: string
+          id: string
+        }
+        Update: {
+          event_kind?: string
+          id?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      create_event: {
+        Args: {
+          p_event_kind?: string
+          p_notes?: string
+          p_working_label: string
+        }
+        Returns: string
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
@@ -567,6 +605,9 @@ export const Constants = {
     Enums: {},
   },
   knowledge: {
+    Enums: {},
+  },
+  provenance: {
     Enums: {},
   },
 } as const

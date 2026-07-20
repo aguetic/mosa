@@ -22,12 +22,23 @@ if (!claim && !loadFailed) {
 }
 
 const createdAt = claim ? formatDate(claim.createdAt) : null;
+const subjectHref = claim
+  ? claim.subjectType === "event"
+    ? `/events/${claim.subjectId}`
+    : `/entities/${claim.subjectId}`
+  : "/";
+const objectHref =
+  claim?.objectEntityId && claim.objectEntityType === "event"
+    ? `/events/${claim.objectEntityId}`
+    : claim?.objectEntityId
+      ? `/entities/${claim.objectEntityId}`
+      : null;
 ---
 
 <Layout title={claim ? claim.predicate : "Claim not found"}>
   <p class="breadcrumb">
     <a href="/">Entity search</a>
-    {claim && <> · <a href={`/entities/${claim.subjectId}`}>{claim.subjectLabel}</a></>}
+    {claim && <> · <a href={subjectHref}>{claim.subjectLabel}</a></>}
   </p>
 
   {
@@ -36,7 +47,7 @@ const createdAt = claim ? formatDate(claim.createdAt) : null;
     ) : !claim ? (
       <>
         <h1>Claim not found</h1>
-        <p class="lede">No Phase 1 claim exists with this identifier.</p>
+        <p class="lede">No claim exists with this identifier.</p>
       </>
     ) : (
       <>
@@ -50,7 +61,7 @@ const createdAt = claim ? formatDate(claim.createdAt) : null;
         <dl class="metadata panel">
           <div>
             <dt>Subject</dt>
-            <dd><a href={`/entities/${claim.subjectId}`}>{claim.subjectLabel}</a></dd>
+            <dd><a href={subjectHref}>{claim.subjectLabel}</a></dd>
           </div>
           <div>
             <dt>Predicate</dt>
@@ -60,7 +71,7 @@ const createdAt = claim ? formatDate(claim.createdAt) : null;
             <dt>Value</dt>
             <dd>
               {claim.valueKind === "entity" && claim.objectEntityId ? (
-                <a href={`/entities/${claim.objectEntityId}`}>
+                <a href={objectHref ?? `/entities/${claim.objectEntityId}`}>
                   {claim.objectEntityLabel ?? claim.objectEntityId}
                 </a>
               ) : (

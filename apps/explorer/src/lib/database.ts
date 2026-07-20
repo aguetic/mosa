@@ -13,7 +13,7 @@ function resolveConnectionString(): string {
   }
 
   if (!LOOPBACK_HOSTS.has(url.hostname.toLowerCase())) {
-    throw new Error("The Phase 1 explorer only connects to a loopback PostgreSQL host.");
+    throw new Error("The MoSA explorer only connects to a loopback PostgreSQL host.");
   }
 
   return connectionString;
@@ -28,7 +28,7 @@ declare global {
 function createPool(): Pool {
   return new Pool({
     connectionString: resolveConnectionString(),
-    application_name: "mosa-phase-1-explorer",
+    application_name: "mosa-explorer",
     max: 4,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 3_000,
