@@ -354,8 +354,8 @@ select is(
         where object_entity_id = '30000000-0000-4000-8000-000000000001'
           and predicate = 'refers_to'
     ),
-    2,
-    'two distinct sources refer to Hoa Hakananaiʻa'
+    3,
+    'three distinct sources refer to Hoa Hakananaiʻa'
 );
 select is(
     (

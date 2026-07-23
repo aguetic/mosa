@@ -95,6 +95,17 @@ describe("generateProvenanceEventTitle", () => {
     ).toBe("Transfer from New Zealand Government to Te Papa");
   });
 
+  it("uses recipient alone when transfer source is absent", () => {
+    expect(
+      generateProvenanceEventTitle(
+        event("e1", [
+          entityStatement("transferred_to", "b", "Queen Victoria"),
+          entityStatement("carried_out_by", "a", "British Admiralty"),
+        ]),
+      ),
+    ).toBe("Transfer to Queen Victoria");
+  });
+
   it("uses movement origin and destination", () => {
     expect(
       generateProvenanceEventTitle(
@@ -295,6 +306,137 @@ describe("summarizeProvenanceEvent dates and notices", () => {
     expect(
       summary.notices.filter((notice) => notice === "Alternative dates reported"),
     ).toHaveLength(1);
+  });
+
+  it("shows a via fact for moved_via without repeating title-covered movement ends", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", [
+        entityStatement("moved_from", "from", "Rapa Nui", "place"),
+        entityStatement("moved_to", "to", "England", "place"),
+        entityStatement("moved_via", "ship", "HMS Topaze", "item"),
+      ]),
+    );
+
+    expect(summary.title).toBe("Movement from Rapa Nui to England");
+    expect(summary.facts).toEqual([
+      {
+        label: "Via",
+        value: "HMS Topaze",
+        href: "/entities/ship",
+      },
+    ]);
+  });
+
+  it("shows a generic notice for multiple characterisations", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", [
+        statement({
+          id: "d1",
+          predicate: "described_as",
+          assertedByAgentId: "bm",
+          assertedByLabel: "British Museum",
+          literalValue: { type: "text", value: "removed from original location" },
+          evidence: [
+            {
+              id: "ev-1",
+              sourceId: "catalogue",
+              sourceLabel: "Catalogue",
+              relationship: "supports",
+              locator: null,
+              excerpt: null,
+              notes: null,
+            },
+          ],
+        }),
+        statement({
+          id: "d2",
+          predicate: "described_as",
+          assertedByAgentId: "bm",
+          assertedByLabel: "British Museum",
+          literalValue: { type: "text", value: "collected" },
+          evidence: [
+            {
+              id: "ev-2",
+              sourceId: "catalogue",
+              sourceLabel: "Catalogue",
+              relationship: "supports",
+              locator: null,
+              excerpt: null,
+              notes: null,
+            },
+          ],
+        }),
+      ]),
+    );
+
+    expect(summary.notices).toContain("Multiple characterisations reported");
+    expect(
+      summary.notices.some((notice) => notice.includes("removed from original location")),
+    ).toBe(false);
+    expect(summary.notices.some((notice) => notice.includes("collected"))).toBe(false);
+    expect(summary.notices.some((notice) => notice.includes("taken from Rapa Nui"))).toBe(false);
+  });
+
+  it("recognises distinct characterisations reported by the same source", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", [
+        statement({
+          id: "d1",
+          predicate: "described_as",
+          assertedByAgentId: "source-agent",
+          assertedByLabel: "Source agent",
+          literalValue: { type: "text", value: "removed from its original location" },
+          evidence: [
+            {
+              id: "ev-1",
+              sourceId: "source",
+              sourceLabel: "Source",
+              relationship: "supports",
+              locator: null,
+              excerpt: null,
+              notes: null,
+            },
+          ],
+        }),
+        statement({
+          id: "d2",
+          predicate: "described_as",
+          assertedByAgentId: "source-agent",
+          assertedByLabel: "Source agent",
+          literalValue: { type: "text", value: "collected" },
+          evidence: [
+            {
+              id: "ev-2",
+              sourceId: "source",
+              sourceLabel: "Source",
+              relationship: "supports",
+              locator: null,
+              excerpt: null,
+              notes: null,
+            },
+          ],
+        }),
+      ]),
+    );
+
+    expect(summary.notices).toContain("Multiple characterisations reported");
+    expect(summary.notices.some((notice) => notice.includes("collected"))).toBe(false);
+  });
+
+  it("keeps a single characterisation as source wording", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", [
+        statement({
+          predicate: "described_as",
+          literalValue: { type: "text", value: "Gift of the New Zealand Government" },
+        }),
+      ]),
+    );
+
+    expect(summary.notices).toContain(
+      "Source describes the event as “Gift of the New Zealand Government”",
+    );
+    expect(summary.notices).not.toContain("Multiple characterisations reported");
   });
 });
 

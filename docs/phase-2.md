@@ -51,10 +51,13 @@ An event is also an `entities.entity` row with `entity_type = 'event'`. Phase 2 
 
 - Case 05: Mamari provenance
 - Case 06: Te Papa moai kavakava provenance
+- Case 07: Hoa Hakananaiʻa provenance
 
 The first vertical slice represents two unresolved early accounts, two separate provisional Paris deposit accounts, and a later sequence of institutional relocations while keeping one stable Mamari item identity. Each Paris account distinguishes `occurred_at → Paris` from `transferred_to → Missionary Museum`. The Mamari case introduces the predicates its competency questions require: `moved_item`, `moved_from`, `moved_to`, `carried_out_by` and `transferred_to`.
 
 Case 06 extends Phase 2 by testing uncertainty within a single institutional provenance account. It does not introduce confidence scores or competing-claim groups. It tests whether hypotheses and qualifications can be represented through ordinary claims and evidence, and whether current custody can remain a direct item state.
+
+Case 07 extends Phase 2 with one well-attested removal event that carries institutional, direct Rapa Nui and indirectly reported characterisations. It distinguishes `supports` evidence from a Ma’u Henua-authored source from `mentions` evidence in Paula Rossetti’s note. Transport remains a separate event using `moved_via`, while transfer events use `transferred_item`. The case distinguishes vessel, expedition and commander without a disagreement table, consent model or preferred narrative.
 
 ## Deferred
 

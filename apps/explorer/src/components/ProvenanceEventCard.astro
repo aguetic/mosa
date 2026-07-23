@@ -15,8 +15,10 @@ const title = generateProvenanceEventTitle(event);
 const FIELD_ORDER = [
   "moved_item",
   "held_item",
+  "transferred_item",
   "moved_from",
   "moved_to",
+  "moved_via",
   "occurred_at",
   "carried_out_by",
   "holding_agent",
@@ -29,8 +31,10 @@ const FIELD_ORDER = [
 const FIELD_LABELS: Record<string, string> = {
   moved_item: "Moved item",
   held_item: "Held item",
+  transferred_item: "Transferred item",
   moved_from: "From",
   moved_to: "To",
+  moved_via: "Via",
   carried_out_by: "Carried out by",
   holding_agent: "Holding agent",
   transferred_from: "Transferred from",

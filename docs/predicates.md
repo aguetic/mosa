@@ -14,10 +14,13 @@
 | `located_at`          | Place   | A source or agent states that an entity is at a place                                                             |
 | `possibly_same_as`    | Entity  | Two entities may represent the same real-world thing, but the identity has not been resolved                      |
 | `physical_remains_of` | Agent   | An item of physical human remains is associated with the person whose remains they are                            |
-| `moved_item`          | Item    | The item reported as physically moved or transferred in an event                                                   |
+| `moved_item`          | Item    | The item reported as physically moved in an event                                                                   |
 | `moved_from`          | Place   | The reported origin of a movement                                                                                   |
 | `moved_to`            | Place   | The reported geographical destination of a physical movement                                                                              |
+| `moved_via`           | Item    | The vessel or transport medium reportedly used for a physical movement                                              |
 | `carried_out_by`      | Agent   | The agent reported as actively carrying out an event                                                                |
+| `commanded_by`        | Agent   | A vessel is reported as having been commanded by a person                                                           |
+| `transferred_item`    | Item    | The item concerned by a reported institutional or interpersonal transfer; does not by itself assert physical movement, ownership, legal title, authority or consent |
 | `transferred_to`      | Agent   | The reported person or organisation receiving an item in a transfer, without implying custody, title or ownership            |
 | `held_item`           | Item    | Identifies the item involved in a holding episode |
 | `holding_agent`       | Agent   | Identifies the reported holder in a holding episode |
@@ -34,7 +37,11 @@
 - Event titles are presentation projections generated from structured claims.
 - Display labels for entities are presentation projections derived from attributed `has_name` claims, external identifiers, source references, or event summaries. The former stored `working_label` and `notes` columns on entities have been removed; see ADR 010.
 - Event–item and participant relationships use competency-derived, role-bearing predicates. Phase 2 currently does not define generic event–item or participant predicates; later cases may introduce specific predicates they prove necessary.
-- Use `moved_item`, `moved_from`, `moved_to`, `carried_out_by`, `transferred_from` and `transferred_to` only with the narrow meanings established by the provenance cases.
+- Use `moved_item`, `moved_from`, `moved_to`, `moved_via`, `carried_out_by`, `transferred_item`, `transferred_from` and `transferred_to` only with the narrow meanings established by the provenance cases.
+- `transferred_item` identifies the item concerned by a transfer. It does not by itself assert physical movement. Use `moved_item` separately when physical movement is also supported. The two predicates are not mutually exclusive.
+- Use `moved_via` for the reported vessel or transport medium. Do not use `carried_out_by` on a vessel; vessels are items, not acting agents.
+- `commanded_by` is currently a vessel-to-person relationship (`HMS Topaze commanded_by Richard Ashmore Powell`). It does not make the commander a direct participant in every event involving that vessel.
+- Item provenance discovery inspects `moved_item`, `held_item` and `transferred_item`.
 - `held_item` identifies the item involved in a holding episode; `holding_agent` identifies the reported holder in that episode.
 - `held_by` remains a direct current or undated custody claim on an item. Do not create a provenance event merely because an item has a current holder or current location.
 - Keep source wording in `described_as`, but do not leave an origin, destination, active agent or recipient only in prose when the source supports a structured claim.

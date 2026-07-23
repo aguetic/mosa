@@ -40,6 +40,7 @@ export interface ProvenanceEventSummary {
 const SUMMARY_FACT_PREDICATES = [
   "moved_from",
   "moved_to",
+  "moved_via",
   "occurred_at",
   "carried_out_by",
   "transferred_from",
@@ -50,6 +51,7 @@ const SUMMARY_FACT_PREDICATES = [
 const FACT_LABELS: Record<(typeof SUMMARY_FACT_PREDICATES)[number], string> = {
   moved_from: "From",
   moved_to: "To",
+  moved_via: "Via",
   occurred_at: "Event location",
   carried_out_by: "Carried out by",
   transferred_from: "Transferred from",
@@ -59,6 +61,7 @@ const FACT_LABELS: Record<(typeof SUMMARY_FACT_PREDICATES)[number], string> = {
 
 const TITLE_COVERED_PREDICATES: Record<string, readonly string[]> = {
   transfer: ["transferred_from", "transferred_to"],
+  transferTo: ["transferred_to"],
   movement: ["moved_from", "moved_to"],
   arrival: ["moved_to"],
   holding: ["holding_agent"],
@@ -235,6 +238,10 @@ export function generateProvenanceEventTitle(event: ProvenanceEvent): string {
     return `Transfer from ${transferredFrom} to ${transferredTo}`;
   }
 
+  if (transferredTo) {
+    return `Transfer to ${transferredTo}`;
+  }
+
   const movedFrom = entityLabel(activeStatements(event.statements, "moved_from")[0]);
   const movedTo = entityLabel(activeStatements(event.statements, "moved_to")[0]);
   if (movedFrom && movedTo) {
@@ -268,6 +275,10 @@ function titleCoveredPredicates(event: ProvenanceEvent): Set<string> {
   const transferredTo = entityLabel(activeStatements(event.statements, "transferred_to")[0]);
   if (transferredFrom && transferredTo) {
     return new Set(TITLE_COVERED_PREDICATES.transfer);
+  }
+
+  if (transferredTo) {
+    return new Set(TITLE_COVERED_PREDICATES.transferTo);
   }
 
   const movedFrom = entityLabel(activeStatements(event.statements, "moved_from")[0]);
@@ -319,6 +330,17 @@ function compactFacts(event: ProvenanceEvent): ProvenanceEventSummary["facts"] {
   return facts;
 }
 
+function hasMultipleCharacterisations(event: ProvenanceEvent): boolean {
+  const descriptions = new Set(
+    activeStatements(event.statements, "described_as")
+      .map(provenanceStatementValue)
+      .map((value) => value.trim().toLocaleLowerCase("en"))
+      .filter(Boolean),
+  );
+
+  return descriptions.size >= 2;
+}
+
 function eventNotices(event: ProvenanceEvent, dateSummary: ProvenanceDateSummary): string[] {
   const notices = [...dateSummary.notices];
 
@@ -336,10 +358,14 @@ function eventNotices(event: ProvenanceEvent, dateSummary: ProvenanceDateSummary
     notices.push("Conflicting evidence");
   }
 
-  for (const statement of activeStatements(event.statements, "described_as")) {
-    const value = provenanceStatementValue(statement);
-    if (value.trim().length > 0) {
-      notices.push(`Source describes the event as “${value}”`);
+  if (hasMultipleCharacterisations(event)) {
+    notices.push("Multiple characterisations reported");
+  } else {
+    for (const statement of activeStatements(event.statements, "described_as")) {
+      const value = provenanceStatementValue(statement);
+      if (value.trim().length > 0) {
+        notices.push(`Source describes the event as “${value}”`);
+      }
     }
   }
 

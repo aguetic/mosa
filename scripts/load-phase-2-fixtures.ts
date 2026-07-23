@@ -11,6 +11,18 @@ const tePapaFixturePath = path.join(
   "fixtures",
   "phase-2-te-papa-moai-kavakava.sql",
 );
+const hoaHakananaiaFixturePath = path.join(
+  projectRoot,
+  "supabase",
+  "fixtures",
+  "phase-2-hoa-hakananai-a.sql",
+);
+const hoaHakananaiaCommunityFixturePath = path.join(
+  projectRoot,
+  "supabase",
+  "fixtures",
+  "phase-2-hoa-hakananai-a-community.sql",
+);
 
 async function loadFixtureSql(fixturePath: string, label: string): Promise<void> {
   const [databaseUrl, fixtureSql] = await Promise.all([
@@ -42,15 +54,28 @@ export async function loadPhase2TePapaMoaiKavakava(): Promise<void> {
   await loadFixtureSql(tePapaFixturePath, "Phase 2 Te Papa moai kavakava fixture");
 }
 
-/** Loads the Mamari Phase 2 fixture. Prefer the named loaders when adding cases. */
+export async function loadPhase2HoaHakananaia(): Promise<void> {
+  await loadFixtureSql(hoaHakananaiaFixturePath, "Phase 2 Hoa Hakananaiʻa fixture");
+}
+
+export async function loadPhase2HoaHakananaiaCommunity(): Promise<void> {
+  await loadFixtureSql(
+    hoaHakananaiaCommunityFixturePath,
+    "Phase 2 Hoa Hakananaiʻa direct Rapa Nui evidence fixture",
+  );
+}
+
+/** Loads all Phase 2 competency fixtures. Prefer named loaders when adding a single case. */
 export async function loadPhase2Fixtures(): Promise<void> {
   await loadPhase2Mamari();
+  await loadPhase2TePapaMoaiKavakava();
+  await loadPhase2HoaHakananaia();
+  await loadPhase2HoaHakananaiaCommunity();
 }
 
 async function main(): Promise<void> {
   try {
-    await loadPhase2Mamari();
-    await loadPhase2TePapaMoaiKavakava();
+    await loadPhase2Fixtures();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     process.stderr.write(`error: ${message}\n`);
