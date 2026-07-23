@@ -42,11 +42,14 @@ An event is also an `entities.entity` row with `entity_type = 'event'`. Phase 2 
 - Event location, physical movement destination and recipient institution are distinct claim roles and are not inferred from one another.
 - Claims sharing an exact `source_id + locator + excerpt` evidence context with a non-empty excerpt may be grouped in presentation, but that tuple is not a formal account or source-statement identity.
 
-## Initial competency case
+## Initial competency cases
 
 - Case 05: Mamari provenance
+- Case 06: Te Papa moai kavakava provenance
 
 The first vertical slice represents two unresolved early account chains, one Paris deposit with two correlated actor-and-date alternatives, and a later sequence of institutional relocations while keeping one stable Mamari item identity. The Paris event distinguishes `occurred_at → Paris` from `transferred_to → Missionary Museum`. Its Jaussen–1888 and French Navy–1892 pairs share different exact evidence contexts without introducing a formal grouping structure. The Mamari case introduces only the predicates its competency questions require: `moved_item`, `moved_from`, `moved_to`, `carried_out_by` and `transferred_to`.
+
+Case 06 extends Phase 2 by testing uncertainty within a single institutional provenance account. It does not introduce confidence scores or competing-claim groups. It tests whether hypotheses and qualifications can be represented through ordinary claims and evidence.
 
 ## Deferred
 

@@ -17,10 +17,14 @@ const predecessors = event.statements.filter(
 
 const FIELD_ORDER = [
   "moved_item",
+  "held_item",
   "moved_from",
   "moved_to",
   "occurred_at",
   "carried_out_by",
+  "involved",
+  "holding_agent",
+  "transferred_from",
   "transferred_to",
   "occurred_during",
   "described_as",
@@ -28,9 +32,13 @@ const FIELD_ORDER = [
 
 const FIELD_LABELS: Record<string, string> = {
   moved_item: "Moved item",
+  held_item: "Held item",
   moved_from: "From",
   moved_to: "To",
   carried_out_by: "Carried out by",
+  involved: "Involved",
+  holding_agent: "Holding agent",
+  transferred_from: "Transferred from",
   transferred_to: "Transferred to",
   occurred_during: "Date",
   described_as: "Source wording",

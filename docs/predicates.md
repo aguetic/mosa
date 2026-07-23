@@ -19,6 +19,10 @@
 | `moved_to`            | Place   | The reported geographical destination of a physical movement                                                                              |
 | `carried_out_by`      | Agent   | The agent reported as actively carrying out an event                                                                |
 | `transferred_to`      | Agent   | The reported person or organisation receiving an item in a transfer, without implying custody, title or ownership            |
+| `held_item`           | Item    | An event concerns an item being held or associated with a holding episode |
+| `holding_agent`       | Agent   | The agent reported as holding an item during an event or collection episode |
+| `transferred_from`    | Agent   | The reported person or organisation from which an item was transferred |
+| `involved`            | Agent   | An agent is reported as involved in an event without being identified as the agent who carried it out |
 | `occurred_at`         | Place   | A source or agent states where an event occurred; this is distinct from a movement destination                                                                    |
 | `occurred_during`     | Literal | A source or agent gives an exact, approximate, ranged or alternative date description for an event                |
 | `preceded_by`         | Event   | A source or agent places one event after another; this records partial ordering rather than a complete chronology |
@@ -33,6 +37,8 @@
 - Use `moved_item`, `moved_from`, `moved_to`, `carried_out_by` and `transferred_to` only with the narrow meanings established by the Mamari case.
 - Keep source wording in `described_as`, but do not leave an origin, destination, active agent or recipient only in prose when the source supports a structured claim.
 - Distinguish event location from institutional recipient: for example, `occurred_at → Paris` and `transferred_to → Missionary Museum` answer different questions.
+- Do not infer collection events from arrival events. Arrival in a country, city, or institution does not establish where or when an object was collected.
+- Preserve institutional uncertainty through claim evidence relationships such as `qualifies`; do not convert uncertainty into confidence scores.
 - An organisation may separately have a sourced `located_at` claim. Do not infer a historical event location from an organisation's current or undated location claim.
 - Event details remain ordinary `knowledge.claim` rows. Explorer labels are projections of claims and should link back to claim identity, status, attribution and evidence.
 - When several claims about one event are reported together, retain each atomic claim and attach its own evidence. Claims sharing an exact `source_id + locator + excerpt` tuple with a non-empty excerpt may be grouped in the explorer.

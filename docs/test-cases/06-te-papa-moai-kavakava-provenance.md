@@ -45,6 +45,17 @@ The model must represent an uncertain collection hypothesis, the source's qualif
 
 The possible 1825 event remains explicitly uncertain and is qualified by the same institutional source. The alternative arrival dates remain visible. Later collection and transfer events are represented separately, with participant roles and evidence attached to the claims that establish them.
 
+## Implementation findings
+
+- Provenance uncertainty can be represented without creating a separate confidence model.
+- A source can support a provenance hypothesis and qualify that same hypothesis through separate evidence relationships.
+- The possible 1825 HMS *Blossom* collection remains an event anchor even though the source questions the likelihood of the event.
+- Alternative dates such as "1828 or 1835" should remain structured alternatives rather than being converted into a range or a selected date.
+- Arrival in England, possible collection on Rapa Nui, later collection membership, and institutional transfer are distinct events.
+- An expedition, vessel, individual, collection, government and museum remain separate agents rather than being collapsed into one provenance actor.
+- Terms such as "gift" remain source-attributed descriptions rather than becoming event types or factual transfer semantics.
+- The existing event + claim model was sufficient; no additional provenance-specific assertion layer was required.
+
 ## Out of scope
 
 - deciding whether Beechey's expedition collected the figure;
