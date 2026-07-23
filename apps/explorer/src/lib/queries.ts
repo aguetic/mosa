@@ -20,7 +20,6 @@ export interface EntitySummary {
   displayLabel: string;
   displayLabelBasis: DisplayLabelBasis;
   displayLabelClaimId: string | null;
-  notes: string | null;
   subtypeKind: string | null;
   identifiers: ExternalIdentifier[];
 }
@@ -68,7 +67,6 @@ interface EntityRow extends QueryResultRow {
   display_label: string;
   display_label_basis: DisplayLabelBasis;
   display_label_claim_id: string | null;
-  notes: string | null;
   subtype_kind: string | null;
   reference?: string | null;
   retrieved_at?: Date | string | null;
@@ -114,7 +112,6 @@ function toEntitySummary(row: EntityRow): EntitySummary {
     displayLabel: row.display_label,
     displayLabelBasis: row.display_label_basis,
     displayLabelClaimId: row.display_label_claim_id,
-    notes: row.notes,
     subtypeKind: row.subtype_kind,
     identifiers: parseIdentifiers(row.identifiers),
   };
@@ -166,7 +163,6 @@ const ENTITY_SELECT = `
       display.display_label,
       display.display_label_basis,
       display.display_label_claim_id::text,
-      e.notes,
       case e.entity_type
           when 'item' then i.item_kind
           when 'agent' then a.agent_kind

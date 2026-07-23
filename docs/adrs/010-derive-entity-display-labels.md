@@ -1,4 +1,4 @@
-# Derive entity display labels instead of storing working labels
+# Do not store generic descriptive prose on entities
 
 ## Status
 
@@ -6,62 +6,63 @@ Accepted
 
 ## Context
 
-`working_label` was introduced on the base entity table as a non-authoritative operational convenience: a short string for humans and tooling when a proper name claim was not yet modeled or not needed.
+The base entity table originally included `working_label` as a non-authoritative operational convenience.
 
-In practice it became responsible for search, headings, links, sorting, fixture lookup, and event descriptions. That made it a cross-cutting dependency across schema, search, fixtures, read models, generated types, and UI.
+In practice, it became responsible for search, headings, links, sorting, fixture lookup, and event descriptions. `entities.entity.notes` developed a similar role: fixture and event prose appeared in the explorer and was sometimes queried by tests to determine whether historical meaning had been modeled.
 
-Worse, it allowed missing structured claims to be concealed with unsourced prose. Events especially showed the failure mode: a convenient label became the de facto event model, compensating for incomplete claim structure rather than exposing it.
+Both fields created a parallel, unsourced description layer. They allowed incomplete structured claims to be concealed by convenient prose, particularly for provenance events.
 
-This decision is intentionally framed as **do not store generic entity display labels**, not merely “remove `working_label`.” The same rationale applies if someone later proposes `operational_label`, `display_name`, `title`, or another replacement field.
+This decision applies to any proposed replacement such as `operational_label`, `display_name`, `title`, `summary`, or a general-purpose entity-description field.
 
 ## Decision
 
-- Remove `working_label` from the base entity table.
-- Store names and designations only as attributed claims.
-- Derive event titles from structured event claims.
-- Derive other entity display labels from name claims, identifiers, or source references.
-- Use explicit UUID-based fallbacks when no displayable assertion exists.
-- Do not use notes, descriptive claims, or evidence excerpts as silent label fallbacks.
-- Do not introduce a replacement generic label column.
+Entity rows will store identity and subtype structure, not generic descriptive prose.
 
-Display labels are presentation projections. They are not preferred names, entity identity, or historical assertions.
+Therefore:
+
+- remove `working_label` from `entities.entity`;
+- remove `notes` from `entities.entity`;
+- do not introduce replacement generic label or description columns;
+- represent names, descriptions, classifications, relationships, and historical information through attributed claims;
+- derive event titles from structured event claims;
+- derive other display labels from name claims, identifiers, source references, or explicit generic UUID-based fallbacks;
+- do not derive labels or summaries from notes, evidence excerpts, or descriptive prose used as a silent fallback.
+
+Display labels and summaries are presentation projections. They are not entity identity, preferred names, or historical assertions.
+
+`knowledge.claim.notes` and `knowledge.claim_evidence.notes` remain available as editorial metadata. They may document encoding decisions, transcription issues, data-quality concerns, or evidence-locator limitations, but must not supply domain meaning.
 
 ## Consequences
 
-### Positive
+### Benefits
 
-- Modeling gaps remain visible instead of being papered over with prose.
-- Unsourced text cannot become canonical by accident.
-- UI language remains reproducible from structured data.
-- Competency cases exercise the actual model rather than a parallel label layer.
+- Modeling gaps remain visible.
+- Unsourced prose cannot become canonical accidentally.
+- User-facing descriptions remain reproducible from structured data.
+- Competency cases test the actual claim model.
 - Names retain attribution, evidence, language, and status.
 
 ### Costs
 
-- Search and read models become more complex.
-- Unnamed entities need visibly generic fallbacks.
-- Choosing among several name claims requires a deterministic presentation policy.
-- Event titles may change as claims change.
-- Fixtures must use IDs rather than labels for references.
+- Search and read projections become more complex.
+- Unnamed entities require generic fallbacks.
+- Choosing among multiple name claims requires deterministic presentation rules.
+- Generated event titles may change when their claims change.
+- Fixtures must reference entities by stable identifiers rather than labels.
 
-These costs are accepted because the alternative—keeping a stored escape hatch—is cheaper only until more fixtures, UI, and search depend on it, after which reversing the decision is expensive.
+These costs are accepted because retaining generic prose fields would allow more schema, UI, and fixture behavior to depend on an unsourced escape hatch.
 
 ## Alternatives considered
 
-| Alternative | Why rejected |
-| --- | --- |
-| Keep `working_label` but document its limited role | Documentation does not stop convenience from becoming canonical. |
-| Rename it to `operational_label` | Same escape hatch under a different name. |
-| Make it nullable | Still invites unsourced prose wherever a label is “needed.” |
-| Store generated event titles | Reifies a disposable projection as entity data; titles drift from claims. |
-| Use notes or `described_as` as display fallbacks | Informative but unsourced text becomes a silent label. |
+| Alternative                                                          | Reason rejected                                                                       |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Retain `working_label` with stricter documentation                   | Convenience fields had already become semantically significant despite documentation. |
+| Rename it to `operational_label`                                     | Preserves the same escape hatch under a different name.                               |
+| Make labels or notes nullable                                        | Still encourages prose whenever structured data is inconvenient.                      |
+| Store generated event titles                                         | Turns a disposable projection into canonical entity data.                             |
+| Use notes, `described_as`, or evidence excerpts as display fallbacks | Allows unsourced or context-specific prose to silently define entity meaning.         |
+| Automatically convert existing prose into claims                     | Would create assertions without establishing attribution or evidence.                 |
 
-The common failure: each option preserves a path where convenient prose compensates for missing structure.
+## Principle
 
-## Guardrails
-
-1. **A generic fallback is preferable to an informative but unsourced label.**
-2. **Display projections are disposable** and must not be treated as entity identity or historical assertions.
-3. **A proposal for a new stored label field requires a new ADR.**
-
-Implementation (migrations, read models, fixtures, UI) should refer to this ADR. Acceptance criteria should verify that the architectural decision — not merely the current refactor — has been implemented.
+> Entity rows store identity and subtype structure. Domain meaning is represented through attributed claims. User-facing descriptions are derived projections. Generic prose must not compensate for missing structure.

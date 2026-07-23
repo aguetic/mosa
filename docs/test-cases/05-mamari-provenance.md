@@ -99,7 +99,7 @@ Mamari has one stable item identity. Seven event anchors represent two separate 
 - Evidence-tuple grouping was removed; claims render independently with their own evidence.
 - Event identity must be decided separately from uncertainty about properties claimed of an event.
 - `described_as` remains useful for preserving original wording, uncertainty, and language, but it must not be the only place where queryable actors, places, recipients, or dates are recorded.
-- Event details remain claims with their own status, asserting agent, notes, and evidence. Friendly explorer headings are projections of those claims, not canonical event fields.
+- Event details remain claims with their own status, asserting agent, editorial notes, and evidence. Friendly explorer headings are projections of those claims, not canonical event fields.
 - Evidence excerpts should contain source wording or be null. Internal entity labels and event labels must not be used as though they were quotations from a source.
 - The reported 1974 move of the congregation must not be represented as a movement of Mamari unless evidence explicitly connects the tablet or its holding collection to that move.
 - Movement and transfer claims do not imply ownership, legal title, consent, authority, or lawful acquisition.

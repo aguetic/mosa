@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(68);
+select plan(69);
 
 -- Schema and API surface.
 select has_table('entities', 'entity', 'entities.entity exists');
@@ -12,6 +12,12 @@ select hasnt_column(
     'entity',
     'working_label',
     'entities no longer store working labels'
+);
+select hasnt_column(
+    'entities',
+    'entity',
+    'notes',
+    'entities no longer store general-purpose notes'
 );
 select has_table('entities', 'item', 'entities.item exists');
 select has_table('entities', 'agent', 'entities.agent exists');
@@ -37,19 +43,19 @@ select ok(
     'claim_evidence_details view exists'
 );
 select ok(
-    to_regprocedure('entities.create_item(text,text)') is not null,
+    to_regprocedure('entities.create_item(text)') is not null,
     'create_item helper exists'
 );
 select ok(
-    to_regprocedure('entities.create_agent(text,text)') is not null,
+    to_regprocedure('entities.create_agent(text)') is not null,
     'create_agent helper exists'
 );
 select ok(
-    to_regprocedure('entities.create_place(text,text)') is not null,
+    to_regprocedure('entities.create_place(text)') is not null,
     'create_place helper exists'
 );
 select ok(
-    to_regprocedure('entities.create_source(text,text,timestamp with time zone,text)') is not null,
+    to_regprocedure('entities.create_source(text,text,timestamp with time zone)') is not null,
     'create_source helper exists'
 );
 
@@ -190,10 +196,7 @@ select lives_ok(
 );
 select lives_ok(
     $$
-    select entities.create_item(
-        'artefact',
-        'authenticated write probe'
-    )
+    select entities.create_item('artefact')
     $$,
     'authenticated users can write entities via create_item'
 );
@@ -514,10 +517,10 @@ create temporary table phase_1_helper_ids (
 ) on commit drop;
 
 insert into phase_1_helper_ids values
-    ('item', entities.create_item('artefact', 'pgTAP helper test')),
-    ('agent', entities.create_agent('person', 'pgTAP helper test')),
-    ('place', entities.create_place('site', 'pgTAP helper test')),
-    ('source', entities.create_source('research_note', 'local:test', null, 'pgTAP helper test'));
+    ('item', entities.create_item('artefact')),
+    ('agent', entities.create_agent('person')),
+    ('place', entities.create_place('site')),
+    ('source', entities.create_source('research_note', 'local:test', null));
 
 select is(
     (

@@ -49,7 +49,6 @@ function event(id: string, statements: ProvenanceStatement[] = []): ProvenanceEv
   return {
     id,
     eventKind: "unknown",
-    notes: null,
     statements,
   };
 }

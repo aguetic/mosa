@@ -65,8 +65,6 @@ function fieldLabel(statement: ProvenanceStatement): string {
     </div>
   </div>
 
-  {event.notes && <p class="muted">{event.notes}</p>}
-
   {
     statements.length === 0 ? (
       <div class="empty">No attributed event statements.</div>
@@ -96,7 +94,6 @@ function fieldLabel(statement: ProvenanceStatement): string {
                 ) : (
                   "unrecorded agent"
                 )}
-                {statement.notes ? ` · ${statement.notes}` : ""}
               </p>
               {statement.evidence.length > 0 && (
                 <ul class="evidence-list">

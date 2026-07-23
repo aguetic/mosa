@@ -93,7 +93,7 @@ const objectHref =
           <div><dt>Claim ID</dt><dd><code>{claim.id}</code></dd></div>
           {createdAt && <div><dt>Created</dt><dd>{createdAt}</dd></div>}
           {claim.supersedesClaimId && <div><dt>Supersedes</dt><dd><a href={`/claims/${claim.supersedesClaimId}`}>{claim.supersedesClaimId}</a></dd></div>}
-          {claim.notes && <div><dt>Notes</dt><dd>{claim.notes}</dd></div>}
+          {claim.notes && <div><dt>Editorial note</dt><dd>{claim.notes}</dd></div>}
         </dl>
 
         {
@@ -120,7 +120,9 @@ const objectHref =
                   <p><a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a></p>
                   {evidence.locator && <p><strong>Locator:</strong> {evidence.locator}</p>}
                   {evidence.excerpt && <blockquote>{evidence.excerpt}</blockquote>}
-                  {evidence.notes && <p class="muted">{evidence.notes}</p>}
+                  {evidence.notes && (
+                    <p class="muted"><strong>Editorial note:</strong> {evidence.notes}</p>
+                  )}
                 </article>
               ))}
             </section>

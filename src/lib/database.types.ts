@@ -45,7 +45,6 @@ export type Database = {
           created_by: string | null
           entity_type: string
           id: string
-          notes: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -54,7 +53,6 @@ export type Database = {
           created_by?: string | null
           entity_type: string
           id?: string
-          notes?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -63,7 +61,6 @@ export type Database = {
           created_by?: string | null
           entity_type?: string
           id?: string
-          notes?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -228,21 +225,11 @@ export type Database = {
       }
     }
     Functions: {
-      create_agent: {
-        Args: { p_agent_kind?: string; p_notes?: string }
-        Returns: string
-      }
-      create_item: {
-        Args: { p_item_kind?: string; p_notes?: string }
-        Returns: string
-      }
-      create_place: {
-        Args: { p_notes?: string; p_place_kind?: string }
-        Returns: string
-      }
+      create_agent: { Args: { p_agent_kind?: string }; Returns: string }
+      create_item: { Args: { p_item_kind?: string }; Returns: string }
+      create_place: { Args: { p_place_kind?: string }; Returns: string }
       create_source: {
         Args: {
-          p_notes?: string
           p_reference?: string
           p_retrieved_at?: string
           p_source_kind: string
@@ -501,10 +488,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_event: {
-        Args: { p_event_kind?: string; p_notes?: string }
-        Returns: string
-      }
+      create_event: { Args: { p_event_kind?: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

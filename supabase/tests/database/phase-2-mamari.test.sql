@@ -246,16 +246,27 @@ select ok(
             '81000000-0000-4000-8000-000000000001'::uuid
             and
             '81000000-0000-4000-8000-000000000007'::uuid
+          and predicate in (
+              'owned_by',
+              'lawfully_owned_by',
+              'consented_by',
+              'lawful_transfer',
+              'was_gift'
+          )
+    )
+    and not exists (
+        select 1
+        from knowledge.claim
+        where subject_id between
+            '81000000-0000-4000-8000-000000000001'::uuid
+            and
+            '81000000-0000-4000-8000-000000000007'::uuid
+          and predicate = 'occurred_during'
           and (
-              predicate in (
-                  'owned_by',
-                  'lawfully_owned_by',
-                  'consented_by',
-                  'lawful_transfer',
-                  'was_gift'
-              )
-              or coalesce(notes, '') ilike '%1974%'
-              or coalesce(literal_value::text, '') ilike '%1974%'
+              literal_value ->> 'verbatim' = '1974'
+              or literal_value ->> 'earliest' = '1974'
+              or literal_value ->> 'latest' = '1974'
+              or literal_value -> 'alternatives' ? '1974'
           )
     ),
     'the fixture does not invent a 1974 move, ownership, legality or consent'

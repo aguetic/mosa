@@ -46,7 +46,6 @@ const title = event ? generateProvenanceEventTitle(event) : null;
         <dl class="metadata panel">
           <div><dt>Event ID</dt><dd><code>{event.id}</code></dd></div>
           <div><dt>Operational kind</dt><dd>{event.eventKind}</dd></div>
-          {event.notes && <div><dt>Notes</dt><dd>{event.notes}</dd></div>}
         </dl>
 
         <h2>Attributed event statements</h2>

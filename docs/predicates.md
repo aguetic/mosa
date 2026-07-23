@@ -32,7 +32,7 @@
 - Store event dates as structured literals so exact years, ranges and alternatives remain distinguishable.
 - Provenance events are displayed using their structured date claims. Display ordering is a presentation projection and does not assert a complete or continuous historical chronology.
 - Event titles are presentation projections generated from structured claims.
-- Display labels for entities are presentation projections derived from attributed `has_name` claims, external identifiers, source references, or event summaries. The former stored `working_label` column has been removed.
+- Display labels for entities are presentation projections derived from attributed `has_name` claims, external identifiers, source references, or event summaries. The former stored `working_label` and `notes` columns on entities have been removed; see ADR 010.
 - Event–item and participant relationships use competency-derived, role-bearing predicates. Phase 2 currently does not define generic event–item or participant predicates; later cases may introduce specific predicates they prove necessary.
 - Use `moved_item`, `moved_from`, `moved_to`, `carried_out_by`, `transferred_from` and `transferred_to` only with the narrow meanings established by the provenance cases.
 - `held_item` identifies the item involved in a holding episode; `holding_agent` identifies the reported holder in that episode.
