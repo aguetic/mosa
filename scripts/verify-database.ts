@@ -40,6 +40,16 @@ async function verifyDatabase(): Promise<void> {
     ["test", "db", "supabase/tests/database/phase-2-hoa-hakananai-a-community.test.sql", "--local"],
     { cwd: projectRoot },
   );
+  await runCommand(
+    supabase,
+    [
+      "test",
+      "db",
+      "supabase/tests/database/phase-2-hoa-hakananai-a-production.test.sql",
+      "--local",
+    ],
+    { cwd: projectRoot },
+  );
 }
 
 async function main(): Promise<void> {

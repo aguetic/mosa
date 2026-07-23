@@ -49,6 +49,7 @@ export interface ClaimDetail {
   objectEntityId: string | null;
   objectEntityLabel: string | null;
   objectEntityType: EntityType | null;
+  objectPlaceKind: string | null;
   literalValue: unknown;
   literalDisplayValue: string | null;
   literalLanguage: string | null;
@@ -83,6 +84,7 @@ interface ClaimRow extends QueryResultRow {
   object_entity_id: string | null;
   object_entity_label: string | null;
   object_entity_type: EntityType | null;
+  object_place_kind: string | null;
   literal_value: unknown;
   literal_display_value: string | null;
   literal_language: string | null;
@@ -143,6 +145,7 @@ function toClaim(
     objectEntityId: row.object_entity_id,
     objectEntityLabel: row.object_entity_label,
     objectEntityType: row.object_entity_type,
+    objectPlaceKind: row.object_place_kind,
     literalValue: row.literal_value,
     literalDisplayValue: row.literal_display_value,
     literalLanguage: row.literal_language,
@@ -292,32 +295,35 @@ async function getEvidenceForClaims(
 
 const CLAIM_SELECT = `
   select
-      claim_id::text,
-      subject_id::text,
-      subject_label,
-      subject_type,
-      predicate,
-      value_kind,
-      object_entity_id::text,
-      object_entity_label,
-      object_entity_type,
-      literal_value,
-      literal_display_value,
-      literal_language,
-      asserted_by_agent_id::text,
-      asserted_by_label,
-      status,
-      supersedes_claim_id::text,
-      notes,
-      created_at
-  from knowledge.claim_details
+      details.claim_id::text,
+      details.subject_id::text,
+      details.subject_label,
+      details.subject_type,
+      details.predicate,
+      details.value_kind,
+      details.object_entity_id::text,
+      details.object_entity_label,
+      details.object_entity_type,
+      place.place_kind as object_place_kind,
+      details.literal_value,
+      details.literal_display_value,
+      details.literal_language,
+      details.asserted_by_agent_id::text,
+      details.asserted_by_label,
+      details.status,
+      details.supersedes_claim_id::text,
+      details.notes,
+      details.created_at
+  from knowledge.claim_details as details
+  left join entities.place as place
+    on place.id = details.object_entity_id
 `;
 
 export async function getClaimsForEntity(id: string): Promise<ClaimDetail[]> {
   const rows = await query<ClaimRow>(
     `${CLAIM_SELECT}
-     where subject_id = $1::uuid or object_entity_id = $1::uuid
-     order by created_at, claim_id`,
+     where details.subject_id = $1::uuid or details.object_entity_id = $1::uuid
+     order by details.created_at, details.claim_id`,
     [id],
   );
   const evidenceByClaim = await getEvidenceForClaims(rows.map((row) => row.claim_id));
@@ -328,7 +334,7 @@ export async function getClaimsForEntity(id: string): Promise<ClaimDetail[]> {
 export async function getClaim(id: string): Promise<ClaimDetail | null> {
   const rows = await query<ClaimRow>(
     `${CLAIM_SELECT}
-     where claim_id = $1::uuid`,
+     where details.claim_id = $1::uuid`,
     [id],
   );
   const row = rows[0];

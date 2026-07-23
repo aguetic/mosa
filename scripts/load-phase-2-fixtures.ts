@@ -23,6 +23,12 @@ const hoaHakananaiaCommunityFixturePath = path.join(
   "fixtures",
   "phase-2-hoa-hakananai-a-community.sql",
 );
+const hoaHakananaiaProductionFixturePath = path.join(
+  projectRoot,
+  "supabase",
+  "fixtures",
+  "phase-2-hoa-hakananai-a-production.sql",
+);
 
 async function loadFixtureSql(fixturePath: string, label: string): Promise<void> {
   const [databaseUrl, fixtureSql] = await Promise.all([
@@ -65,12 +71,20 @@ export async function loadPhase2HoaHakananaiaCommunity(): Promise<void> {
   );
 }
 
+export async function loadPhase2HoaHakananaiaProduction(): Promise<void> {
+  await loadFixtureSql(
+    hoaHakananaiaProductionFixturePath,
+    "Phase 2 Hoa Hakananaiʻa production and current-location fixture",
+  );
+}
+
 /** Loads all Phase 2 competency fixtures. Prefer named loaders when adding a single case. */
 export async function loadPhase2Fixtures(): Promise<void> {
   await loadPhase2Mamari();
   await loadPhase2TePapaMoaiKavakava();
   await loadPhase2HoaHakananaia();
   await loadPhase2HoaHakananaiaCommunity();
+  await loadPhase2HoaHakananaiaProduction();
 }
 
 async function main(): Promise<void> {

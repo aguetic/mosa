@@ -59,6 +59,8 @@ Case 06 extends Phase 2 by testing uncertainty within a single institutional pro
 
 Case 07 extends Phase 2 with one well-attested removal event that carries institutional, direct Rapa Nui and indirectly reported characterisations. It distinguishes `supports` evidence from a Ma’u Henua-authored source from `mentions` evidence in Paula Rossetti’s note. Transport remains a separate event using `moved_via`, while transfer events use `transferred_item`. The case distinguishes vessel, expedition and commander without a disagreement table, consent model or preferred narrative.
 
+Case 07 also distinguishes production place, findspot, movement origin and current location. Source qualification of `made_at → Rano Kao` is represented through `qualifies` evidence rather than a qualification-specific predicate. Item pages project reported production and current recorded state ahead of findspot and the provenance-event sequence, with readable source labels and inline qualification wording.
+
 ## Deferred
 
 - a complete provenance ontology;

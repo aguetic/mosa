@@ -10,6 +10,9 @@
 | `classified_as`       | Literal | A source or agent assigns a classification                                                                        |
 | `described_as`        | Literal | A source or agent provides a descriptive interpretation of an entity                                              |
 | `made_of`             | Literal | A source or agent identifies a material                                                                           |
+| `made_at`             | Place   | The reported place where an item was made                                                                         |
+| `made_during`         | Literal | The reported production date or period, represented as a structured date literal                                  |
+| `found_at`            | Place   | The reported findspot or documented discovery location of an item                                                 |
 | `held_by`             | Agent   | An agent has physical custody or possession of an item; this does not imply ownership, title or lawful possession |
 | `located_at`          | Place   | A source or agent states that an entity is at a place                                                             |
 | `possibly_same_as`    | Entity  | Two entities may represent the same real-world thing, but the identity has not been resolved                      |
@@ -45,6 +48,14 @@
 - `held_item` identifies the item involved in a holding episode; `holding_agent` identifies the reported holder in that episode.
 - `held_by` remains a direct current or undated custody claim on an item. Do not create a provenance event merely because an item has a current holder or current location.
 - Keep source wording in `described_as`, but do not leave an origin, destination, active agent or recipient only in prose when the source supports a structured claim.
+- `made_at`, `found_at`, `moved_from` and `located_at` answer different questions. Do not infer any one from another.
+- A reported production place remains an ordinary `made_at` claim even when a source qualifies it as possible, probable or likely.
+- Represent source qualification through a `qualifies` evidence relationship and preserve the source wording in the evidence excerpt.
+- Do not create predicate variants such as `possibly_made_at`, `probably_made_at` or `likely_made_at`.
+- `made_during` uses the same structured date-literal conventions as `occurred_during`, including precision, approximation, ranges and alternatives.
+- Item pages may project production and current-state claims prominently, but those projections remain disposable presentation views over attributed claims.
+- Item-page projections may surface `qualifies` wording beside a claim value so the first reading does not sound more certain than the evidence.
+- Distinct `located_at` claims may use presentation labels such as broader location and display location; the underlying predicate remains `located_at`.
 - Distinguish event location from institutional recipient: for example, `occurred_at → Paris` and `transferred_to → Missionary Museum` answer different questions.
 - Do not infer collection events from arrival events. Arrival in a country, city, or institution does not establish where or when an object was collected.
 - Preserve institutional uncertainty through claim evidence relationships such as `qualifies`; do not convert uncertainty into confidence scores.

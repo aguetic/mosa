@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, isHttpReference, literalLabel } from "./presentation";
+import { formatDate, formatLiteralValue, isHttpReference, literalLabel } from "./presentation";
 import type { ClaimDetail } from "./queries";
 
 function claim(overrides: Partial<ClaimDetail> = {}): ClaimDetail {
@@ -13,6 +13,7 @@ function claim(overrides: Partial<ClaimDetail> = {}): ClaimDetail {
     objectEntityId: null,
     objectEntityLabel: null,
     objectEntityType: null,
+    objectPlaceKind: null,
     literalValue: null,
     literalDisplayValue: null,
     literalLanguage: null,
@@ -55,16 +56,60 @@ describe("isHttpReference", () => {
   });
 });
 
+describe("formatLiteralValue", () => {
+  it("formats approximate date intervals for presentation", () => {
+    expect(
+      formatLiteralValue({
+        type: "date_interval",
+        earliest: "1000",
+        latest: "1200",
+        precision: "year",
+        interpretation: "approximate_range",
+        verbatim: "1000–1200 (approx)",
+      }),
+    ).toBe("Approximately 1000–1200");
+  });
+
+  it("formats exact ranges and text values", () => {
+    expect(
+      formatLiteralValue({
+        type: "date_interval",
+        earliest: "1868",
+        latest: "1869",
+        interpretation: "range",
+      }),
+    ).toBe("1868–1869");
+    expect(formatLiteralValue({ type: "text", value: "basalt" })).toBe("basalt");
+  });
+});
+
 describe("literalLabel", () => {
   it("prefers the display value when present", () => {
     expect(literalLabel(claim({ literalDisplayValue: "Moai" }))).toBe("Moai");
   });
 
+  it("formats date intervals instead of raw JSON", () => {
+    expect(
+      literalLabel(
+        claim({
+          predicate: "made_during",
+          literalValue: {
+            type: "date_interval",
+            earliest: "1000",
+            latest: "1200",
+            precision: "year",
+            interpretation: "approximate_range",
+            verbatim: "1000–1200 (approx)",
+          },
+        }),
+      ),
+    ).toBe("Approximately 1000–1200");
+  });
+
   it("falls back to string and JSON literals", () => {
     expect(literalLabel(claim({ literalValue: "plain" }))).toBe("plain");
-    expect(literalLabel(claim({ literalValue: { type: "text", value: "x" } }))).toBe(
-      '{"type":"text","value":"x"}',
-    );
+    expect(literalLabel(claim({ literalValue: { type: "text", value: "x" } }))).toBe("x");
+    expect(literalLabel(claim({ literalValue: { unexpected: true } }))).toBe('{"unexpected":true}');
   });
 
   it("labels missing literals", () => {

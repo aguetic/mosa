@@ -2,7 +2,7 @@
 import ClaimCard from "../../components/ClaimCard.astro";
 import ProvenanceEventSummaryCard from "../../components/ProvenanceEventSummaryCard.astro";
 import Layout from "../../layouts/Layout.astro";
-import { formatDate, isHttpReference } from "../../lib/presentation";
+import { formatDate, isHttpReference, literalLabel } from "../../lib/presentation";
 import { getProvenanceEventsForItem, type ProvenanceEvent } from "../../lib/provenance";
 import {
   type ClaimDetail,
@@ -35,13 +35,126 @@ if (!entity && !loadFailed) {
   Astro.response.status = 404;
 }
 
+const EVENT_LINK_PREDICATES = new Set(["moved_item", "held_item", "transferred_item"]);
+
+const ITEM_SUMMARY_PREDICATES = new Set([
+  "made_at",
+  "made_during",
+  "found_at",
+  "held_by",
+  "located_at",
+]);
+
 const outgoingClaims = entity
   ? claims.filter((claim) => claim.subjectId === entity?.id)
   : [];
 const incomingClaims = entity
-  ? claims.filter((claim) => claim.objectEntityId === entity?.id)
+  ? claims.filter(
+      (claim) =>
+        claim.objectEntityId === entity?.id && !EVENT_LINK_PREDICATES.has(claim.predicate),
+    )
   : [];
 const retrievedAt = entity ? formatDate(entity.retrievedAt) : null;
+
+const productionClaims =
+  entity?.entityType === "item"
+    ? outgoingClaims.filter(
+        (claim) =>
+          claim.status === "active" && ["made_at", "made_during"].includes(claim.predicate),
+      )
+    : [];
+
+const currentStateClaims =
+  entity?.entityType === "item"
+    ? outgoingClaims.filter(
+        (claim) =>
+          claim.status === "active" &&
+          ["held_by", "located_at"].includes(claim.predicate),
+      )
+    : [];
+
+const earlyLocationClaims =
+  entity?.entityType === "item"
+    ? outgoingClaims.filter(
+        (claim) => claim.status === "active" && claim.predicate === "found_at",
+      )
+    : [];
+
+const remainingOutgoingClaims =
+  entity?.entityType === "item"
+    ? outgoingClaims.filter((claim) => !ITEM_SUMMARY_PREDICATES.has(claim.predicate))
+    : outgoingClaims;
+
+const itemSummarySections = [
+  {
+    title: "Reported production",
+    description:
+      "Attributed claims about where and when the item was reportedly made. A find or removal location is not treated as a production place.",
+    emptyText: "Production place and period are not recorded.",
+    claims: productionClaims,
+    showWhenEmpty: true,
+  },
+  {
+    title: "Current recorded state",
+    description:
+      "Current custody and location claims do not imply ownership, lawful title, or legitimate acquisition.",
+    emptyText: "Current custodian and location are not recorded.",
+    claims: currentStateClaims,
+    showWhenEmpty: true,
+  },
+  {
+    title: "Documented location before removal",
+    description:
+      "Findspot or documented discovery location, distinct from production place and from later movement origins.",
+    emptyText: "No pre-removal findspot is recorded.",
+    claims: earlyLocationClaims,
+    showWhenEmpty: false,
+  },
+];
+
+function itemSummaryLabel(claim: ClaimDetail): string {
+  if (claim.predicate === "located_at") {
+    if (claim.objectPlaceKind === "gallery") {
+      return "Display location";
+    }
+
+    const hasDisplayLocation = currentStateClaims.some(
+      (other) => other.predicate === "located_at" && other.objectPlaceKind === "gallery",
+    );
+    return hasDisplayLocation ? "Broader location" : "Location";
+  }
+
+  return (
+    {
+      made_at: "Made at",
+      made_during: "Production period",
+      found_at: "Found or documented at",
+      held_by: "Held by",
+    }[claim.predicate] ?? claim.predicate
+  );
+}
+
+function claimValue(claim: ClaimDetail): string {
+  return claim.valueKind === "entity"
+    ? claim.objectEntityLabel ?? claim.objectEntityId ?? "Not recorded"
+    : literalLabel(claim);
+}
+
+function claimValueHref(claim: ClaimDetail): string | null {
+  if (!claim.objectEntityId) {
+    return null;
+  }
+
+  return claim.objectEntityType === "event"
+    ? `/events/${claim.objectEntityId}`
+    : `/entities/${claim.objectEntityId}`;
+}
+
+function sourceQualifications(claim: ClaimDetail): string[] {
+  return claim.evidence
+    .filter((evidence) => evidence.relationship === "qualifies" && evidence.excerpt)
+    .map((evidence) => evidence.excerpt as string);
+}
 ---
 
 <Layout title={entity?.displayLabel ?? "Entity not found"}>
@@ -123,6 +236,77 @@ const retrievedAt = entity ? formatDate(entity.retrievedAt) : null;
         }
 
         {
+          entity.entityType === "item" &&
+            itemSummarySections
+              .filter((section) => section.showWhenEmpty || section.claims.length > 0)
+              .map((section) => (
+              <>
+                <h2>{section.title}</h2>
+                <p class="lede">{section.description}</p>
+
+                {section.claims.length === 0 ? (
+                  <div class="empty">{section.emptyText}</div>
+                ) : (
+                  <dl class="metadata panel">
+                    {section.claims.map((claim) => {
+                      const href = claimValueHref(claim);
+                      const qualifications = sourceQualifications(claim);
+
+                      return (
+                        <div>
+                          <dt>{itemSummaryLabel(claim)}</dt>
+                          <dd>
+                            {href ? <a href={href}>{claimValue(claim)}</a> : claimValue(claim)}
+
+                            {qualifications.map((qualification) => (
+                              <p class="claim-meta">
+                                <strong>Source qualification:</strong> {qualification}
+                              </p>
+                            ))}
+
+                            <p class="claim-meta">
+                              <a href={`/claims/${claim.id}`}>View claim</a>
+                              {" · "}
+                              Asserted by{" "}
+                              {claim.assertedByAgentId ? (
+                                <a href={`/entities/${claim.assertedByAgentId}`}>
+                                  {claim.assertedByLabel ?? claim.assertedByAgentId}
+                                </a>
+                              ) : (
+                                "unrecorded agent"
+                              )}
+                            </p>
+
+                            {claim.evidence.length > 0 && (
+                              <ul class="evidence-list">
+                                {claim.evidence.map((evidence) => (
+                                  <li>
+                                    <strong>
+                                      {evidence.relationship === "qualifies"
+                                        ? "Source qualification"
+                                        : evidence.relationship}
+                                    </strong>
+                                    {" · "}
+                                    <a href={`/entities/${evidence.sourceId}`}>
+                                      {evidence.sourceLabel}
+                                    </a>
+                                    {evidence.locator ? ` · ${evidence.locator}` : ""}
+                                    {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </dd>
+                        </div>
+                      );
+                    })}
+                  </dl>
+                )}
+              </>
+            ))
+        }
+
+        {
           provenanceEvents.length > 0 && (
             <>
               <h2>Provenance events</h2>
@@ -139,13 +323,25 @@ const retrievedAt = entity ? formatDate(entity.retrievedAt) : null;
         }
 
         <h2>Claims about this entity</h2>
-        <section class="claims" aria-label="Outgoing claims">
-          {outgoingClaims.length === 0 ? <div class="empty">No outgoing claims.</div> : outgoingClaims.map((claim) => <ClaimCard claim={claim} />)}
+        <section class="claims" aria-label="Other outgoing claims">
+          {
+            remainingOutgoingClaims.length === 0 ? (
+              <div class="empty">No additional outgoing claims.</div>
+            ) : (
+              remainingOutgoingClaims.map((claim) => <ClaimCard claim={claim} />)
+            )
+          }
         </section>
 
         <h2>Claims pointing to this entity</h2>
         <section class="claims" aria-label="Incoming claims">
-          {incomingClaims.length === 0 ? <div class="empty">No incoming claims.</div> : incomingClaims.map((claim) => <ClaimCard claim={claim} />)}
+          {
+            incomingClaims.length === 0 ? (
+              <div class="empty">No additional incoming claims.</div>
+            ) : (
+              incomingClaims.map((claim) => <ClaimCard claim={claim} />)
+            )
+          }
         </section>
       </>
     )

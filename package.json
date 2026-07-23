@@ -28,7 +28,7 @@
     "db:reset": "supabase db reset --local --no-seed",
     "db:fixtures": "pnpm run db:fixtures:phase1 && pnpm run db:fixtures:phase2",
     "db:lint": "supabase db lint --local --level error",
-    "db:test": "supabase test db supabase/tests/database/phase-1-cases.test.sql --local && supabase test db supabase/tests/database/phase-2-mamari.test.sql --local && supabase test db supabase/tests/database/phase-2-te-papa-moai-kavakava.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a-community.test.sql --local",
+    "db:test": "supabase test db supabase/tests/database/phase-1-cases.test.sql --local && supabase test db supabase/tests/database/phase-2-mamari.test.sql --local && supabase test db supabase/tests/database/phase-2-te-papa-moai-kavakava.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a-community.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a-production.test.sql --local",
     "db:verify": "tsx scripts/verify-database.ts",
     "db:types": "tsx scripts/generate-database-types.ts",
     "db:types:check": "tsx scripts/generate-database-types.ts --check",
