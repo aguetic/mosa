@@ -64,6 +64,12 @@
 - Create one provisional event anchor for each source-reported account or explicitly paired alternative account. Merge event anchors only when the project is sufficiently confident that the claims describe one occurrence.
 - Unresolved accounts remain separate provisional events. Do not infer that two provisional events represent the same historical occurrence.
 - Do not infer ownership, title, legality, authority or consent from a transfer or relocation event.
+- Do not create placeholder agents for unidentified participants. Absence of a role claim is the representation of an unrecorded detail.
+- When a source reports a characterisation without identifying the underlying speaker, leave `asserted_by_agent_id` null and attach the source with `mentions`.
+- Prefer `moved_item` with `event_kind = relocation` when physical movement is the supported claim and a transfer or gift interpretation remains uncertain. Do not add `transferred_item` merely to aid discovery.
+- Later presence at an institution or place does not by itself establish `moved_to`, `transferred_to` or `occurred_at` for an earlier provisional event.
+- Explorer projections may omit absent origin, destination or participant roles on overview cards. Event detail pages may show one compact incompleteness notice when that prevents misunderstanding. “Not recorded” wording is presentation only and must not be stored as a claim value.
+- Sparse movement presentations should state that a source reports movement, surface source characterisation wording, and use at most one incompleteness notice for unrecorded route or participants.
 
 ## Evidence relationships
 

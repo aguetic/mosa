@@ -4,7 +4,9 @@ import Layout from "../../layouts/Layout.astro";
 import { getProvenanceEvent, type ProvenanceEventDetail } from "../../lib/provenance";
 import {
   generateProvenanceEventTitle,
+  provenanceEventDetailView,
   provenanceStatementValue,
+  sparseMovementSummaryText,
 } from "../../lib/provenance-presentation";
 import { isUuid } from "../../lib/values";
 
@@ -26,6 +28,8 @@ if (!event && !loadFailed) {
 }
 
 const title = event ? generateProvenanceEventTitle(event) : null;
+const summaryText = event ? sparseMovementSummaryText(event) : null;
+const detailView = event ? provenanceEventDetailView(event) : null;
 ---
 
 <Layout title={title ?? "Provenance event not found"}>
@@ -34,7 +38,7 @@ const title = event ? generateProvenanceEventTitle(event) : null;
   {
     loadFailed ? (
       <div class="notice">The local database could not be read. Check the Astro server console for details.</div>
-    ) : !event ? (
+    ) : !event || !detailView ? (
       <>
         <h1>Provenance event not found</h1>
         <p class="lede">No Phase 2 event exists with this identifier.</p>
@@ -43,10 +47,33 @@ const title = event ? generateProvenanceEventTitle(event) : null;
       <>
         <p class="eyebrow">Provenance event</p>
         <h1>{title}</h1>
+        {summaryText && <p class="lede">{summaryText}</p>}
         <dl class="metadata panel">
           <div><dt>Event ID</dt><dd><code>{event.id}</code></dd></div>
           <div><dt>Operational kind</dt><dd>{event.eventKind}</dd></div>
         </dl>
+
+        {
+          detailView.sections.map((section) => (
+            <>
+              <h2>{section.title}</h2>
+              <dl class="metadata panel">
+                {section.rows.map((row) => (
+                  <div>
+                    <dt>{row.label}</dt>
+                    <dd>{row.href ? <a href={row.href}>{row.value}</a> : row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          ))
+        }
+
+        {
+          detailView.incompletenessNotice && (
+            <p class="notice">{detailView.incompletenessNotice}</p>
+          )
+        }
 
         <h2>Attributed event statements</h2>
         <ProvenanceEventCard event={event} />

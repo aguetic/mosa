@@ -25,6 +25,8 @@ export interface ProvenanceEventSummary {
   sortEnd: string | null;
   dateCategory: "dated" | "undated";
   title: string;
+  /** Short narrative for sparse events; derived, not persisted. */
+  summaryText: string | null;
   facts: Array<{
     label: string;
     value: string;
@@ -36,6 +38,27 @@ export interface ProvenanceEventSummary {
     label: string;
   }>;
 }
+
+export interface ProvenanceEventDetailRow {
+  label: string;
+  value: string;
+  href?: string;
+  recorded: boolean;
+}
+
+export interface ProvenanceEventDetailSection {
+  title: string;
+  rows: ProvenanceEventDetailRow[];
+}
+
+export interface ProvenanceEventDetailView {
+  sections: ProvenanceEventDetailSection[];
+  /** One compact incompleteness notice when useful; derived, not persisted. */
+  incompletenessNotice: string | null;
+}
+
+export const REPORTED_MOVEMENT_ACTION = "Physical movement";
+export const ROUTE_AND_PARTICIPANTS_NOT_RECORDED = "Route and participants are not recorded.";
 
 const SUMMARY_FACT_PREDICATES = [
   "moved_from",
@@ -267,6 +290,19 @@ export function generateProvenanceEventTitle(event: ProvenanceEvent): string {
     return `Event at ${occurredAt}`;
   }
 
+  const movedItem = entityLabel(activeStatements(event.statements, "moved_item")[0]);
+  if (movedItem && !movedFrom && !movedTo) {
+    return `Reported movement of ${movedItem}`;
+  }
+
+  if (movedItem) {
+    return "Reported movement";
+  }
+
+  if (activeStatements(event.statements, "transferred_item").length > 0) {
+    return "Transfer event";
+  }
+
   return "Provenance event";
 }
 
@@ -341,6 +377,75 @@ function hasMultipleCharacterisations(event: ProvenanceEvent): boolean {
   return descriptions.size >= 2;
 }
 
+function hasActivePredicate(event: ProvenanceEvent, predicate: string): boolean {
+  return activeStatements(event.statements, predicate).length > 0;
+}
+
+function isSparseMovement(event: ProvenanceEvent): boolean {
+  return (
+    hasActivePredicate(event, "moved_item") &&
+    !hasActivePredicate(event, "moved_from") &&
+    !hasActivePredicate(event, "moved_to")
+  );
+}
+
+function primaryMovedItemEvidence(event: ProvenanceEvent) {
+  const movedItem = activeStatements(event.statements, "moved_item")[0];
+  return movedItem?.evidence[0] ?? null;
+}
+
+/** Compact incompleteness notice for sparse movements. Derived, not persisted. */
+export function movementIncompletenessNotice(event: ProvenanceEvent): string | null {
+  if (!isSparseMovement(event)) {
+    return null;
+  }
+
+  if (hasActivePredicate(event, "carried_out_by")) {
+    return "Route is not recorded.";
+  }
+
+  return ROUTE_AND_PARTICIPANTS_NOT_RECORDED;
+}
+
+/** Narrative for a movement with no recorded endpoints. Gaps belong in notices. */
+export function sparseMovementSummaryText(event: ProvenanceEvent): string | null {
+  if (!isSparseMovement(event)) {
+    return null;
+  }
+
+  const evidence = primaryMovedItemEvidence(event);
+  const sourceLabel = evidence?.sourceLabel?.trim() || null;
+  const excerpt = evidence?.excerpt?.trim() || null;
+
+  if (sourceLabel && excerpt) {
+    return `${sourceLabel} reports that the item “${excerpt}”.`;
+  }
+
+  if (sourceLabel) {
+    return `${sourceLabel} reports that the item was moved.`;
+  }
+
+  return "A source reports that the item was moved.";
+}
+
+function sourceWordingNotice(event: ProvenanceEvent): string | null {
+  if (hasMultipleCharacterisations(event)) {
+    return "Multiple characterisations reported";
+  }
+
+  const description = activeStatements(event.statements, "described_as")[0];
+  if (!description) {
+    return null;
+  }
+
+  const value = provenanceStatementValue(description).trim();
+  if (!value) {
+    return null;
+  }
+
+  return `Source wording: “${value}”`;
+}
+
 function eventNotices(event: ProvenanceEvent, dateSummary: ProvenanceDateSummary): string[] {
   const notices = [...dateSummary.notices];
 
@@ -358,18 +463,190 @@ function eventNotices(event: ProvenanceEvent, dateSummary: ProvenanceDateSummary
     notices.push("Conflicting evidence");
   }
 
-  if (hasMultipleCharacterisations(event)) {
-    notices.push("Multiple characterisations reported");
-  } else {
-    for (const statement of activeStatements(event.statements, "described_as")) {
-      const value = provenanceStatementValue(statement);
-      if (value.trim().length > 0) {
-        notices.push(`Source describes the event as “${value}”`);
-      }
-    }
+  const wording = sourceWordingNotice(event);
+  if (wording) {
+    notices.push(wording);
+  }
+
+  const incompleteness = movementIncompletenessNotice(event);
+  if (incompleteness) {
+    notices.push(incompleteness);
   }
 
   return dedupeNotices(notices);
+}
+
+function recordedEntityDetail(
+  event: ProvenanceEvent,
+  predicate: string,
+  label: string,
+): ProvenanceEventDetailRow | null {
+  const statement = activeStatements(event.statements, predicate)[0];
+  if (!statement) {
+    return null;
+  }
+
+  return {
+    label,
+    value: provenanceStatementValue(statement),
+    href: statement.valueKind === "entity" ? entityHref(statement) : undefined,
+    recorded: true,
+  };
+}
+
+function recordedItemDetail(event: ProvenanceEvent): ProvenanceEventDetailRow | null {
+  for (const predicate of ["moved_item", "transferred_item", "held_item"] as const) {
+    const detail = recordedEntityDetail(event, predicate, "Item");
+    if (detail) {
+      return detail;
+    }
+  }
+
+  return null;
+}
+
+function recordedTransferPartiesDetail(event: ProvenanceEvent): ProvenanceEventDetailRow | null {
+  const from = activeStatements(event.statements, "transferred_from")[0];
+  const to = activeStatements(event.statements, "transferred_to")[0];
+
+  if (!from && !to) {
+    return null;
+  }
+
+  if (from && to) {
+    return {
+      label: "Transfer parties",
+      value: `${provenanceStatementValue(from)} → ${provenanceStatementValue(to)}`,
+      recorded: true,
+    };
+  }
+
+  const sole = from ?? to;
+  if (!sole) {
+    return null;
+  }
+
+  return {
+    label: "Transfer parties",
+    value: provenanceStatementValue(sole),
+    href: sole.valueKind === "entity" ? entityHref(sole) : undefined,
+    recorded: true,
+  };
+}
+
+function characterisationRows(statement: ProvenanceStatement): ProvenanceEventDetailRow[] {
+  const rows: ProvenanceEventDetailRow[] = [];
+  const value = provenanceStatementValue(statement).trim();
+  const evidence = statement.evidence[0];
+  const speaker =
+    statement.assertedByLabel ?? (statement.assertedByAgentId ? statement.assertedByAgentId : null);
+
+  if (value.length > 0) {
+    rows.push({
+      label: "Reported characterisation",
+      value: `“${value}”`,
+      recorded: true,
+    });
+  }
+
+  if (speaker) {
+    rows.push({
+      label: "Underlying speaker",
+      value: speaker,
+      href: statement.assertedByAgentId ? `/entities/${statement.assertedByAgentId}` : undefined,
+      recorded: true,
+    });
+  }
+
+  if (evidence?.sourceLabel) {
+    const relationshipLabel =
+      evidence.relationship === "mentions"
+        ? `Indirect report in ${evidence.sourceLabel}`
+        : evidence.relationship === "supports"
+          ? `Direct support in ${evidence.sourceLabel}`
+          : `${evidence.relationship} in ${evidence.sourceLabel}`;
+
+    rows.push({
+      label: "Evidence type",
+      value: relationshipLabel,
+      href: `/entities/${evidence.sourceId}`,
+      recorded: true,
+    });
+  }
+
+  return rows;
+}
+
+/**
+ * Event-detail projection of positively recorded facts.
+ * Absent roles are omitted; incompleteness is a single optional notice.
+ */
+export function provenanceEventDetailView(event: ProvenanceEvent): ProvenanceEventDetailView {
+  const dateSummary = summarizeProvenanceDate(event.statements);
+  const hasMovedItem = hasActivePredicate(event, "moved_item");
+  const hasTransferItem = hasActivePredicate(event, "transferred_item");
+
+  const recordedRows: ProvenanceEventDetailRow[] = [];
+
+  if (hasMovedItem) {
+    recordedRows.push({
+      label: "Reported action",
+      value: REPORTED_MOVEMENT_ACTION,
+      recorded: true,
+    });
+  }
+
+  const item = recordedItemDetail(event);
+  if (item) {
+    recordedRows.push(item);
+  }
+
+  if (dateSummary.category === "dated") {
+    recordedRows.push({
+      label: "Date",
+      value: dateSummary.label,
+      recorded: true,
+    });
+  }
+
+  for (const row of [
+    recordedEntityDetail(event, "moved_from", "Origin"),
+    recordedEntityDetail(event, "moved_to", "Destination"),
+    recordedEntityDetail(event, "carried_out_by", "Person or group carrying it out"),
+  ]) {
+    if (row) {
+      recordedRows.push(row);
+    }
+  }
+
+  // Show transfer parties only when a transfer is positively recorded.
+  if (
+    hasTransferItem ||
+    hasActivePredicate(event, "transferred_from") ||
+    hasActivePredicate(event, "transferred_to")
+  ) {
+    const parties = recordedTransferPartiesDetail(event);
+    if (parties) {
+      recordedRows.push(parties);
+    }
+  }
+
+  const sections: ProvenanceEventDetailSection[] = [];
+  if (recordedRows.length > 0) {
+    sections.push({ title: "Recorded details", rows: recordedRows });
+  }
+
+  for (const statement of activeStatements(event.statements, "described_as")) {
+    const rows = characterisationRows(statement);
+    if (rows.length > 0) {
+      sections.push({ title: "Source characterisation", rows });
+    }
+  }
+
+  return {
+    sections,
+    incompletenessNotice: movementIncompletenessNotice(event),
+  };
 }
 
 function eventSources(event: ProvenanceEvent): ProvenanceEventSummary["sources"] {
@@ -400,6 +677,7 @@ export function summarizeProvenanceEvent(event: ProvenanceEvent): ProvenanceEven
     sortEnd: dateSummary.sortEnd,
     dateCategory: dateSummary.category,
     title: generateProvenanceEventTitle(event),
+    summaryText: sparseMovementSummaryText(event),
     facts: compactFacts(event),
     notices: eventNotices(event, dateSummary),
     sources: eventSources(event),

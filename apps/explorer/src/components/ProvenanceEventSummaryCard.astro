@@ -17,6 +17,10 @@ const summary = summarizeProvenanceEvent(event);
   </div>
 
   {
+    summary.summaryText && <p class="lede">{summary.summaryText}</p>
+  }
+
+  {
     summary.facts.length > 0 && (
       <dl class="metadata">
         {summary.facts.map((fact) => (

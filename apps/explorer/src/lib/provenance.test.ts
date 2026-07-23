@@ -3,7 +3,10 @@ import type { ProvenanceEvent, ProvenanceStatement } from "./provenance";
 import {
   generateProvenanceEventTitle,
   orderProvenanceEvents,
+  provenanceEventDetailView,
   provenanceStatementValue,
+  REPORTED_MOVEMENT_ACTION,
+  ROUTE_AND_PARTICIPANTS_NOT_RECORDED,
   summarizeProvenanceEvent,
 } from "./provenance-presentation";
 
@@ -133,12 +136,16 @@ describe("generateProvenanceEventTitle", () => {
     ).toBe("Held by Oldman Collection");
   });
 
-  it("falls back to Provenance event when no recognised predicates exist", () => {
+  it("titles a sparse movement as a reported movement of the item", () => {
     expect(
       generateProvenanceEventTitle(
-        event("e1", [entityStatement("moved_item", "item", "An item", "item")]),
+        event("e1", [entityStatement("moved_item", "item", "La Serena moai", "item")]),
       ),
-    ).toBe("Provenance event");
+    ).toBe("Reported movement of La Serena moai");
+  });
+
+  it("falls back to Provenance event when no recognised predicates exist", () => {
+    expect(generateProvenanceEventTitle(event("e1", []))).toBe("Provenance event");
   });
 });
 
@@ -423,7 +430,7 @@ describe("summarizeProvenanceEvent dates and notices", () => {
     expect(summary.notices.some((notice) => notice.includes("collected"))).toBe(false);
   });
 
-  it("keeps a single characterisation as source wording", () => {
+  it("shows single characterisation as source wording", () => {
     const summary = summarizeProvenanceEvent(
       event("e1", [
         statement({
@@ -433,10 +440,144 @@ describe("summarizeProvenanceEvent dates and notices", () => {
       ]),
     );
 
-    expect(summary.notices).toContain(
-      "Source describes the event as “Gift of the New Zealand Government”",
-    );
+    expect(summary.notices).toContain("Source wording: “Gift of the New Zealand Government”");
     expect(summary.notices).not.toContain("Multiple characterisations reported");
+  });
+
+  it("summarises a sparse movement with one incompleteness notice", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", [
+        {
+          ...entityStatement("moved_item", "item", "La Serena moai", "item"),
+          evidence: [
+            {
+              id: "ev-1",
+              sourceId: "note",
+              sourceLabel: "Paula Rossetti's note",
+              relationship: "supports",
+              locator: "Provenance",
+              excerpt: "fue llevado en 1952",
+              notes: null,
+            },
+          ],
+        },
+        statement({
+          predicate: "occurred_during",
+          literalValue: {
+            earliest: "1952",
+            latest: "1952",
+            verbatim: "1952",
+            interpretation: "exact",
+          },
+        }),
+        statement({
+          predicate: "described_as",
+          literalValue: {
+            type: "text",
+            value: "se dice que fue un regalo del pueblo Rapa Nui",
+            language: "es",
+          },
+        }),
+      ]),
+    );
+
+    expect(summary.title).toBe("Reported movement of La Serena moai");
+    expect(summary.dateLabel).toBe("1952");
+    expect(summary.summaryText).toBe(
+      "Paula Rossetti's note reports that the item “fue llevado en 1952”.",
+    );
+    expect(summary.notices).toEqual([
+      "Source wording: “se dice que fue un regalo del pueblo Rapa Nui”",
+      ROUTE_AND_PARTICIPANTS_NOT_RECORDED,
+    ]);
+  });
+});
+
+describe("provenanceEventDetailView", () => {
+  it("shows only positively recorded details plus one incompleteness notice", () => {
+    const view = provenanceEventDetailView(
+      event("e1", [
+        {
+          ...entityStatement("moved_item", "item", "La Serena moai", "item"),
+          evidence: [
+            {
+              id: "ev-1",
+              sourceId: "note",
+              sourceLabel: "Paula Rossetti's note",
+              relationship: "supports",
+              locator: "Provenance",
+              excerpt: "fue llevado en 1952",
+              notes: null,
+            },
+          ],
+        },
+        statement({
+          predicate: "occurred_during",
+          literalValue: {
+            earliest: "1952",
+            latest: "1952",
+            verbatim: "1952",
+            interpretation: "exact",
+          },
+        }),
+        statement({
+          predicate: "described_as",
+          literalValue: {
+            type: "text",
+            value: "se dice que fue un regalo del pueblo Rapa Nui",
+            language: "es",
+          },
+          evidence: [
+            {
+              id: "ev-2",
+              sourceId: "note",
+              sourceLabel: "Paula Rossetti's note",
+              relationship: "mentions",
+              locator: "Provenance",
+              excerpt: "se dice que fue un regalo del pueblo Rapa Nui",
+              notes: null,
+            },
+          ],
+        }),
+      ]),
+    );
+
+    expect(view.incompletenessNotice).toBe(ROUTE_AND_PARTICIPANTS_NOT_RECORDED);
+    expect(view.sections).toEqual([
+      {
+        title: "Recorded details",
+        rows: [
+          {
+            label: "Reported action",
+            value: REPORTED_MOVEMENT_ACTION,
+            recorded: true,
+          },
+          {
+            label: "Item",
+            value: "La Serena moai",
+            href: "/entities/item",
+            recorded: true,
+          },
+          { label: "Date", value: "1952", recorded: true },
+        ],
+      },
+      {
+        title: "Source characterisation",
+        rows: [
+          {
+            label: "Reported characterisation",
+            value: "“se dice que fue un regalo del pueblo Rapa Nui”",
+            recorded: true,
+          },
+          {
+            label: "Evidence type",
+            value: "Indirect report in Paula Rossetti's note",
+            href: "/entities/note",
+            recorded: true,
+          },
+        ],
+      },
+    ]);
   });
 });
 
