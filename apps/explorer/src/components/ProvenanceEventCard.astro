@@ -7,10 +7,9 @@ import {
 
 interface Props {
   event: ProvenanceEvent;
-  showInternalLabel?: boolean;
 }
 
-const { event, showInternalLabel = false } = Astro.props;
+const { event } = Astro.props;
 const title = generateProvenanceEventTitle(event);
 
 const FIELD_ORDER = [
@@ -65,12 +64,6 @@ function fieldLabel(statement: ProvenanceStatement): string {
       <span class="badge">{event.eventKind}</span>
     </div>
   </div>
-
-  {
-    showInternalLabel && (
-      <p class="claim-meta">Internal label: {event.workingLabel}</p>
-    )
-  }
 
   {event.notes && <p class="muted">{event.notes}</p>}
 

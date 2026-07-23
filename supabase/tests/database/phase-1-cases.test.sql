@@ -3,10 +3,16 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(67);
+select plan(68);
 
 -- Schema and API surface.
 select has_table('entities', 'entity', 'entities.entity exists');
+select hasnt_column(
+    'entities',
+    'entity',
+    'working_label',
+    'entities no longer store working labels'
+);
 select has_table('entities', 'item', 'entities.item exists');
 select has_table('entities', 'agent', 'entities.agent exists');
 select has_table('entities', 'place', 'entities.place exists');
@@ -31,19 +37,19 @@ select ok(
     'claim_evidence_details view exists'
 );
 select ok(
-    to_regprocedure('entities.create_item(text,text,text)') is not null,
+    to_regprocedure('entities.create_item(text,text)') is not null,
     'create_item helper exists'
 );
 select ok(
-    to_regprocedure('entities.create_agent(text,text,text)') is not null,
+    to_regprocedure('entities.create_agent(text,text)') is not null,
     'create_agent helper exists'
 );
 select ok(
-    to_regprocedure('entities.create_place(text,text,text)') is not null,
+    to_regprocedure('entities.create_place(text,text)') is not null,
     'create_place helper exists'
 );
 select ok(
-    to_regprocedure('entities.create_source(text,text,text,timestamp with time zone,text)') is not null,
+    to_regprocedure('entities.create_source(text,text,timestamp with time zone,text)') is not null,
     'create_source helper exists'
 );
 
@@ -185,7 +191,6 @@ select lives_ok(
 select lives_ok(
     $$
     select entities.create_item(
-        'pgTAP temporary item',
         'artefact',
         'authenticated write probe'
     )
@@ -509,10 +514,10 @@ create temporary table phase_1_helper_ids (
 ) on commit drop;
 
 insert into phase_1_helper_ids values
-    ('item', entities.create_item('Fixture helper item', 'artefact', 'pgTAP helper test')),
-    ('agent', entities.create_agent('Fixture helper agent', 'person', 'pgTAP helper test')),
-    ('place', entities.create_place('Fixture helper place', 'site', 'pgTAP helper test')),
-    ('source', entities.create_source('Fixture helper source', 'research_note', 'local:test', null, 'pgTAP helper test'));
+    ('item', entities.create_item('artefact', 'pgTAP helper test')),
+    ('agent', entities.create_agent('person', 'pgTAP helper test')),
+    ('place', entities.create_place('site', 'pgTAP helper test')),
+    ('source', entities.create_source('research_note', 'local:test', null, 'pgTAP helper test'));
 
 select is(
     (

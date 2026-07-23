@@ -13,15 +13,21 @@ select ok(
         from entities.item as item
         join entities.entity as entity on entity.id = item.id
         where item.id = '32000000-0000-4000-8000-000000000001'::uuid
-          and entity.working_label = 'Te Papa moai kavakava'
     )
     and exists (
         select 1
         from entities.external_identifier
         where entity_id = '32000000-0000-4000-8000-000000000001'::uuid
           and value = 'OL000342'
+    )
+    and exists (
+        select 1
+        from knowledge.claim
+        where subject_id = '32000000-0000-4000-8000-000000000001'::uuid
+          and predicate = 'has_name'
+          and literal_value ->> 'value' = 'moai kavakava'
     ),
-    'Te Papa moai kavakava item exists with inventory OL000342'
+    'Te Papa moai kavakava item exists with inventory OL000342 and has_name'
 );
 
 -- Four event anchors exist.

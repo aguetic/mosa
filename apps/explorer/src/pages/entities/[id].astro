@@ -44,7 +44,7 @@ const incomingClaims = entity
 const retrievedAt = entity ? formatDate(entity.retrievedAt) : null;
 ---
 
-<Layout title={entity?.workingLabel ?? "Entity not found"}>
+<Layout title={entity?.displayLabel ?? "Entity not found"}>
   <p class="breadcrumb"><a href="/">← Entity search</a></p>
 
   {
@@ -58,7 +58,7 @@ const retrievedAt = entity ? formatDate(entity.retrievedAt) : null;
     ) : (
       <>
         <p class="eyebrow">{entity.entityType}</p>
-        <h1>{entity.workingLabel}</h1>
+        <h1>{entity.displayLabel}</h1>
         <div class="badges">
           <span class="badge">{entity.entityType}</span>
           {entity.subtypeKind && <span class="badge">{entity.subtypeKind}</span>}
@@ -72,6 +72,18 @@ const retrievedAt = entity ? formatDate(entity.retrievedAt) : null;
           <div>
             <dt>Subtype</dt>
             <dd>{entity.subtypeKind ?? "Not recorded"}</dd>
+          </div>
+          <div>
+            <dt>Display label basis</dt>
+            <dd>
+              {entity.displayLabelBasis}
+              {entity.displayLabelClaimId && (
+                <>
+                  {" · "}
+                  <a href={`/claims/${entity.displayLabelClaimId}`}>view claim</a>
+                </>
+              )}
+            </dd>
           </div>
           {
             entity.reference && (

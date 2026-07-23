@@ -12,7 +12,6 @@ begin
         select 1 from entities.entity
         where id = '10000000-0000-4000-8000-000000000001'::uuid
           and entity_type = 'agent'
-          and working_label = 'Paula Rossetti'
     ) then
         raise exception 'Phase 2 Mamari fixture requires the Phase 1 fixture to be loaded first.';
     end if;
@@ -21,7 +20,6 @@ begin
         select 1 from entities.entity
         where id = '20000000-0000-4000-8000-000000000002'::uuid
           and entity_type = 'place'
-          and working_label = 'Rome'
     ) then
         raise exception 'Phase 2 Mamari fixture requires the Phase 1 Rome place.';
     end if;
@@ -91,33 +89,33 @@ where id in (
     '81000000-0000-4000-8000-000000000009'::uuid
 );
 
-insert into entities.entity (id, entity_type, working_label, notes)
+insert into entities.entity (id, entity_type, notes)
 values
-    ('11000000-0000-4000-8000-000000000001', 'agent', 'Gaspar Zumbohm', null),
-    ('11000000-0000-4000-8000-000000000002', 'agent', 'Hippolyte Roussel', null),
-    ('11000000-0000-4000-8000-000000000003', 'agent', 'Tepano Jaussen', null),
-    ('11000000-0000-4000-8000-000000000004', 'agent', 'Congregation of the Sacred Hearts', null),
-    ('11000000-0000-4000-8000-000000000005', 'agent', 'French Navy', null),
-    ('11000000-0000-4000-8000-000000000006', 'agent', 'Wikipedia contributors', null),
-    ('11000000-0000-4000-8000-000000000007', 'agent', 'Steven Roger Fischer', null),
-    ('11000000-0000-4000-8000-000000000008', 'agent', 'Missionary Museum', 'Institution named as the destination of the reported Paris deposit'),
-    ('21000000-0000-4000-8000-000000000001', 'place', 'Rapa Nui', null),
-    ('21000000-0000-4000-8000-000000000002', 'place', 'Tahiti', null),
-    ('21000000-0000-4000-8000-000000000003', 'place', 'Paris', null),
-    ('21000000-0000-4000-8000-000000000004', 'place', 'Braine-le-Comte', null),
-    ('21000000-0000-4000-8000-000000000005', 'place', 'Grottaferrata', null),
-    ('31000000-0000-4000-8000-000000000001', 'item', 'Mamari rongorongo tablet', 'Phase 2 case 05'),
-    ('41000000-0000-4000-8000-000000000001', 'source', 'Paula Rossetti note: Mamari', null),
-    ('41000000-0000-4000-8000-000000000002', 'source', 'Wikipedia snapshot: Rongorongo text C', null),
-    ('41000000-0000-4000-8000-000000000003', 'source', 'SSCC institutional directory record', null),
-    ('41000000-0000-4000-8000-000000000004', 'source', 'Fischer 1997 account of Mamari', null),
-    ('81000000-0000-4000-8000-000000000001', 'event', 'Case 05 event 01', 'Roussel account provisional anchor'),
-    ('81000000-0000-4000-8000-000000000002', 'event', 'Case 05 event 02', 'Zumbohm account provisional anchor'),
-    ('81000000-0000-4000-8000-000000000003', 'event', 'Case 05 event 03', 'Paris account — Jaussen, 1888'),
-    ('81000000-0000-4000-8000-000000000004', 'event', 'Case 05 event 04', 'Paris account — French Navy, 1892'),
-    ('81000000-0000-4000-8000-000000000005', 'event', 'Case 05 event 05', 'Braine-le-Comte relocation'),
-    ('81000000-0000-4000-8000-000000000006', 'event', 'Case 05 event 06', 'Grottaferrata relocation'),
-    ('81000000-0000-4000-8000-000000000007', 'event', 'Case 05 event 07', 'Rome relocation');
+    ('11000000-0000-4000-8000-000000000001', 'agent', null),
+    ('11000000-0000-4000-8000-000000000002', 'agent', null),
+    ('11000000-0000-4000-8000-000000000003', 'agent', null),
+    ('11000000-0000-4000-8000-000000000004', 'agent', null),
+    ('11000000-0000-4000-8000-000000000005', 'agent', null),
+    ('11000000-0000-4000-8000-000000000006', 'agent', null),
+    ('11000000-0000-4000-8000-000000000007', 'agent', null),
+    ('11000000-0000-4000-8000-000000000008', 'agent', 'Institution named as the destination of the reported Paris deposit'),
+    ('21000000-0000-4000-8000-000000000001', 'place', null),
+    ('21000000-0000-4000-8000-000000000002', 'place', null),
+    ('21000000-0000-4000-8000-000000000003', 'place', null),
+    ('21000000-0000-4000-8000-000000000004', 'place', null),
+    ('21000000-0000-4000-8000-000000000005', 'place', null),
+    ('31000000-0000-4000-8000-000000000001', 'item', 'Phase 2 case 05'),
+    ('41000000-0000-4000-8000-000000000001', 'source', null),
+    ('41000000-0000-4000-8000-000000000002', 'source', null),
+    ('41000000-0000-4000-8000-000000000003', 'source', null),
+    ('41000000-0000-4000-8000-000000000004', 'source', null),
+    ('81000000-0000-4000-8000-000000000001', 'event', 'Roussel account provisional anchor'),
+    ('81000000-0000-4000-8000-000000000002', 'event', 'Zumbohm account provisional anchor'),
+    ('81000000-0000-4000-8000-000000000003', 'event', 'Paris account — Jaussen, 1888'),
+    ('81000000-0000-4000-8000-000000000004', 'event', 'Paris account — French Navy, 1892'),
+    ('81000000-0000-4000-8000-000000000005', 'event', 'Braine-le-Comte relocation'),
+    ('81000000-0000-4000-8000-000000000006', 'event', 'Grottaferrata relocation'),
+    ('81000000-0000-4000-8000-000000000007', 'event', 'Rome relocation');
 
 insert into entities.agent (id, agent_kind) values
     ('11000000-0000-4000-8000-000000000001', 'person'),
@@ -159,6 +157,22 @@ values ('71000000-0000-4000-8000-000000000001', '31000000-0000-4000-8000-0000000
 
 insert into knowledge.claim (id, subject_id, predicate, object_entity_id, literal_value, asserted_by_agent_id, notes)
 values
+
+    -- Display names for Phase 2 Mamari agents, places and item.
+    ('51000000-0000-4000-8000-000000000100', '11000000-0000-4000-8000-000000000001', 'has_name', null, '{"type":"text","value":"Gaspar Zumbohm"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('51000000-0000-4000-8000-000000000101', '11000000-0000-4000-8000-000000000002', 'has_name', null, '{"type":"text","value":"Hippolyte Roussel"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('51000000-0000-4000-8000-000000000102', '11000000-0000-4000-8000-000000000003', 'has_name', null, '{"type":"text","value":"Tepano Jaussen"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('51000000-0000-4000-8000-000000000103', '11000000-0000-4000-8000-000000000004', 'has_name', null, '{"type":"text","value":"Congregation of the Sacred Hearts"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
+    ('51000000-0000-4000-8000-000000000104', '11000000-0000-4000-8000-000000000005', 'has_name', null, '{"type":"text","value":"French Navy"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
+    ('51000000-0000-4000-8000-000000000105', '11000000-0000-4000-8000-000000000006', 'has_name', null, '{"type":"text","value":"Wikipedia contributors"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
+    ('51000000-0000-4000-8000-000000000106', '11000000-0000-4000-8000-000000000007', 'has_name', null, '{"type":"text","value":"Steven Roger Fischer"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('51000000-0000-4000-8000-000000000107', '11000000-0000-4000-8000-000000000008', 'has_name', null, '{"type":"text","value":"Missionary Museum"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
+    ('51000000-0000-4000-8000-000000000108', '21000000-0000-4000-8000-000000000001', 'has_name', null, '{"type":"text","value":"Rapa Nui"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('51000000-0000-4000-8000-000000000109', '21000000-0000-4000-8000-000000000002', 'has_name', null, '{"type":"text","value":"Tahiti"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('51000000-0000-4000-8000-000000000110', '21000000-0000-4000-8000-000000000003', 'has_name', null, '{"type":"text","value":"Paris"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
+    ('51000000-0000-4000-8000-000000000111', '21000000-0000-4000-8000-000000000004', 'has_name', null, '{"type":"text","value":"Braine-le-Comte"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
+    ('51000000-0000-4000-8000-000000000112', '21000000-0000-4000-8000-000000000005', 'has_name', null, '{"type":"text","value":"Grottaferrata"}'::jsonb, '11000000-0000-4000-8000-000000000006', null),
+
     -- Source and item identity.
     ('51000000-0000-4000-8000-000000000001', '41000000-0000-4000-8000-000000000001', 'refers_to', '31000000-0000-4000-8000-000000000001', null, '10000000-0000-4000-8000-000000000001', null),
     ('51000000-0000-4000-8000-000000000002', '41000000-0000-4000-8000-000000000001', 'authored_by', '10000000-0000-4000-8000-000000000001', null, '10000000-0000-4000-8000-000000000001', null),
@@ -265,5 +279,20 @@ values
     ('61000000-0000-4000-8000-000000000005', '51000000-0000-4000-8000-000000000005', '41000000-0000-4000-8000-000000000001', 'supports', 'Document title', 'Mamari'),
     ('61000000-0000-4000-8000-000000000006', '51000000-0000-4000-8000-000000000006', '41000000-0000-4000-8000-000000000002', 'supports', 'Article title and scholarly designation', 'Text C'),
     ('61000000-0000-4000-8000-000000000007', '51000000-0000-4000-8000-000000000007', '41000000-0000-4000-8000-000000000001', 'supports', 'Document title', 'Tablilla kohau rongorongo');
+
+
+insert into knowledge.claim_evidence (id, claim_id, source_id, relationship, locator, excerpt)
+select
+    ('61000000-0000-4000-8000-' || right(claim.id::text, 12))::uuid,
+    claim.id,
+    case when claim.asserted_by_agent_id = '10000000-0000-4000-8000-000000000001'::uuid
+         then '41000000-0000-4000-8000-000000000001'::uuid
+         else '41000000-0000-4000-8000-000000000002'::uuid end,
+    'supports',
+    'Display name',
+    claim.literal_value ->> 'value'
+from knowledge.claim as claim
+where claim.id between '51000000-0000-4000-8000-000000000100'::uuid
+  and '51000000-0000-4000-8000-000000000112'::uuid;
 
 commit;

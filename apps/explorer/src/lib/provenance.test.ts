@@ -45,14 +45,9 @@ function entityStatement(
   });
 }
 
-function event(
-  id: string,
-  workingLabel: string,
-  statements: ProvenanceStatement[] = [],
-): ProvenanceEvent {
+function event(id: string, statements: ProvenanceStatement[] = []): ProvenanceEvent {
   return {
     id,
-    workingLabel,
     eventKind: "unknown",
     notes: null,
     statements,
@@ -93,7 +88,7 @@ describe("generateProvenanceEventTitle", () => {
   it("uses transfer source and recipient", () => {
     expect(
       generateProvenanceEventTitle(
-        event("e1", "ignored", [
+        event("e1", [
           entityStatement("transferred_from", "a", "New Zealand Government"),
           entityStatement("transferred_to", "b", "Te Papa"),
         ]),
@@ -104,7 +99,7 @@ describe("generateProvenanceEventTitle", () => {
   it("uses movement origin and destination", () => {
     expect(
       generateProvenanceEventTitle(
-        event("e1", "ignored", [
+        event("e1", [
           entityStatement("moved_from", "a", "Rapa Nui", "place"),
           entityStatement("moved_to", "b", "Tahiti", "place"),
         ]),
@@ -115,7 +110,7 @@ describe("generateProvenanceEventTitle", () => {
   it("uses arrival when only destination is known", () => {
     expect(
       generateProvenanceEventTitle(
-        event("e1", "ignored", [entityStatement("moved_to", "a", "England", "place")]),
+        event("e1", [entityStatement("moved_to", "a", "England", "place")]),
       ),
     ).toBe("Arrival in England");
   });
@@ -123,7 +118,7 @@ describe("generateProvenanceEventTitle", () => {
   it("uses holding agent", () => {
     expect(
       generateProvenanceEventTitle(
-        event("e1", "ignored", [entityStatement("holding_agent", "a", "Oldman Collection")]),
+        event("e1", [entityStatement("holding_agent", "a", "Oldman Collection")]),
       ),
     ).toBe("Held by Oldman Collection");
   });
@@ -131,7 +126,7 @@ describe("generateProvenanceEventTitle", () => {
   it("falls back to Provenance event when no recognised predicates exist", () => {
     expect(
       generateProvenanceEventTitle(
-        event("e1", "Case 06 event 99", [entityStatement("moved_item", "item", "An item", "item")]),
+        event("e1", [entityStatement("moved_item", "item", "An item", "item")]),
       ),
     ).toBe("Provenance event");
   });
@@ -140,7 +135,7 @@ describe("generateProvenanceEventTitle", () => {
 describe("summarizeProvenanceEvent dates and notices", () => {
   it("summarises an exact date", () => {
     const summary = summarizeProvenanceEvent(
-      event("e1", "label", [
+      event("e1", [
         statement({
           predicate: "occurred_during",
           literalValue: {
@@ -162,7 +157,7 @@ describe("summarizeProvenanceEvent dates and notices", () => {
 
   it("preserves approximate dates with a notice", () => {
     const summary = summarizeProvenanceEvent(
-      event("e1", "label", [
+      event("e1", [
         statement({
           predicate: "occurred_during",
           literalValue: {
@@ -181,7 +176,7 @@ describe("summarizeProvenanceEvent dates and notices", () => {
 
   it("preserves alternative dates without collapsing them to a range", () => {
     const summary = summarizeProvenanceEvent(
-      event("e1", "label", [
+      event("e1", [
         statement({
           predicate: "occurred_during",
           literalValue: {
@@ -203,7 +198,7 @@ describe("summarizeProvenanceEvent dates and notices", () => {
 
   it("marks events without dates as undated", () => {
     const summary = summarizeProvenanceEvent(
-      event("e1", "label", [entityStatement("holding_agent", "a", "Oldman Collection")]),
+      event("e1", [entityStatement("holding_agent", "a", "Oldman Collection")]),
     );
 
     expect(summary.dateLabel).toBe("Date not recorded");
@@ -213,7 +208,7 @@ describe("summarizeProvenanceEvent dates and notices", () => {
 
   it("adds qualification and contradiction notices from evidence relationships", () => {
     const summary = summarizeProvenanceEvent(
-      event("e1", "label", [
+      event("e1", [
         statement({
           id: "claim-1",
           predicate: "carried_out_by",
@@ -251,7 +246,7 @@ describe("summarizeProvenanceEvent dates and notices", () => {
 
   it("deduplicates notices", () => {
     const summary = summarizeProvenanceEvent(
-      event("e1", "label", [
+      event("e1", [
         statement({
           predicate: "occurred_during",
           literalValue: {
@@ -306,10 +301,8 @@ describe("summarizeProvenanceEvent dates and notices", () => {
 
 describe("orderProvenanceEvents", () => {
   it("orders dated events before undated events and by sort bounds", () => {
-    const undated = event("u", "Z undated", [
-      entityStatement("holding_agent", "a", "Oldman Collection"),
-    ]);
-    const later = event("b", "A later", [
+    const undated = event("u", [entityStatement("holding_agent", "a", "Oldman Collection")]);
+    const later = event("b", [
       statement({
         predicate: "occurred_during",
         literalValue: {
@@ -320,7 +313,7 @@ describe("orderProvenanceEvents", () => {
         },
       }),
     ]);
-    const earlier = event("a", "M earlier", [
+    const earlier = event("a", [
       statement({
         predicate: "occurred_during",
         literalValue: {
@@ -346,17 +339,13 @@ describe("orderProvenanceEvents", () => {
       verbatim: "1888",
       interpretation: "exact",
     };
-    const first = event("aaa", "Z label", [
-      statement({ predicate: "occurred_during", literalValue: date }),
-    ]);
-    const second = event("bbb", "A label", [
-      statement({ predicate: "occurred_during", literalValue: date }),
-    ]);
+    const first = event("aaa", [statement({ predicate: "occurred_during", literalValue: date })]);
+    const second = event("bbb", [statement({ predicate: "occurred_during", literalValue: date })]);
 
     expect(orderProvenanceEvents([second, first]).map(({ id }) => id)).toEqual(["aaa", "bbb"]);
   });
 
-  it("does not let working labels affect order or generated titles", () => {
+  it("orders by date and UUID without depending on incidental labels", () => {
     const sharedStatements = [
       entityStatement("moved_to", "england", "England", "place"),
       statement({
@@ -370,8 +359,8 @@ describe("orderProvenanceEvents", () => {
         },
       }),
     ];
-    const first = event("event-a", "Zebra working label", sharedStatements);
-    const second = event("event-b", "Apple working label", sharedStatements);
+    const first = event("event-a", sharedStatements);
+    const second = event("event-b", sharedStatements);
 
     const ordered = orderProvenanceEvents([second, first]);
     expect(ordered.map(({ id }) => id)).toEqual(["event-a", "event-b"]);

@@ -20,8 +20,8 @@ The app defaults to the standard local Supabase PostgreSQL URL. Override it by c
 
 ## Views
 
-- `/` searches entities by working label or external identifier.
+- `/` searches entities by derived display label, `has_name` values, external identifiers, or source references.
 - `/entities/:id` shows subtype data, identifiers, outgoing claims, incoming claims, and evidence summaries.
 - `/claims/:id` shows one claim and all attached evidence.
 - `/events/:id` shows one provenance event and its attributed statements.
-- Item pages show sourced provenance events in partial sequence order.
+- Item pages show sourced provenance events ordered by reported date.

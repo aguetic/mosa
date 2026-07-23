@@ -58,7 +58,7 @@ A 1974 move by the congregation is not modelled as a Mamari event unless evidenc
 - `collected`, `removed`, `stolen`, `sold`, `sent`, and `deposited` remain source-attributed wording in `described_as` claims.
 - Source excerpts must contain source wording or be null; internal event labels are not evidence excerpts.
 - Later relocation claims do not imply ownership, lawful title, consent or authority.
-- Event titles and display order are presentation projections; working labels are operational only.
+- Event titles and display order are presentation projections.
 
 ## Questions
 

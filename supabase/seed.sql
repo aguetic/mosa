@@ -2,29 +2,24 @@
 
 insert into entities.entity (
     id,
-    entity_type,
-    working_label
+    entity_type
 )
 values
     (
         '00000000-0000-4000-8000-000000000001',
-        'agent',
-        'Example Museum'
+        'agent'
     ),
     (
         '00000000-0000-4000-8000-000000000002',
-        'item',
-        'Example collection item'
+        'item'
     ),
     (
         '00000000-0000-4000-8000-000000000003',
-        'place',
-        'Example location'
+        'place'
     ),
     (
         '00000000-0000-4000-8000-000000000004',
-        'source',
-        'Example Museum catalogue record 123'
+        'source'
     );
 
 insert into entities.agent (
@@ -102,17 +97,38 @@ insert into knowledge.claim (
     literal_value,
     asserted_by_agent_id
 )
-values (
-    '10000000-0000-4000-8000-000000000002',
-    '00000000-0000-4000-8000-000000000002',
-    'has_name',
-    jsonb_build_object(
-        'type', 'text',
-        'value', 'Example institutional name',
-        'language', 'en'
+values
+    (
+        '10000000-0000-4000-8000-000000000002',
+        '00000000-0000-4000-8000-000000000002',
+        'has_name',
+        jsonb_build_object(
+            'type', 'text',
+            'value', 'Example institutional name',
+            'language', 'en'
+        ),
+        '00000000-0000-4000-8000-000000000001'
     ),
-    '00000000-0000-4000-8000-000000000001'
-);
+    (
+        '10000000-0000-4000-8000-000000000003',
+        '00000000-0000-4000-8000-000000000001',
+        'has_name',
+        jsonb_build_object(
+            'type', 'text',
+            'value', 'Example Museum'
+        ),
+        '00000000-0000-4000-8000-000000000001'
+    ),
+    (
+        '10000000-0000-4000-8000-000000000004',
+        '00000000-0000-4000-8000-000000000003',
+        'has_name',
+        jsonb_build_object(
+            'type', 'text',
+            'value', 'Example location'
+        ),
+        '00000000-0000-4000-8000-000000000001'
+    );
 
 insert into knowledge.claim_evidence (
     claim_id,
@@ -135,4 +151,18 @@ values
         'supports',
         'Object name field',
         'Example institutional name'
+    ),
+    (
+        '10000000-0000-4000-8000-000000000003',
+        '00000000-0000-4000-8000-000000000004',
+        'supports',
+        'Publisher field',
+        'Example Museum'
+    ),
+    (
+        '10000000-0000-4000-8000-000000000004',
+        '00000000-0000-4000-8000-000000000004',
+        'supports',
+        'Location field',
+        'Example location'
     );

@@ -45,7 +45,7 @@ An event is also an `entities.entity` row with `entity_type = 'event'`. Phase 2 
 - Claims and claim evidence remain the only assertion mechanism.
 - Event location, physical movement destination and recipient institution are distinct claim roles and are not inferred from one another.
 - Formal event-identity resolution remains deferred.
-- Working labels are operational fallbacks and must not determine chronology, titles or historical meaning.
+- Display labels are presentation projections, not stored entity fields.
 
 ## Initial competency cases
 

@@ -12,23 +12,17 @@ begin
     if exists (
         select 1
         from entities.entity
-        where working_label in (
-            'Hoa Hakananaiʻa',
-            'MPE 32571',
-            'МАЭ № 736-205',
-            'Curved wooden moai shown in The Lost Gods of Easter Island',
-            'Unidentified cranial remains — Museo Colegio San Pedro Nolasco'
-        )
-        and id not in (
+        where id in (
             '30000000-0000-4000-8000-000000000001'::uuid,
             '30000000-0000-4000-8000-000000000002'::uuid,
             '30000000-0000-4000-8000-000000000003'::uuid,
             '30000000-0000-4000-8000-000000000004'::uuid,
             '30000000-0000-4000-8000-000000000005'::uuid
         )
+        and entity_type <> 'item'
     ) then
         raise exception
-            'Phase 1 fixture labels already exist under non-fixture UUIDs. Reset the local database before loading fixtures.';
+            'Phase 1 fixture item UUIDs are already used by non-item entities. Reset the local database before loading fixtures.';
     end if;
 
     if exists (
@@ -108,33 +102,33 @@ where id in (
     '40000000-0000-4000-8000-000000000007'::uuid
 );
 
-insert into entities.entity (id, entity_type, working_label, notes)
+insert into entities.entity (id, entity_type, notes)
 values
-    ('10000000-0000-4000-8000-000000000001', 'agent', 'Paula Rossetti', 'Phase 1 fixture contributor'),
-    ('10000000-0000-4000-8000-000000000002', 'agent', 'British Museum', null),
-    ('10000000-0000-4000-8000-000000000003', 'agent', 'Museo delle Civiltà', null),
-    ('10000000-0000-4000-8000-000000000004', 'agent', 'Kunstkamera', null),
-    ('10000000-0000-4000-8000-000000000005', 'agent', 'Museo Colegio San Pedro Nolasco', null),
-    ('10000000-0000-4000-8000-000000000006', 'agent', 'Unidentified ancestral person associated with the cranial remains', 'The person’s identity is currently unknown'),
+    ('10000000-0000-4000-8000-000000000001', 'agent', 'Phase 1 fixture contributor'),
+    ('10000000-0000-4000-8000-000000000002', 'agent', null),
+    ('10000000-0000-4000-8000-000000000003', 'agent', null),
+    ('10000000-0000-4000-8000-000000000004', 'agent', null),
+    ('10000000-0000-4000-8000-000000000005', 'agent', null),
+    ('10000000-0000-4000-8000-000000000006', 'agent', 'The person’s identity is currently unknown'),
 
-    ('20000000-0000-4000-8000-000000000001', 'place', 'London', null),
-    ('20000000-0000-4000-8000-000000000002', 'place', 'Rome', null),
-    ('20000000-0000-4000-8000-000000000003', 'place', 'Saint Petersburg', null),
-    ('20000000-0000-4000-8000-000000000004', 'place', 'Santiago, Chile', null),
+    ('20000000-0000-4000-8000-000000000001', 'place', null),
+    ('20000000-0000-4000-8000-000000000002', 'place', null),
+    ('20000000-0000-4000-8000-000000000003', 'place', null),
+    ('20000000-0000-4000-8000-000000000004', 'place', null),
 
-    ('30000000-0000-4000-8000-000000000001', 'item', 'Hoa Hakananaiʻa', 'Phase 1 case 01'),
-    ('30000000-0000-4000-8000-000000000002', 'item', 'MPE 32571', 'Phase 1 case 02'),
-    ('30000000-0000-4000-8000-000000000003', 'item', 'МАЭ № 736-205', 'Kunstkamera object; Phase 1 case 03'),
-    ('30000000-0000-4000-8000-000000000004', 'item', 'Curved wooden moai shown in The Lost Gods of Easter Island', 'Provisional documentary identity; Phase 1 case 03'),
-    ('30000000-0000-4000-8000-000000000005', 'item', 'Unidentified cranial remains — Museo Colegio San Pedro Nolasco', 'Phase 1 case 04'),
+    ('30000000-0000-4000-8000-000000000001', 'item', 'Phase 1 case 01'),
+    ('30000000-0000-4000-8000-000000000002', 'item', 'Phase 1 case 02'),
+    ('30000000-0000-4000-8000-000000000003', 'item', 'Kunstkamera object; Phase 1 case 03'),
+    ('30000000-0000-4000-8000-000000000004', 'item', 'Provisional documentary identity; Phase 1 case 03'),
+    ('30000000-0000-4000-8000-000000000005', 'item', 'Phase 1 case 04'),
 
-    ('40000000-0000-4000-8000-000000000001', 'source', 'British Museum catalogue record: Oc1869,1005.1', null),
-    ('40000000-0000-4000-8000-000000000002', 'source', 'Paula Rossetti note: Moai Hoa Haka Nanaia', null),
-    ('40000000-0000-4000-8000-000000000003', 'source', 'Paula Rossetti note: MPE 32571', null),
-    ('40000000-0000-4000-8000-000000000004', 'source', 'Photograph of MPE 32571', null),
-    ('40000000-0000-4000-8000-000000000005', 'source', 'Kunstkamera catalogue record: МАЭ № 736-205', null),
-    ('40000000-0000-4000-8000-000000000006', 'source', 'The Lost Gods of Easter Island documentary', null),
-    ('40000000-0000-4000-8000-000000000007', 'source', 'Paula Rossetti note: Cráneo humano', null);
+    ('40000000-0000-4000-8000-000000000001', 'source', null),
+    ('40000000-0000-4000-8000-000000000002', 'source', null),
+    ('40000000-0000-4000-8000-000000000003', 'source', null),
+    ('40000000-0000-4000-8000-000000000004', 'source', null),
+    ('40000000-0000-4000-8000-000000000005', 'source', null),
+    ('40000000-0000-4000-8000-000000000006', 'source', null),
+    ('40000000-0000-4000-8000-000000000007', 'source', null);
 
 insert into entities.agent (id, agent_kind)
 values
@@ -187,6 +181,21 @@ insert into knowledge.claim (
     notes
 )
 values
+
+    -- Display names for agents and places (presentation projections, not preferred names).
+    ('50000000-0000-4000-8000-000000000050', '10000000-0000-4000-8000-000000000001', 'has_name', null, '{"type":"text","value":"Paula Rossetti"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000051', '10000000-0000-4000-8000-000000000002', 'has_name', null, '{"type":"text","value":"British Museum"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000052', '10000000-0000-4000-8000-000000000003', 'has_name', null, '{"type":"text","value":"Museo delle Civiltà"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000053', '10000000-0000-4000-8000-000000000004', 'has_name', null, '{"type":"text","value":"Kunstkamera"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000054', '10000000-0000-4000-8000-000000000005', 'has_name', null, '{"type":"text","value":"Museo Colegio San Pedro Nolasco"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000055', '10000000-0000-4000-8000-000000000006', 'has_name', null, '{"type":"text","value":"Unidentified ancestral person associated with the cranial remains"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000056', '20000000-0000-4000-8000-000000000001', 'has_name', null, '{"type":"text","value":"London"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000057', '20000000-0000-4000-8000-000000000002', 'has_name', null, '{"type":"text","value":"Rome"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000058', '20000000-0000-4000-8000-000000000003', 'has_name', null, '{"type":"text","value":"Saint Petersburg"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000059', '20000000-0000-4000-8000-000000000004', 'has_name', null, '{"type":"text","value":"Santiago, Chile"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000060', '30000000-0000-4000-8000-000000000004', 'has_name', null, '{"type":"text","value":"Curved wooden moai shown in The Lost Gods of Easter Island"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+    ('50000000-0000-4000-8000-000000000061', '30000000-0000-4000-8000-000000000005', 'has_name', null, '{"type":"text","value":"Unidentified cranial remains"}'::jsonb, '10000000-0000-4000-8000-000000000001', null),
+
     -- Case 01: Hoa Hakananaiʻa.
     ('50000000-0000-4000-8000-000000000001', '40000000-0000-4000-8000-000000000001', 'refers_to', '30000000-0000-4000-8000-000000000001', null, '10000000-0000-4000-8000-000000000002', null),
     ('50000000-0000-4000-8000-000000000002', '40000000-0000-4000-8000-000000000001', 'published_by', '10000000-0000-4000-8000-000000000002', null, '10000000-0000-4000-8000-000000000002', null),
@@ -279,5 +288,28 @@ values
     ('60000000-0000-4000-8000-000000000043', '50000000-0000-4000-8000-000000000043', '40000000-0000-4000-8000-000000000007', 'supports', 'Document title', 'Cráneo humano', null),
     ('60000000-0000-4000-8000-000000000044', '50000000-0000-4000-8000-000000000044', '40000000-0000-4000-8000-000000000007', 'supports', 'Comentarios Paula Rossetti', 'Este cráneo se encuentra en una colección privada en el Museo Colegio San Pedro Nolasco', 'Custody does not imply ownership.'),
     ('60000000-0000-4000-8000-000000000045', '50000000-0000-4000-8000-000000000045', '40000000-0000-4000-8000-000000000007', 'supports', 'Location field', 'Santiago Chile', null);
+
+insert into knowledge.claim_evidence (
+    id,
+    claim_id,
+    source_id,
+    relationship,
+    locator,
+    excerpt,
+    notes
+)
+values
+    ('60000000-0000-4000-8000-000000000050', '50000000-0000-4000-8000-000000000050', '40000000-0000-4000-8000-000000000002', 'supports', 'Document author', 'Paula Rossetti', null),
+    ('60000000-0000-4000-8000-000000000051', '50000000-0000-4000-8000-000000000051', '40000000-0000-4000-8000-000000000001', 'supports', 'Publisher or institution field', 'British Museum', null),
+    ('60000000-0000-4000-8000-000000000052', '50000000-0000-4000-8000-000000000052', '40000000-0000-4000-8000-000000000003', 'supports', 'Museum field', 'Museo delle Civiltà', null),
+    ('60000000-0000-4000-8000-000000000053', '50000000-0000-4000-8000-000000000053', '40000000-0000-4000-8000-000000000005', 'supports', 'Publisher or institution field', 'Kunstkamera', null),
+    ('60000000-0000-4000-8000-000000000054', '50000000-0000-4000-8000-000000000054', '40000000-0000-4000-8000-000000000007', 'supports', 'Collection description', 'Museo Colegio San Pedro Nolasco', null),
+    ('60000000-0000-4000-8000-000000000055', '50000000-0000-4000-8000-000000000055', '40000000-0000-4000-8000-000000000007', 'provides_context', 'Document comments', 'ancestral person remains unidentified', null),
+    ('60000000-0000-4000-8000-000000000056', '50000000-0000-4000-8000-000000000056', '40000000-0000-4000-8000-000000000002', 'supports', 'Location field', 'London', null),
+    ('60000000-0000-4000-8000-000000000057', '50000000-0000-4000-8000-000000000057', '40000000-0000-4000-8000-000000000003', 'supports', 'Location field', 'Roma Italy', null),
+    ('60000000-0000-4000-8000-000000000058', '50000000-0000-4000-8000-000000000058', '40000000-0000-4000-8000-000000000005', 'supports', 'Institution location', 'Saint Petersburg', null),
+    ('60000000-0000-4000-8000-000000000059', '50000000-0000-4000-8000-000000000059', '40000000-0000-4000-8000-000000000007', 'supports', 'Location field', 'Santiago Chile', null),
+    ('60000000-0000-4000-8000-000000000060', '50000000-0000-4000-8000-000000000060', '40000000-0000-4000-8000-000000000006', 'supports', 'Documentary description', 'Curved wooden moai', null),
+    ('60000000-0000-4000-8000-000000000061', '50000000-0000-4000-8000-000000000061', '40000000-0000-4000-8000-000000000007', 'supports', 'Document title', 'Cráneo humano', null);
 
 commit;

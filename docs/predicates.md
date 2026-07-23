@@ -31,7 +31,8 @@
 - Use `provenance.event.event_kind` only for broad operational grouping. Preserve wording such as “collected”, “removed”, “stolen”, “gift”, “sent” or “deposited” in attributed `described_as` claims.
 - Store event dates as structured literals so exact years, ranges and alternatives remain distinguishable.
 - Provenance events are displayed using their structured date claims. Display ordering is a presentation projection and does not assert a complete or continuous historical chronology.
-- Event titles are presentation projections generated from structured claims. Working labels remain operational fallbacks and must not determine chronology, titles or historical meaning.
+- Event titles are presentation projections generated from structured claims.
+- Display labels for entities are presentation projections derived from attributed `has_name` claims, external identifiers, source references, or event summaries. The former stored `working_label` column has been removed.
 - Event–item and participant relationships use competency-derived, role-bearing predicates. Phase 2 currently does not define generic event–item or participant predicates; later cases may introduce specific predicates they prove necessary.
 - Use `moved_item`, `moved_from`, `moved_to`, `carried_out_by`, `transferred_from` and `transferred_to` only with the narrow meanings established by the provenance cases.
 - `held_item` identifies the item involved in a holding episode; `holding_agent` identifies the reported holder in that episode.

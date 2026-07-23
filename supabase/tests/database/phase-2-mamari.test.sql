@@ -241,23 +241,21 @@ select is(
 select ok(
     not exists (
         select 1
-        from entities.entity
-        where entity_type = 'event'
-          and working_label ilike '%1974%'
-    )
-    and not exists (
-        select 1
         from knowledge.claim
         where subject_id between
             '81000000-0000-4000-8000-000000000001'::uuid
             and
             '81000000-0000-4000-8000-000000000007'::uuid
-          and predicate in (
-              'owned_by',
-              'lawfully_owned_by',
-              'consented_by',
-              'lawful_transfer',
-              'was_gift'
+          and (
+              predicate in (
+                  'owned_by',
+                  'lawfully_owned_by',
+                  'consented_by',
+                  'lawful_transfer',
+                  'was_gift'
+              )
+              or coalesce(notes, '') ilike '%1974%'
+              or coalesce(literal_value::text, '') ilike '%1974%'
           )
     ),
     'the fixture does not invent a 1974 move, ownership, legality or consent'

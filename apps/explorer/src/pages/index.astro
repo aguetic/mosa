@@ -35,7 +35,7 @@ try {
 
   <form class="search-form" method="get" action="/">
     <label>
-      Label or identifier
+      Name, identifier or source reference
       <input name="q" type="search" value={searchText} placeholder="MPE 32571" />
     </label>
     <label>
@@ -68,7 +68,7 @@ try {
               entities.map((entity) => (
                 <article class="result-card">
                   <div class="result-card__top">
-                    <h2><a href={entityHref(entity)}>{entity.workingLabel}</a></h2>
+                    <h2><a href={entityHref(entity)}>{entity.displayLabel}</a></h2>
                     <div class="badges">
                       <span class="badge">{entity.entityType}</span>
                       {entity.subtypeKind && <span class="badge">{entity.subtypeKind}</span>}

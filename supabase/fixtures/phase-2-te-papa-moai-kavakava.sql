@@ -13,7 +13,6 @@ begin
         select 1 from entities.entity
         where id = '10000000-0000-4000-8000-000000000001'::uuid
           and entity_type = 'agent'
-          and working_label = 'Paula Rossetti'
     ) then
         raise exception 'Phase 2 Te Papa fixture requires the Phase 1 fixture to be loaded first.';
     end if;
@@ -72,23 +71,23 @@ where id in (
     '82000000-0000-4000-8000-000000000005'::uuid
 );
 
-insert into entities.entity (id, entity_type, working_label, notes)
+insert into entities.entity (id, entity_type, notes)
 values
-    ('12000000-0000-4000-8000-000000000001', 'agent', 'F. W. Beechey', null),
-    ('12000000-0000-4000-8000-000000000002', 'agent', 'HMS Blossom expedition', null),
-    ('12000000-0000-4000-8000-000000000003', 'agent', 'Oldman Collection', null),
-    ('12000000-0000-4000-8000-000000000004', 'agent', 'New Zealand Government', null),
-    ('12000000-0000-4000-8000-000000000005', 'agent', 'Museum of New Zealand Te Papa Tongarewa', null),
-    ('22000000-0000-4000-8000-000000000001', 'place', 'Rapa Nui', null),
-    ('22000000-0000-4000-8000-000000000002', 'place', 'England', null),
-    ('22000000-0000-4000-8000-000000000003', 'place', 'Wellington', null),
-    ('32000000-0000-4000-8000-000000000001', 'item', 'Te Papa moai kavakava', 'Phase 2 case 06; inventory OL000342'),
-    ('42000000-0000-4000-8000-000000000001', 'source', 'Te Papa catalogue record', null),
-    ('42000000-0000-4000-8000-000000000002', 'source', 'Paula Rossetti note: Te Papa moai kavakava', null),
-    ('82000000-0000-4000-8000-000000000001', 'event', 'Case 06 event 01', 'Possible HMS Blossom collection hypothesis'),
-    ('82000000-0000-4000-8000-000000000002', 'event', 'Case 06 event 02', 'Arrival in England'),
-    ('82000000-0000-4000-8000-000000000003', 'event', 'Case 06 event 03', 'Oldman Collection holding'),
-    ('82000000-0000-4000-8000-000000000004', 'event', 'Case 06 event 04', '1992 transfer to Te Papa');
+    ('12000000-0000-4000-8000-000000000001', 'agent', null),
+    ('12000000-0000-4000-8000-000000000002', 'agent', null),
+    ('12000000-0000-4000-8000-000000000003', 'agent', null),
+    ('12000000-0000-4000-8000-000000000004', 'agent', null),
+    ('12000000-0000-4000-8000-000000000005', 'agent', null),
+    ('22000000-0000-4000-8000-000000000001', 'place', null),
+    ('22000000-0000-4000-8000-000000000002', 'place', null),
+    ('22000000-0000-4000-8000-000000000003', 'place', null),
+    ('32000000-0000-4000-8000-000000000001', 'item', 'Phase 2 case 06; inventory OL000342'),
+    ('42000000-0000-4000-8000-000000000001', 'source', null),
+    ('42000000-0000-4000-8000-000000000002', 'source', null),
+    ('82000000-0000-4000-8000-000000000001', 'event', 'Possible HMS Blossom collection hypothesis'),
+    ('82000000-0000-4000-8000-000000000002', 'event', 'Arrival in England'),
+    ('82000000-0000-4000-8000-000000000003', 'event', 'Oldman Collection holding'),
+    ('82000000-0000-4000-8000-000000000004', 'event', '1992 transfer to Te Papa');
 
 insert into entities.agent (id, agent_kind) values
     ('12000000-0000-4000-8000-000000000001', 'person'),
@@ -120,6 +119,17 @@ values ('72000000-0000-4000-8000-000000000001', '32000000-0000-4000-8000-0000000
 
 insert into knowledge.claim (id, subject_id, predicate, object_entity_id, literal_value, asserted_by_agent_id, notes)
 values
+
+    -- Display names for Phase 2 Te Papa agents and places.
+    ('52000000-0000-4000-8000-000000000100', '12000000-0000-4000-8000-000000000001', 'has_name', null, '{"type":"text","value":"F. W. Beechey"}'::jsonb, '12000000-0000-4000-8000-000000000005', null),
+    ('52000000-0000-4000-8000-000000000101', '12000000-0000-4000-8000-000000000002', 'has_name', null, '{"type":"text","value":"HMS Blossom expedition"}'::jsonb, '12000000-0000-4000-8000-000000000005', null),
+    ('52000000-0000-4000-8000-000000000102', '12000000-0000-4000-8000-000000000003', 'has_name', null, '{"type":"text","value":"Oldman Collection"}'::jsonb, '12000000-0000-4000-8000-000000000005', null),
+    ('52000000-0000-4000-8000-000000000103', '12000000-0000-4000-8000-000000000004', 'has_name', null, '{"type":"text","value":"New Zealand Government"}'::jsonb, '12000000-0000-4000-8000-000000000005', null),
+    ('52000000-0000-4000-8000-000000000104', '12000000-0000-4000-8000-000000000005', 'has_name', null, '{"type":"text","value":"Museum of New Zealand Te Papa Tongarewa"}'::jsonb, '12000000-0000-4000-8000-000000000005', null),
+    ('52000000-0000-4000-8000-000000000105', '22000000-0000-4000-8000-000000000001', 'has_name', null, '{"type":"text","value":"Rapa Nui"}'::jsonb, '12000000-0000-4000-8000-000000000005', null),
+    ('52000000-0000-4000-8000-000000000106', '22000000-0000-4000-8000-000000000002', 'has_name', null, '{"type":"text","value":"England"}'::jsonb, '12000000-0000-4000-8000-000000000005', null),
+    ('52000000-0000-4000-8000-000000000107', '22000000-0000-4000-8000-000000000003', 'has_name', null, '{"type":"text","value":"Wellington"}'::jsonb, '12000000-0000-4000-8000-000000000005', null),
+
     -- Sources and item identity.
     ('52000000-0000-4000-8000-000000000001', '42000000-0000-4000-8000-000000000001', 'refers_to', '32000000-0000-4000-8000-000000000001', null, '12000000-0000-4000-8000-000000000005', null),
     ('52000000-0000-4000-8000-000000000002', '42000000-0000-4000-8000-000000000001', 'published_by', '12000000-0000-4000-8000-000000000005', null, '12000000-0000-4000-8000-000000000005', null),
@@ -227,5 +237,18 @@ values
     ('62000000-0000-4000-8000-000000000008', '52000000-0000-4000-8000-000000000008', '42000000-0000-4000-8000-000000000001', 'mentions', 'Provenance > HMS Blossom hypothesis', 'HMS Blossom'),
     ('62000000-0000-4000-8000-000000000010', '52000000-0000-4000-8000-000000000010', '42000000-0000-4000-8000-000000000001', 'supports', 'Catalogue holding institution', 'Museum of New Zealand Te Papa Tongarewa'),
     ('62000000-0000-4000-8000-000000000011', '52000000-0000-4000-8000-000000000011', '42000000-0000-4000-8000-000000000001', 'supports', 'Catalogue location', 'Wellington');
+
+
+insert into knowledge.claim_evidence (id, claim_id, source_id, relationship, locator, excerpt)
+select
+    ('62000000-0000-4000-8000-' || right(claim.id::text, 12))::uuid,
+    claim.id,
+    '42000000-0000-4000-8000-000000000001'::uuid,
+    'supports',
+    'Display name',
+    claim.literal_value ->> 'value'
+from knowledge.claim as claim
+where claim.id between '52000000-0000-4000-8000-000000000100'::uuid
+  and '52000000-0000-4000-8000-000000000107'::uuid;
 
 commit;

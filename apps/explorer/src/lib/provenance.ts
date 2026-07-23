@@ -33,7 +33,6 @@ export interface ProvenanceStatement {
 
 export interface ProvenanceEvent {
   id: string;
-  workingLabel: string;
   eventKind: string;
   notes: string | null;
   statements: ProvenanceStatement[];
@@ -45,7 +44,6 @@ export interface ProvenanceEventDetail extends ProvenanceEvent {
 
 interface EventRow extends QueryResultRow {
   id: string;
-  working_label: string;
   event_kind: string;
   notes: string | null;
 }
@@ -180,7 +178,6 @@ export async function getProvenanceEventsForItem(itemId: string): Promise<Proven
   const rows = await query<EventRow>(
     `select
          event.id::text,
-         entity.working_label,
          event.event_kind,
          entity.notes
      from provenance.event as event
@@ -213,7 +210,6 @@ export async function getProvenanceEventsForItem(itemId: string): Promise<Proven
   return orderProvenanceEvents(
     rows.map((row) => ({
       id: row.id,
-      workingLabel: row.working_label,
       eventKind: row.event_kind,
       notes: row.notes,
       statements: statementsByEvent.get(row.id) ?? [],
@@ -225,7 +221,6 @@ export async function getProvenanceEvent(id: string): Promise<ProvenanceEventDet
   const rows = await query<EventRow>(
     `select
          event.id::text,
-         entity.working_label,
          event.event_kind,
          entity.notes
      from provenance.event as event
@@ -245,7 +240,6 @@ export async function getProvenanceEvent(id: string): Promise<ProvenanceEventDet
 
   return {
     id: row.id,
-    workingLabel: row.working_label,
     eventKind: row.event_kind,
     notes: row.notes,
     statements,
