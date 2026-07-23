@@ -18,7 +18,7 @@ Names and scholarly designations, external identifiers, and classifications must
 
 ## Provenance pressure
 
-The source packet contains more than one account of how Mamari left Rapa Nui and reached Tahiti. It also reports one later deposit in Paris through two alternative actor-and-date reconstructions, followed by a sequence of institutional relocations.
+The source packet contains more than one account of how Mamari left Rapa Nui and reached Tahiti. It also reports two provisional Paris deposit accounts with different actor-and-date pairings, followed by a sequence of institutional relocations.
 
 A generic participant role and a prose `described_as` value are not sufficient. The database must be able to answer, without parsing prose:
 
@@ -34,16 +34,15 @@ A generic participant role and a prose `described_as` value are not sufficient. 
 
 These are research anchors, not accepted historical facts:
 
-1. movement from Rapa Nui to Tahiti carried out by Roussel;
-2. transfer to Jaussen according to the Roussel account;
-3. departure or collection from Rapa Nui involving Zumbohm around 1870;
-4. movement to Tahiti and transfer to Jaussen according to the Zumbohm account;
-5. deposit in the Missionary Museum in Paris, reported as either carried out by Jaussen in 1888 or by the French Navy in 1892;
-6. relocation to Braine-le-Comte in 1905;
-7. relocation to Grottaferrata in 1953;
-8. relocation to Rome in 1964.
+1. Roussel account: movement from Rapa Nui to Tahiti and transfer to Jaussen;
+2. Zumbohm account: movement from Rapa Nui to Tahiti and transfer to Jaussen around 1870;
+3. Paris account — Jaussen, 1888;
+4. Paris account — French Navy, 1892;
+5. relocation to Braine-le-Comte in 1905;
+6. relocation to Grottaferrata in 1953;
+7. relocation to Rome in 1964.
 
-The Roussel and Zumbohm chains remain separate because the available material does not establish that their event anchors describe the same occurrences. The Paris alternatives instead describe one deposit event. Their actor-and-date pairings are preserved by the exact existing evidence contexts attached to the claims, without a claim-group or source-statement identity.
+The Roussel and Zumbohm accounts remain separate provisional anchors because the available material does not establish that they describe the same occurrence. The two Paris accounts are likewise separate provisional anchors whose historical identity remains unresolved. Display order for dated events is derived from structured date claims and does not assert a complete chronology.
 
 A 1974 move by the congregation is not modelled as a Mamari event unless evidence directly connects the tablet or its holding collection to that move.
 
@@ -51,35 +50,33 @@ A 1974 move by the congregation is not modelled as a Mamari event unless evidenc
 
 - `moved_from` and `moved_to` must be independently queryable.
 - `carried_out_by` and `transferred_to` must be independently queryable.
-- The single Paris event must contain one `moved_item → Mamari`, one `occurred_at → Paris`, and one `transferred_to → Missionary Museum` claim.
+- Each Paris provisional account must contain its own `moved_item → Mamari`, `occurred_at → Paris`, and `transferred_to → Missionary Museum` claims.
 - The Paris deposit wording does not by itself justify `moved_to → Paris`; a physical movement destination is asserted only where the source supports it.
 - Every provenance event must identify Mamari through `moved_item`.
-- The Roussel and Zumbohm account chains must not share an event merely because both end in Tahiti or mention Jaussen.
-- The Jaussen and 1888 claims must share one identical `source_id + locator + excerpt` evidence context.
-- The French Navy and 1892 claims must share a different identical evidence context, preventing unintended Jaussen–1892 or French Navy–1888 combinations in presentation.
-- Matching evidence contexts are a lightweight presentation convention, not stable account identities or formal claim groups.
+- The Roussel and Zumbohm accounts must not share an event merely because both end in Tahiti or mention Jaussen.
+- The two Paris accounts must not be merged merely because they share an item, place or recipient.
 - `collected`, `removed`, `stolen`, `sold`, `sent`, and `deposited` remain source-attributed wording in `described_as` claims.
 - Source excerpts must contain source wording or be null; internal event labels are not evidence excerpts.
 - Later relocation claims do not imply ownership, lawful title, consent or authority.
+- Event titles and display order are presentation projections; working labels are operational only.
 
 ## Questions
 
 - Can SQL retrieve item, origin, movement destination, event location, actor, recipient, date and source without inspecting `described_as` text?
-- Can uncertain event identity remain separate from uncertainty about an otherwise shared event?
-- Can the alternative Jaussen–1888 and French Navy–1892 pairs remain independently queryable on one event?
-- Can the explorer group correlated claims by existing evidence context without introducing a new ontology entity?
+- Can uncertain event identity remain separate provisional anchors?
+- Can the alternative Jaussen–1888 and French Navy–1892 accounts remain independently queryable?
 - Can the original wording remain visible without carrying the only structured meaning?
-- Can later events be ordered while the earlier account chains remain unresolved?
-- Can the explorer show the structured roles and evidence for each event?
+- Can dated later events be displayed by reported date while earlier accounts remain unresolved?
+- Can the explorer show generated titles, compact summaries and detailed evidence for each event?
 
 ## Pass condition
 
-Mamari has one stable item identity. Eight event anchors represent two separate early account chains, one Paris deposit event and three supported later relocations. The Paris event stores its shared item, location and recipient once while retaining two correlated actor-and-date alternatives through existing claim evidence. The structured claims answer the competency questions without parsing descriptive prose, and no unsupported 1974 object move, ownership, authority, consent or legal conclusion is introduced.
+Mamari has one stable item identity. Seven event anchors represent two separate early accounts, two provisional Paris accounts and three supported later relocations. The structured claims answer the competency questions without parsing descriptive prose, and no unsupported 1974 object move, ownership, authority, consent or legal conclusion is introduced.
 
 ## Out of scope
 
 - deciding which early or Paris account is historically correct;
-- deciding whether the separately modelled early events describe the same real-world occurrences;
+- deciding whether the separately modelled early or Paris events describe the same real-world occurrences;
 - a general participant-role table or complete provenance predicate vocabulary;
 - formal source statements, evidence-unit identities, or explicit claim and conflict groups;
 - resolving whether any transfer was lawful;
@@ -95,13 +92,11 @@ Mamari has one stable item identity. Eight event anchors represent two separate 
   - `occurred_at` identifies where an event happened;
   - `moved_to` identifies the geographical destination of a physical movement;
   - `transferred_to` identifies the person or organisation reported as receiving the item.
-- The Missionary Museum and Paris must therefore be represented as separate claims on the Paris deposit event.
-- Conflicting properties do not necessarily imply distinct events. When a source explicitly frames actor-and-date combinations as alternatives for one occurrence, one event anchor is more accurate.
-- The Roussel and Zumbohm accounts must remain separate event chains rather than converging on one assumed Tahiti event.
-- The Jaussen–1888 and French Navy–1892 pairings can be preserved by giving each pair the same exact `source_id`, `locator`, and `excerpt` values in existing claim evidence.
-- The explorer may group claims that share an exact evidence context under the generic label “Reported together”. This grouping is a derived presentation and has no formal identity; it does not infer semantic alternatives from English wording.
-- Claims with unique or incomplete evidence contexts remain visible as ordinary statements.
-- Exact-tuple grouping is intentionally provisional and presentational. A formal source-statement, evidence-unit, claim-group, or conflict-group model may be introduced only when another case proves it necessary.
+- The Missionary Museum and Paris must therefore be represented as separate claims on each Paris account event.
+- Unresolved alternative accounts remain separate provisional event anchors. The project does not infer that the Jaussen–1888 and French Navy–1892 accounts describe one historical occurrence.
+- The Roussel and Zumbohm accounts must remain separate rather than converging on one assumed Tahiti event.
+- Event chains through `preceded_by` were removed; display order is derived from structured dates.
+- Evidence-tuple grouping was removed; claims render independently with their own evidence.
 - Event identity must be decided separately from uncertainty about properties claimed of an event.
 - `described_as` remains useful for preserving original wording, uncertainty, and language, but it must not be the only place where queryable actors, places, recipients, or dates are recorded.
 - Event details remain claims with their own status, asserting agent, notes, and evidence. Friendly explorer headings are projections of those claims, not canonical event fields.
@@ -111,4 +106,4 @@ Mamari has one stable item identity. Eight event anchors represent two separate 
 
 ## Result
 
-Pass. No additional schema structure was required for correlated alternatives. The model represents the Paris deposit once, preserves its two actor-and-date pairings through existing claim evidence, and keeps the grouping explicitly provisional and presentational.
+Pass. Seven provisional event anchors represent the Mamari accounts without stored event ordering, without evidence-tuple grouping, and without inventing ownership or legal conclusions.

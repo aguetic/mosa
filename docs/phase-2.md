@@ -13,9 +13,13 @@ Represent competing, incomplete and temporally ordered accounts of how an item m
 - stable event identities;
 - broad operational event kinds;
 - events as subjects and objects of ordinary claims;
-- event items, movement origins and destinations, event locations, active agents, recipient institutions, dates, descriptions and ordering expressed through attributed claims;
+- event items, movement origins and destinations, event locations, active agents, recipient institutions, dates and descriptions expressed through attributed claims;
 - claim-level source evidence;
-- read-only exploration of an item's event sequence.
+- read-only exploration of an item's events;
+- event display order derived from structured date claims;
+- event titles generated from structured claims as presentation projections;
+- unresolved accounts retained as separate provisional event anchors;
+- current states such as custody that may remain direct item claims rather than provenance events.
 
 ### Canonical storage
 
@@ -33,23 +37,24 @@ An event is also an `entities.entity` row with `entity_type = 'event'`. Phase 2 
 ## Invariants
 
 - Events are research anchors, not accepted historical facts.
-- Separate event anchors are used when event identity is unresolved; conflicting properties may instead remain alternative claims about one event.
+- Separate provisional event anchors are used when event identity is unresolved.
 - Historical and legal wording remains source-attributed; descriptive prose is not the only storage location for queryable event details.
 - Event dates may be exact, approximate, ranged or alternative and must not be normalised beyond the evidence.
-- Event ordering is partial and sourced; missing links are not inferred.
+- Display order is derived from structured date claims and does not assert a complete or continuous historical chronology.
 - Relocation or transfer does not imply ownership, lawful title, consent or authority.
 - Claims and claim evidence remain the only assertion mechanism.
 - Event location, physical movement destination and recipient institution are distinct claim roles and are not inferred from one another.
-- Claims sharing an exact `source_id + locator + excerpt` evidence context with a non-empty excerpt may be grouped in presentation, but that tuple is not a formal account or source-statement identity.
+- Formal event-identity resolution remains deferred.
+- Working labels are operational fallbacks and must not determine chronology, titles or historical meaning.
 
 ## Initial competency cases
 
 - Case 05: Mamari provenance
 - Case 06: Te Papa moai kavakava provenance
 
-The first vertical slice represents two unresolved early account chains, one Paris deposit with two correlated actor-and-date alternatives, and a later sequence of institutional relocations while keeping one stable Mamari item identity. The Paris event distinguishes `occurred_at → Paris` from `transferred_to → Missionary Museum`. Its Jaussen–1888 and French Navy–1892 pairs share different exact evidence contexts without introducing a formal grouping structure. The Mamari case introduces only the predicates its competency questions require: `moved_item`, `moved_from`, `moved_to`, `carried_out_by` and `transferred_to`.
+The first vertical slice represents two unresolved early accounts, two separate provisional Paris deposit accounts, and a later sequence of institutional relocations while keeping one stable Mamari item identity. Each Paris account distinguishes `occurred_at → Paris` from `transferred_to → Missionary Museum`. The Mamari case introduces the predicates its competency questions require: `moved_item`, `moved_from`, `moved_to`, `carried_out_by` and `transferred_to`.
 
-Case 06 extends Phase 2 by testing uncertainty within a single institutional provenance account. It does not introduce confidence scores or competing-claim groups. It tests whether hypotheses and qualifications can be represented through ordinary claims and evidence.
+Case 06 extends Phase 2 by testing uncertainty within a single institutional provenance account. It does not introduce confidence scores or competing-claim groups. It tests whether hypotheses and qualifications can be represented through ordinary claims and evidence, and whether current custody can remain a direct item state.
 
 ## Deferred
 
@@ -60,7 +65,8 @@ Case 06 extends Phase 2 by testing uncertainty within a single institutional pro
 - consent and authority determinations;
 - restitution workflows;
 - provenance editing interfaces;
-- general-purpose ingestion.
-- stable source-statement, evidence-unit, claim-group or conflict-group identities.
+- general-purpose ingestion;
+- stable source-statement, evidence-unit, claim-group or conflict-group identities;
+- formal event-identity resolution.
 
 New Phase 2 structures require a failing provenance competency test or a recorded decision.

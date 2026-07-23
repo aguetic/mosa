@@ -5,7 +5,7 @@ import { loadPhase1Fixtures } from "./load-phase-1-fixtures";
 import { loadPhase2Fixtures, loadPhase2TePapaMoaiKavakava } from "./load-phase-2-fixtures";
 
 const projectRoot = path.resolve(__dirname, "..");
-const supabase = getSupabaseExecutable();
+const supabase = getSupabaseExecutable(projectRoot);
 
 async function verifyDatabase(): Promise<void> {
   await runCommand(supabase, ["start"], { cwd: projectRoot });

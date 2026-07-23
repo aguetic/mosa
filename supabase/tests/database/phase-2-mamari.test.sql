@@ -23,224 +23,199 @@ select fk_ok(
     'event identities share the entity identity space'
 );
 
--- Fixture shape and unresolved early accounts.
+-- Seven event anchors.
 
 select ok(
     (
-        select count(*) = 8
+        select count(*) = 7
         from provenance.event
         where id between
             '81000000-0000-4000-8000-000000000001'::uuid
             and
-            '81000000-0000-4000-8000-000000000009'::uuid
+            '81000000-0000-4000-8000-000000000007'::uuid
     )
     and (
-        select count(distinct subject_id) = 8
+        select count(distinct subject_id) = 7
         from knowledge.claim
         where subject_id between
             '81000000-0000-4000-8000-000000000001'::uuid
             and
-            '81000000-0000-4000-8000-000000000009'::uuid
-          and predicate = 'moved_item'
+            '81000000-0000-4000-8000-000000000007'::uuid
+          and predicate in ('moved_item', 'held_item')
           and object_entity_id =
               '31000000-0000-4000-8000-000000000001'::uuid
     ),
-    'Mamari has eight event anchors and every event identifies the stable item'
+    'Mamari has seven event anchors and every event identifies the stable item'
 );
+
+-- Roussel account is a single merged event.
 
 select ok(
     exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '81000000-0000-4000-8000-000000000002'::uuid
-          and predicate = 'preceded_by'
-          and object_entity_id = '81000000-0000-4000-8000-000000000001'::uuid
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000001'::uuid
+          and predicate = 'moved_from'
+          and object_entity_id = '21000000-0000-4000-8000-000000000001'::uuid
     )
     and exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '81000000-0000-4000-8000-000000000004'::uuid
-          and predicate = 'preceded_by'
-          and object_entity_id = '81000000-0000-4000-8000-000000000003'::uuid
-    )
-    and not exists (
-        select 1
-        from knowledge.claim
-        where subject_id in (
-            '81000000-0000-4000-8000-000000000001'::uuid,
-            '81000000-0000-4000-8000-000000000002'::uuid
-        )
-          and object_entity_id in (
-            '81000000-0000-4000-8000-000000000003'::uuid,
-            '81000000-0000-4000-8000-000000000004'::uuid
-        )
-    ),
-    'the Roussel and Zumbohm account chains remain separate'
-);
-
--- One Paris event with shared facts and correlated alternatives.
-
-select ok(
-    exists (
-        select 1
-        from provenance.event
-        where id = '81000000-0000-4000-8000-000000000005'::uuid
-          and event_kind = 'transfer'
-    )
-    and not exists (
-        select 1
-        from provenance.event
-        where id = '81000000-0000-4000-8000-000000000006'::uuid
-    )
-    and exists (
-        select 1
-        from entities.agent
-        where id = '11000000-0000-4000-8000-000000000008'::uuid
-          and agent_kind = 'organisation'
-    ),
-    'one Paris deposit event refers to the Missionary Museum organisation'
-);
-
-select ok(
-    (
-        with expected(predicate, object_entity_id) as (
-            values
-                (
-                    'moved_item',
-                    '31000000-0000-4000-8000-000000000001'::uuid
-                ),
-                (
-                    'occurred_at',
-                    '21000000-0000-4000-8000-000000000003'::uuid
-                ),
-                (
-                    'transferred_to',
-                    '11000000-0000-4000-8000-000000000008'::uuid
-                )
-        )
-        select count(*) = 3
-        from expected
-        where (
-            select count(*)
-            from knowledge.claim
-            where subject_id = '81000000-0000-4000-8000-000000000005'::uuid
-              and knowledge.claim.predicate = expected.predicate
-              and knowledge.claim.object_entity_id = expected.object_entity_id
-        ) = 1
-    )
-    and not exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '81000000-0000-4000-8000-000000000005'::uuid
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000001'::uuid
           and predicate = 'moved_to'
+          and object_entity_id = '21000000-0000-4000-8000-000000000002'::uuid
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000001'::uuid
+          and predicate = 'carried_out_by'
+          and object_entity_id = '11000000-0000-4000-8000-000000000002'::uuid
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000001'::uuid
+          and predicate = 'transferred_to'
+          and object_entity_id = '11000000-0000-4000-8000-000000000003'::uuid
     ),
-    'the Paris event stores its shared item, location and recipient exactly once'
+    'one Roussel event contains origin, destination, actor and recipient'
 );
+
+-- Zumbohm account is a single merged event.
 
 select ok(
     exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '81000000-0000-4000-8000-000000000005'::uuid
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000002'::uuid
+          and predicate = 'moved_from'
+          and object_entity_id = '21000000-0000-4000-8000-000000000001'::uuid
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000002'::uuid
+          and predicate = 'moved_to'
+          and object_entity_id = '21000000-0000-4000-8000-000000000002'::uuid
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000002'::uuid
+          and predicate = 'carried_out_by'
+          and object_entity_id = '11000000-0000-4000-8000-000000000001'::uuid
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000002'::uuid
+          and predicate = 'transferred_to'
+          and object_entity_id = '11000000-0000-4000-8000-000000000003'::uuid
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000002'::uuid
+          and predicate = 'occurred_during'
+          and literal_value ->> 'verbatim' = '1870'
+    ),
+    'one Zumbohm event contains origin, destination, actor, recipient and date'
+);
+
+-- Two separate Paris provisional accounts.
+
+select ok(
+    exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000003'::uuid
           and predicate = 'carried_out_by'
           and object_entity_id = '11000000-0000-4000-8000-000000000003'::uuid
     )
     and exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '81000000-0000-4000-8000-000000000005'::uuid
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000003'::uuid
           and predicate = 'occurred_during'
           and literal_value ->> 'verbatim' = '1888'
     )
     and exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '81000000-0000-4000-8000-000000000005'::uuid
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000003'::uuid
+          and predicate = 'occurred_at'
+          and object_entity_id = '21000000-0000-4000-8000-000000000003'::uuid
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000003'::uuid
+          and predicate = 'transferred_to'
+          and object_entity_id = '11000000-0000-4000-8000-000000000008'::uuid
+    ),
+    'the Jaussen Paris event has the 1888 date and shared Paris facts'
+);
+
+select ok(
+    exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000004'::uuid
           and predicate = 'carried_out_by'
           and object_entity_id = '11000000-0000-4000-8000-000000000005'::uuid
     )
     and exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '81000000-0000-4000-8000-000000000005'::uuid
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000004'::uuid
           and predicate = 'occurred_during'
           and literal_value ->> 'verbatim' = '1892'
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000004'::uuid
+          and predicate = 'occurred_at'
+          and object_entity_id = '21000000-0000-4000-8000-000000000003'::uuid
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000004'::uuid
+          and predicate = 'transferred_to'
+          and object_entity_id = '11000000-0000-4000-8000-000000000008'::uuid
     ),
-    'the Paris event retains both actor and date alternatives'
+    'the French Navy Paris event has the 1892 date and shared Paris facts'
 );
 
-select ok(
-    (
-        select jsonb_build_array(source_id, locator, excerpt)
-        from knowledge.claim_evidence
-        where claim_id = '51000000-0000-4000-8000-000000000044'::uuid
-    ) = (
-        select jsonb_build_array(source_id, locator, excerpt)
-        from knowledge.claim_evidence
-        where claim_id = '51000000-0000-4000-8000-000000000045'::uuid
-    )
-    and (
-        select jsonb_build_array(source_id, locator, excerpt)
-        from knowledge.claim_evidence
-        where claim_id = '51000000-0000-4000-8000-000000000046'::uuid
-    ) = (
-        select jsonb_build_array(source_id, locator, excerpt)
-        from knowledge.claim_evidence
-        where claim_id = '51000000-0000-4000-8000-000000000047'::uuid
-    )
-    and (
-        select jsonb_build_array(source_id, locator, excerpt)
-        from knowledge.claim_evidence
-        where claim_id = '51000000-0000-4000-8000-000000000044'::uuid
-    ) <> (
-        select jsonb_build_array(source_id, locator, excerpt)
-        from knowledge.claim_evidence
-        where claim_id = '51000000-0000-4000-8000-000000000046'::uuid
-    )
-    and (
-        select count(distinct jsonb_build_array(source_id, locator, excerpt)) = 2
-        from knowledge.claim_evidence
-        where claim_id in (
-            '51000000-0000-4000-8000-000000000044'::uuid,
-            '51000000-0000-4000-8000-000000000045'::uuid,
-            '51000000-0000-4000-8000-000000000046'::uuid,
-            '51000000-0000-4000-8000-000000000047'::uuid
-        )
-    ),
-    'each Paris actor/date pair shares one distinct existing evidence context'
-);
-
--- Later ordering and general safeguards.
+-- Later dated relocations.
 
 select ok(
     exists (
-        select 1
-        from knowledge.claim
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000005'::uuid
+          and predicate = 'occurred_during'
+          and literal_value ->> 'verbatim' = '1905'
+    )
+    and exists (
+        select 1 from knowledge.claim
+        where subject_id = '81000000-0000-4000-8000-000000000006'::uuid
+          and predicate = 'occurred_during'
+          and literal_value ->> 'verbatim' = '1953'
+    )
+    and exists (
+        select 1 from knowledge.claim
         where subject_id = '81000000-0000-4000-8000-000000000007'::uuid
-          and predicate = 'preceded_by'
-          and object_entity_id = '81000000-0000-4000-8000-000000000005'::uuid
-    )
-    and exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '81000000-0000-4000-8000-000000000008'::uuid
-          and predicate = 'preceded_by'
-          and object_entity_id = '81000000-0000-4000-8000-000000000007'::uuid
-    )
-    and exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '81000000-0000-4000-8000-000000000009'::uuid
-          and predicate = 'preceded_by'
-          and object_entity_id = '81000000-0000-4000-8000-000000000008'::uuid
+          and predicate = 'occurred_during'
+          and literal_value ->> 'verbatim' = '1964'
+    ),
+    'three later dated relocations exist'
+);
+
+-- No ordering or involved predicates.
+
+select ok(
+    not exists (
+        select 1 from knowledge.claim
+        where predicate = 'preceded_by'
+          and subject_id between
+              '81000000-0000-4000-8000-000000000001'::uuid
+              and
+              '81000000-0000-4000-8000-000000000007'::uuid
     )
     and not exists (
-        select 1
-        from knowledge.claim
-        where predicate = 'preceded_by'
-          and object_entity_id = '81000000-0000-4000-8000-000000000006'::uuid
+        select 1 from knowledge.claim
+        where predicate = 'involved'
+          and subject_id between
+              '81000000-0000-4000-8000-000000000001'::uuid
+              and
+              '81000000-0000-4000-8000-000000000007'::uuid
     ),
-    'the later relocation sequence follows the single Paris event'
+    'Phase 2 Mamari fixtures contain no preceded_by or involved claims'
 );
 
 select is(
@@ -254,7 +229,7 @@ select is(
             where claim.subject_id between
                 '81000000-0000-4000-8000-000000000001'::uuid
                 and
-                '81000000-0000-4000-8000-000000000009'::uuid
+                '81000000-0000-4000-8000-000000000007'::uuid
             group by claim.id
             having count(evidence.id) = 0
         ) as claims_without_evidence
@@ -276,7 +251,7 @@ select ok(
         where subject_id between
             '81000000-0000-4000-8000-000000000001'::uuid
             and
-            '81000000-0000-4000-8000-000000000009'::uuid
+            '81000000-0000-4000-8000-000000000007'::uuid
           and predicate in (
               'owned_by',
               'lawfully_owned_by',

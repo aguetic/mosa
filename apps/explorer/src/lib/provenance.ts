@@ -193,7 +193,7 @@ export async function getProvenanceEventsForItem(itemId: string): Promise<Proven
          and item_claim.object_entity_id = $1::uuid
          and item_claim.status = 'active'
      )
-     order by entity.working_label, event.id`,
+     order by event.id`,
     [itemId],
   );
 

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { ProvenanceEvent, ProvenanceStatement } from "./provenance";
-import { orderProvenanceEvents, provenanceStatementValue } from "./provenance-presentation";
+import {
+  generateProvenanceEventTitle,
+  orderProvenanceEvents,
+  provenanceStatementValue,
+  summarizeProvenanceEvent,
+} from "./provenance-presentation";
 
 function statement(overrides: Partial<ProvenanceStatement> = {}): ProvenanceStatement {
   return {
@@ -22,6 +27,22 @@ function statement(overrides: Partial<ProvenanceStatement> = {}): ProvenanceStat
     evidence: [],
     ...overrides,
   };
+}
+
+function entityStatement(
+  predicate: string,
+  id: string,
+  label: string,
+  entityType = "agent",
+): ProvenanceStatement {
+  return statement({
+    id: `${predicate}-${id}`,
+    predicate,
+    valueKind: "entity",
+    objectEntityId: id,
+    objectEntityLabel: label,
+    objectEntityType: entityType,
+  });
 }
 
 function event(
@@ -68,59 +89,295 @@ describe("provenanceStatementValue", () => {
   });
 });
 
+describe("generateProvenanceEventTitle", () => {
+  it("uses transfer source and recipient", () => {
+    expect(
+      generateProvenanceEventTitle(
+        event("e1", "ignored", [
+          entityStatement("transferred_from", "a", "New Zealand Government"),
+          entityStatement("transferred_to", "b", "Te Papa"),
+        ]),
+      ),
+    ).toBe("Transfer from New Zealand Government to Te Papa");
+  });
+
+  it("uses movement origin and destination", () => {
+    expect(
+      generateProvenanceEventTitle(
+        event("e1", "ignored", [
+          entityStatement("moved_from", "a", "Rapa Nui", "place"),
+          entityStatement("moved_to", "b", "Tahiti", "place"),
+        ]),
+      ),
+    ).toBe("Movement from Rapa Nui to Tahiti");
+  });
+
+  it("uses arrival when only destination is known", () => {
+    expect(
+      generateProvenanceEventTitle(
+        event("e1", "ignored", [entityStatement("moved_to", "a", "England", "place")]),
+      ),
+    ).toBe("Arrival in England");
+  });
+
+  it("uses holding agent", () => {
+    expect(
+      generateProvenanceEventTitle(
+        event("e1", "ignored", [entityStatement("holding_agent", "a", "Oldman Collection")]),
+      ),
+    ).toBe("Held by Oldman Collection");
+  });
+
+  it("falls back to Provenance event when no recognised predicates exist", () => {
+    expect(
+      generateProvenanceEventTitle(
+        event("e1", "Case 06 event 99", [entityStatement("moved_item", "item", "An item", "item")]),
+      ),
+    ).toBe("Provenance event");
+  });
+});
+
+describe("summarizeProvenanceEvent dates and notices", () => {
+  it("summarises an exact date", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", "label", [
+        statement({
+          predicate: "occurred_during",
+          literalValue: {
+            earliest: "1992",
+            latest: "1992",
+            verbatim: "1992",
+            interpretation: "exact",
+          },
+        }),
+      ]),
+    );
+
+    expect(summary.dateLabel).toBe("1992");
+    expect(summary.sortStart).toBe("1992");
+    expect(summary.sortEnd).toBe("1992");
+    expect(summary.dateCategory).toBe("dated");
+    expect(summary.notices).not.toContain("Approximate date");
+  });
+
+  it("preserves approximate dates with a notice", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", "label", [
+        statement({
+          predicate: "occurred_during",
+          literalValue: {
+            earliest: "1870",
+            latest: "1870",
+            verbatim: "around 1870",
+            interpretation: "approximate",
+          },
+        }),
+      ]),
+    );
+
+    expect(summary.dateLabel).toBe("around 1870");
+    expect(summary.notices).toContain("Approximate date");
+  });
+
+  it("preserves alternative dates without collapsing them to a range", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", "label", [
+        statement({
+          predicate: "occurred_during",
+          literalValue: {
+            earliest: "1828",
+            latest: "1835",
+            verbatim: "1828 or 1835",
+            alternatives: ["1828", "1835"],
+            interpretation: "alternatives",
+          },
+        }),
+      ]),
+    );
+
+    expect(summary.dateLabel).toBe("1828 or 1835");
+    expect(summary.sortStart).toBe("1828");
+    expect(summary.sortEnd).toBe("1835");
+    expect(summary.notices).toContain("Alternative dates reported");
+  });
+
+  it("marks events without dates as undated", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", "label", [entityStatement("holding_agent", "a", "Oldman Collection")]),
+    );
+
+    expect(summary.dateLabel).toBe("Date not recorded");
+    expect(summary.dateCategory).toBe("undated");
+    expect(summary.notices).toContain("Date not recorded");
+  });
+
+  it("adds qualification and contradiction notices from evidence relationships", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", "label", [
+        statement({
+          id: "claim-1",
+          predicate: "carried_out_by",
+          valueKind: "entity",
+          objectEntityId: "exp",
+          objectEntityLabel: "HMS Blossom expedition",
+          objectEntityType: "agent",
+          evidence: [
+            {
+              id: "ev-1",
+              sourceId: "src",
+              sourceLabel: "Catalogue",
+              relationship: "qualifies",
+              locator: null,
+              excerpt: null,
+              notes: null,
+            },
+            {
+              id: "ev-2",
+              sourceId: "src",
+              sourceLabel: "Catalogue",
+              relationship: "contradicts",
+              locator: null,
+              excerpt: null,
+              notes: null,
+            },
+          ],
+        }),
+      ]),
+    );
+
+    expect(summary.notices).toContain("Source includes a qualification");
+    expect(summary.notices).toContain("Conflicting evidence");
+  });
+
+  it("deduplicates notices", () => {
+    const summary = summarizeProvenanceEvent(
+      event("e1", "label", [
+        statement({
+          predicate: "occurred_during",
+          literalValue: {
+            earliest: "1828",
+            latest: "1835",
+            verbatim: "1828 or 1835",
+            alternatives: ["1828", "1835"],
+            interpretation: "alternatives",
+          },
+          evidence: [
+            {
+              id: "ev-1",
+              sourceId: "src",
+              sourceLabel: "Catalogue",
+              relationship: "qualifies",
+              locator: null,
+              excerpt: null,
+              notes: null,
+            },
+          ],
+        }),
+        statement({
+          id: "claim-2",
+          predicate: "moved_to",
+          valueKind: "entity",
+          objectEntityId: "england",
+          objectEntityLabel: "England",
+          objectEntityType: "place",
+          evidence: [
+            {
+              id: "ev-2",
+              sourceId: "src",
+              sourceLabel: "Catalogue",
+              relationship: "qualifies",
+              locator: null,
+              excerpt: null,
+              notes: null,
+            },
+          ],
+        }),
+      ]),
+    );
+
+    expect(
+      summary.notices.filter((notice) => notice === "Source includes a qualification"),
+    ).toHaveLength(1);
+    expect(
+      summary.notices.filter((notice) => notice === "Alternative dates reported"),
+    ).toHaveLength(1);
+  });
+});
+
 describe("orderProvenanceEvents", () => {
-  it("orders a partial sequence with alternative predecessors", () => {
-    const roussel = event("rous", "Roussel account");
-    const zumbohm = event("zumb", "Zumbohm account");
-    const tahiti = event("tahi", "Tahiti receipt", [
+  it("orders dated events before undated events and by sort bounds", () => {
+    const undated = event("u", "Z undated", [
+      entityStatement("holding_agent", "a", "Oldman Collection"),
+    ]);
+    const later = event("b", "A later", [
       statement({
-        subjectId: "tahi",
-        predicate: "preceded_by",
-        valueKind: "entity",
-        objectEntityId: "rous",
-      }),
-      statement({
-        subjectId: "tahi",
-        predicate: "preceded_by",
-        valueKind: "entity",
-        objectEntityId: "zumb",
+        predicate: "occurred_during",
+        literalValue: {
+          earliest: "1992",
+          latest: "1992",
+          verbatim: "1992",
+          interpretation: "exact",
+        },
       }),
     ]);
-    const paris = event("pari", "Paris deposit", [
+    const earlier = event("a", "M earlier", [
       statement({
-        subjectId: "pari",
-        predicate: "preceded_by",
-        valueKind: "entity",
-        objectEntityId: "tahi",
+        predicate: "occurred_during",
+        literalValue: {
+          earliest: "1825",
+          latest: "1825",
+          verbatim: "1825",
+          interpretation: "exact",
+        },
       }),
     ]);
 
-    expect(orderProvenanceEvents([paris, tahiti, zumbohm, roussel]).map(({ id }) => id)).toEqual([
-      "rous",
-      "zumb",
-      "tahi",
-      "pari",
+    expect(orderProvenanceEvents([undated, later, earlier]).map(({ id }) => id)).toEqual([
+      "a",
+      "b",
+      "u",
     ]);
   });
 
-  it("returns every event when the source claims contain a cycle", () => {
-    const first = event("a", "A", [
-      statement({
-        subjectId: "a",
-        predicate: "preceded_by",
-        valueKind: "entity",
-        objectEntityId: "b",
-      }),
+  it("uses event UUID as a deterministic technical tie-breaker", () => {
+    const date = {
+      earliest: "1888",
+      latest: "1888",
+      verbatim: "1888",
+      interpretation: "exact",
+    };
+    const first = event("aaa", "Z label", [
+      statement({ predicate: "occurred_during", literalValue: date }),
     ]);
-    const second = event("b", "B", [
-      statement({
-        subjectId: "b",
-        predicate: "preceded_by",
-        valueKind: "entity",
-        objectEntityId: "a",
-      }),
+    const second = event("bbb", "A label", [
+      statement({ predicate: "occurred_during", literalValue: date }),
     ]);
 
-    expect(orderProvenanceEvents([second, first]).map(({ id }) => id)).toEqual(["a", "b"]);
+    expect(orderProvenanceEvents([second, first]).map(({ id }) => id)).toEqual(["aaa", "bbb"]);
+  });
+
+  it("does not let working labels affect order or generated titles", () => {
+    const sharedStatements = [
+      entityStatement("moved_to", "england", "England", "place"),
+      statement({
+        predicate: "occurred_during",
+        literalValue: {
+          earliest: "1828",
+          latest: "1835",
+          verbatim: "1828 or 1835",
+          alternatives: ["1828", "1835"],
+          interpretation: "alternatives",
+        },
+      }),
+    ];
+    const first = event("event-a", "Zebra working label", sharedStatements);
+    const second = event("event-b", "Apple working label", sharedStatements);
+
+    const ordered = orderProvenanceEvents([second, first]);
+    expect(ordered.map(({ id }) => id)).toEqual(["event-a", "event-b"]);
+    expect(ordered.map((item) => generateProvenanceEventTitle(item))).toEqual([
+      "Arrival in England",
+      "Arrival in England",
+    ]);
   });
 });

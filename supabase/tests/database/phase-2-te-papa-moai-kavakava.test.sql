@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(14);
+select plan(15);
 
 -- Te Papa item exists.
 
@@ -24,7 +24,7 @@ select ok(
     'Te Papa moai kavakava item exists with inventory OL000342'
 );
 
--- Five event anchors exist.
+-- Four event anchors exist.
 
 select is(
     (
@@ -33,25 +33,22 @@ select is(
         where id between
             '82000000-0000-4000-8000-000000000001'::uuid
             and
-            '82000000-0000-4000-8000-000000000005'::uuid
+            '82000000-0000-4000-8000-000000000004'::uuid
     ),
-    5,
-    'five Te Papa event anchors exist'
+    4,
+    'four Te Papa event anchors exist'
 );
-
--- HMS Blossom hypothesis exists and retains structured roles.
 
 select ok(
-    exists (
+    not exists (
         select 1
-        from provenance.event as event
-        join entities.entity as entity on entity.id = event.id
-        where event.id = '82000000-0000-4000-8000-000000000001'::uuid
-          and entity.working_label = 'Possible HMS Blossom collection hypothesis'
-          and event.event_kind = 'unknown'
+        from provenance.event
+        where id = '82000000-0000-4000-8000-000000000005'::uuid
     ),
-    'HMS Blossom collection hypothesis exists as an event anchor'
+    'no current-custody event exists'
 );
+
+-- HMS Blossom hypothesis remains active with reporting and qualifying evidence.
 
 select ok(
     exists (
@@ -60,6 +57,7 @@ select ok(
         where subject_id = '82000000-0000-4000-8000-000000000001'::uuid
           and predicate = 'moved_item'
           and object_entity_id = '32000000-0000-4000-8000-000000000001'::uuid
+          and status = 'active'
     )
     and exists (
         select 1
@@ -67,6 +65,7 @@ select ok(
         where subject_id = '82000000-0000-4000-8000-000000000001'::uuid
           and predicate = 'carried_out_by'
           and object_entity_id = '12000000-0000-4000-8000-000000000002'::uuid
+          and status = 'active'
     )
     and exists (
         select 1
@@ -74,29 +73,31 @@ select ok(
         where subject_id = '82000000-0000-4000-8000-000000000001'::uuid
           and predicate = 'occurred_during'
           and literal_value ->> 'verbatim' = '1825'
-          and literal_value ->> 'interpretation' = 'hypothesis'
+          and status = 'active'
     ),
-    'HMS Blossom event has moved_item, expedition carried_out_by and 1825 occurred_during'
+    'the 1825 event remains active with expedition carried_out_by'
 );
 
--- Same event has qualifying evidence and is not rejected.
-
 select ok(
-    exists (
-        select 1
+    (
+        select count(distinct claim.id) = 5
         from knowledge.claim as claim
-        join knowledge.claim_evidence as evidence on evidence.claim_id = claim.id
+        join knowledge.claim_evidence as mentions
+            on mentions.claim_id = claim.id
+           and mentions.relationship = 'mentions'
+        join knowledge.claim_evidence as qualifies
+            on qualifies.claim_id = claim.id
+           and qualifies.relationship = 'qualifies'
         where claim.subject_id = '82000000-0000-4000-8000-000000000001'::uuid
-          and evidence.relationship = 'qualifies'
-          and evidence.source_id = '42000000-0000-4000-8000-000000000001'::uuid
-    )
-    and not exists (
-        select 1
-        from knowledge.claim
-        where subject_id = '82000000-0000-4000-8000-000000000001'::uuid
-          and status = 'rejected'
+          and claim.predicate in (
+              'moved_item',
+              'occurred_at',
+              'carried_out_by',
+              'occurred_during',
+              'described_as'
+          )
     ),
-    'the same HMS Blossom event has qualifying evidence and is not rejected'
+    'the 1825 claims have both reporting and qualifying evidence'
 );
 
 -- Arrival preserves alternative dates and is not collection.
@@ -128,15 +129,6 @@ select ok(
         from knowledge.claim
         where subject_id = '82000000-0000-4000-8000-000000000002'::uuid
           and predicate in ('occurred_at', 'carried_out_by', 'involved')
-    )
-    and not exists (
-        select 1
-        from knowledge.claim
-        where predicate = 'preceded_by'
-          and (
-              subject_id = '82000000-0000-4000-8000-000000000002'::uuid
-              or object_entity_id = '82000000-0000-4000-8000-000000000001'::uuid
-          )
     ),
     'arrival in England is not modelled as the Rapa Nui collection'
 );
@@ -207,19 +199,6 @@ select ok(
         from provenance.event
         where id = '82000000-0000-4000-8000-000000000004'::uuid
           and event_kind = 'gift'
-    )
-    and not exists (
-        select 1
-        from knowledge.claim
-        where subject_id between
-            '82000000-0000-4000-8000-000000000001'::uuid
-            and
-            '82000000-0000-4000-8000-000000000005'::uuid
-          and (
-              predicate ilike '%gift%'
-              or literal_value ->> 'value' ilike '%gift%'
-          )
-          and predicate <> 'described_as'
     ),
     'gift exists only as described_as wording'
 );
@@ -231,16 +210,47 @@ select ok(
         where subject_id between
             '82000000-0000-4000-8000-000000000001'::uuid
             and
-            '82000000-0000-4000-8000-000000000005'::uuid
+            '82000000-0000-4000-8000-000000000004'::uuid
           and predicate in (
               'owned_by',
               'lawfully_owned_by',
               'consented_by',
               'lawful_transfer',
-              'was_gift'
+              'was_gift',
+              'involved',
+              'preceded_by'
+          )
+    )
+    and not exists (
+        select 1
+        from knowledge.claim
+        where predicate in ('involved', 'preceded_by')
+          and (
+              subject_id = '32000000-0000-4000-8000-000000000001'::uuid
+              or object_entity_id = '32000000-0000-4000-8000-000000000001'::uuid
           )
     ),
-    'no ownership, legality or consent predicates exist'
+    'no involved, preceded_by, ownership, legality or consent claims exist'
+);
+
+-- Current custody is a direct item state.
+
+select ok(
+    exists (
+        select 1
+        from knowledge.claim
+        where subject_id = '32000000-0000-4000-8000-000000000001'::uuid
+          and predicate = 'held_by'
+          and object_entity_id = '12000000-0000-4000-8000-000000000005'::uuid
+    )
+    and exists (
+        select 1
+        from knowledge.claim
+        where subject_id = '32000000-0000-4000-8000-000000000001'::uuid
+          and predicate = 'located_at'
+          and object_entity_id = '22000000-0000-4000-8000-000000000003'::uuid
+    ),
+    'the item has direct held_by and located_at claims'
 );
 
 -- Agents remain separate; all event claims have evidence.
@@ -268,7 +278,7 @@ select is(
             where claim.subject_id between
                 '82000000-0000-4000-8000-000000000001'::uuid
                 and
-                '82000000-0000-4000-8000-000000000005'::uuid
+                '82000000-0000-4000-8000-000000000004'::uuid
             group by claim.id
             having count(evidence.id) = 0
         ) as claims_without_evidence
@@ -278,14 +288,17 @@ select is(
 );
 
 select ok(
-    exists (
+    not exists (
         select 1
         from knowledge.claim
-        where subject_id = '82000000-0000-4000-8000-000000000005'::uuid
+        where subject_id between
+            '82000000-0000-4000-8000-000000000001'::uuid
+            and
+            '82000000-0000-4000-8000-000000000004'::uuid
           and predicate = 'holding_agent'
           and object_entity_id = '12000000-0000-4000-8000-000000000005'::uuid
     ),
-    'current Te Papa custody is represented separately'
+    'current Te Papa custody is not represented as an event holding claim'
 );
 
 select * from finish();

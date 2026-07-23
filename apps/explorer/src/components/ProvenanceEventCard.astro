@@ -1,19 +1,17 @@
 ---
 import type { ProvenanceEvent, ProvenanceStatement } from "../lib/provenance";
 import {
-  evidenceContextKey,
-  groupProvenanceStatementsByEvidenceContext,
-} from "../lib/provenance-evidence-context";
-import { provenanceStatementValue } from "../lib/provenance-presentation";
+  generateProvenanceEventTitle,
+  provenanceStatementValue,
+} from "../lib/provenance-presentation";
 
 interface Props {
   event: ProvenanceEvent;
+  showInternalLabel?: boolean;
 }
 
-const { event } = Astro.props;
-const predecessors = event.statements.filter(
-  (statement) => statement.predicate === "preceded_by" && statement.objectEntityId,
-);
+const { event, showInternalLabel = false } = Astro.props;
+const title = generateProvenanceEventTitle(event);
 
 const FIELD_ORDER = [
   "moved_item",
@@ -22,7 +20,6 @@ const FIELD_ORDER = [
   "moved_to",
   "occurred_at",
   "carried_out_by",
-  "involved",
   "holding_agent",
   "transferred_from",
   "transferred_to",
@@ -36,7 +33,6 @@ const FIELD_LABELS: Record<string, string> = {
   moved_from: "From",
   moved_to: "To",
   carried_out_by: "Carried out by",
-  involved: "Involved",
   holding_agent: "Holding agent",
   transferred_from: "Transferred from",
   transferred_to: "Transferred to",
@@ -45,31 +41,13 @@ const FIELD_LABELS: Record<string, string> = {
   occurred_at: "Event location",
 };
 
-const statements = event.statements
-  .filter((statement) => statement.predicate !== "preceded_by")
-  .sort((left, right) => {
-    const leftIndex = FIELD_ORDER.indexOf(left.predicate as (typeof FIELD_ORDER)[number]);
-    const rightIndex = FIELD_ORDER.indexOf(right.predicate as (typeof FIELD_ORDER)[number]);
-    const normalizedLeft = leftIndex === -1 ? FIELD_ORDER.length : leftIndex;
-    const normalizedRight = rightIndex === -1 ? FIELD_ORDER.length : rightIndex;
-    return normalizedLeft - normalizedRight || left.predicate.localeCompare(right.predicate);
-  });
-
-const { groups: evidenceGroups, ungrouped: ungroupedStatements } =
-  groupProvenanceStatementsByEvidenceContext(statements);
-const statementSections = [
-  ...(ungroupedStatements.length > 0
-    ? [
-        {
-          contextKey: null,
-          label: null,
-          evidence: null,
-          statements: ungroupedStatements,
-        },
-      ]
-    : []),
-  ...evidenceGroups,
-];
+const statements = [...event.statements].sort((left, right) => {
+  const leftIndex = FIELD_ORDER.indexOf(left.predicate as (typeof FIELD_ORDER)[number]);
+  const rightIndex = FIELD_ORDER.indexOf(right.predicate as (typeof FIELD_ORDER)[number]);
+  const normalizedLeft = leftIndex === -1 ? FIELD_ORDER.length : leftIndex;
+  const normalizedRight = rightIndex === -1 ? FIELD_ORDER.length : rightIndex;
+  return normalizedLeft - normalizedRight || left.predicate.localeCompare(right.predicate);
+});
 
 function entityHref(id: string, entityType: string | null): string {
   return entityType === "event" ? `/events/${id}` : `/entities/${id}`;
@@ -78,21 +56,21 @@ function entityHref(id: string, entityType: string | null): string {
 function fieldLabel(statement: ProvenanceStatement): string {
   return FIELD_LABELS[statement.predicate] ?? statement.predicate;
 }
-
-function statementEvidence(statement: ProvenanceStatement, contextKey: string | null) {
-  return contextKey
-    ? statement.evidence.filter((evidence) => evidenceContextKey(evidence) !== contextKey)
-    : statement.evidence;
-}
 ---
 
 <article class="claim-card">
   <div class="claim-card__top">
-    <h3><a href={`/events/${event.id}`}>{event.workingLabel}</a></h3>
+    <h3><a href={`/events/${event.id}`}>{title}</a></h3>
     <div class="badges">
       <span class="badge">{event.eventKind}</span>
     </div>
   </div>
+
+  {
+    showInternalLabel && (
+      <p class="claim-meta">Internal label: {event.workingLabel}</p>
+    )
+  }
 
   {event.notes && <p class="muted">{event.notes}</p>}
 
@@ -100,93 +78,49 @@ function statementEvidence(statement: ProvenanceStatement, contextKey: string | 
     statements.length === 0 ? (
       <div class="empty">No attributed event statements.</div>
     ) : (
-      <div>
-        {statementSections.map((section) => (
-          <section class={section.label ? "panel" : undefined}>
-            {section.label && section.evidence && (
-              <header>
-                <h4>{section.label}</h4>
-                <p class="claim-meta">
-                  <a href={`/entities/${section.evidence.sourceId}`}>
-                    {section.evidence.sourceLabel}
+      <dl class="metadata panel">
+        {statements.map((statement) => (
+          <div>
+            <dt>{fieldLabel(statement)}</dt>
+            <dd>
+              {statement.valueKind === "entity" && statement.objectEntityId ? (
+                <a href={entityHref(statement.objectEntityId, statement.objectEntityType)}>
+                  {provenanceStatementValue(statement)}
+                </a>
+              ) : (
+                <span class="literal">{provenanceStatementValue(statement)}</span>
+              )}
+              {statement.literalLanguage && (
+                <span class="muted"> ({statement.literalLanguage})</span>
+              )}
+              <p class="claim-meta">
+                <a href={`/claims/${statement.id}`}>View claim</a> · status {statement.status} ·
+                Asserted by{" "}
+                {statement.assertedByAgentId ? (
+                  <a href={`/entities/${statement.assertedByAgentId}`}>
+                    {statement.assertedByLabel ?? statement.assertedByAgentId}
                   </a>
-                  {section.evidence.locator ? ` · ${section.evidence.locator}` : ""}
-                  {section.evidence.excerpt ? ` · “${section.evidence.excerpt}”` : ""}
-                </p>
-              </header>
-            )}
-            <dl class={`metadata${section.label ? "" : " panel"}`}>
-              {section.statements.map((statement) => (
-                <div>
-                  <dt>{fieldLabel(statement)}</dt>
-                  <dd>
-                    {statement.valueKind === "entity" && statement.objectEntityId ? (
-                      <a href={entityHref(statement.objectEntityId, statement.objectEntityType)}>
-                        {provenanceStatementValue(statement)}
-                      </a>
-                    ) : (
-                      <span class="literal">{provenanceStatementValue(statement)}</span>
-                    )}
-                    {statement.literalLanguage && (
-                      <span class="muted"> ({statement.literalLanguage})</span>
-                    )}
-                    <p class="claim-meta">
-                      <a href={`/claims/${statement.id}`}>View claim</a> · status {statement.status} ·
-                      Asserted by{" "}
-                      {statement.assertedByAgentId ? (
-                        <a href={`/entities/${statement.assertedByAgentId}`}>
-                          {statement.assertedByLabel ?? statement.assertedByAgentId}
-                        </a>
-                      ) : (
-                        "unrecorded agent"
-                      )}
-                      {statement.notes ? ` · ${statement.notes}` : ""}
-                    </p>
-                    {statementEvidence(statement, section.contextKey).length > 0 && (
-                      <ul class="evidence-list">
-                        {statementEvidence(statement, section.contextKey).map((evidence) => (
-                          <li>
-                            <strong>{evidence.relationship}</strong> ·{" "}
-                            <a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a>
-                            {evidence.locator ? ` · ${evidence.locator}` : ""}
-                            {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </section>
+                ) : (
+                  "unrecorded agent"
+                )}
+                {statement.notes ? ` · ${statement.notes}` : ""}
+              </p>
+              {statement.evidence.length > 0 && (
+                <ul class="evidence-list">
+                  {statement.evidence.map((evidence) => (
+                    <li>
+                      <strong>{evidence.relationship}</strong> ·{" "}
+                      <a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a>
+                      {evidence.locator ? ` · ${evidence.locator}` : ""}
+                      {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </dd>
+          </div>
         ))}
-      </div>
-    )
-  }
-
-  {
-    predecessors.length > 0 && (
-      <div>
-        <p class="claim-meta"><strong>Preceded by</strong></p>
-        <ul class="evidence-list">
-          {predecessors.map((statement) => (
-            <li>
-              <a href={`/events/${statement.objectEntityId}`}>
-                {statement.objectEntityLabel ?? statement.objectEntityId}
-              </a>
-              {" · "}<a href={`/claims/${statement.id}`}>view claim</a> · status {statement.status}
-              {statement.assertedByLabel ? ` · asserted by ${statement.assertedByLabel}` : ""}
-              {statement.notes ? ` · ${statement.notes}` : ""}
-              {statement.evidence.map((evidence) => (
-                <>
-                  {" · "}<a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a>
-                  {evidence.locator ? ` (${evidence.locator})` : ""}
-                </>
-              ))}
-            </li>
-          ))}
-        </ul>
-      </div>
+      </dl>
     )
   }
 </article>

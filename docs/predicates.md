@@ -19,31 +19,31 @@
 | `moved_to`            | Place   | The reported geographical destination of a physical movement                                                                              |
 | `carried_out_by`      | Agent   | The agent reported as actively carrying out an event                                                                |
 | `transferred_to`      | Agent   | The reported person or organisation receiving an item in a transfer, without implying custody, title or ownership            |
-| `held_item`           | Item    | An event concerns an item being held or associated with a holding episode |
-| `holding_agent`       | Agent   | The agent reported as holding an item during an event or collection episode |
-| `transferred_from`    | Agent   | The reported person or organisation from which an item was transferred |
-| `involved`            | Agent   | An agent is reported as involved in an event without being identified as the agent who carried it out |
+| `held_item`           | Item    | Identifies the item involved in a holding episode |
+| `holding_agent`       | Agent   | Identifies the reported holder in a holding episode |
+| `transferred_from`    | Agent   | Identifies the reported source party in a transfer |
 | `occurred_at`         | Place   | A source or agent states where an event occurred; this is distinct from a movement destination                                                                    |
 | `occurred_during`     | Literal | A source or agent gives an exact, approximate, ranged or alternative date description for an event                |
-| `preceded_by`         | Event   | A source or agent places one event after another; this records partial ordering rather than a complete chronology |
 
 ## Phase 2 provenance conventions
 
 - Provenance events are stable research anchors, not accepted historical conclusions.
 - Use `provenance.event.event_kind` only for broad operational grouping. Preserve wording such as “collected”, “removed”, “stolen”, “gift”, “sent” or “deposited” in attributed `described_as` claims.
 - Store event dates as structured literals so exact years, ranges and alternatives remain distinguishable.
-- Use `preceded_by` only where a source supports the ordering. Multiple alternative predecessors may coexist.
+- Provenance events are displayed using their structured date claims. Display ordering is a presentation projection and does not assert a complete or continuous historical chronology.
+- Event titles are presentation projections generated from structured claims. Working labels remain operational fallbacks and must not determine chronology, titles or historical meaning.
 - Event–item and participant relationships use competency-derived, role-bearing predicates. Phase 2 currently does not define generic event–item or participant predicates; later cases may introduce specific predicates they prove necessary.
-- Use `moved_item`, `moved_from`, `moved_to`, `carried_out_by` and `transferred_to` only with the narrow meanings established by the Mamari case.
+- Use `moved_item`, `moved_from`, `moved_to`, `carried_out_by`, `transferred_from` and `transferred_to` only with the narrow meanings established by the provenance cases.
+- `held_item` identifies the item involved in a holding episode; `holding_agent` identifies the reported holder in that episode.
+- `held_by` remains a direct current or undated custody claim on an item. Do not create a provenance event merely because an item has a current holder or current location.
 - Keep source wording in `described_as`, but do not leave an origin, destination, active agent or recipient only in prose when the source supports a structured claim.
 - Distinguish event location from institutional recipient: for example, `occurred_at → Paris` and `transferred_to → Missionary Museum` answer different questions.
 - Do not infer collection events from arrival events. Arrival in a country, city, or institution does not establish where or when an object was collected.
 - Preserve institutional uncertainty through claim evidence relationships such as `qualifies`; do not convert uncertainty into confidence scores.
 - An organisation may separately have a sourced `located_at` claim. Do not infer a historical event location from an organisation's current or undated location claim.
 - Event details remain ordinary `knowledge.claim` rows. Explorer labels are projections of claims and should link back to claim identity, status, attribution and evidence.
-- When several claims about one event are reported together, retain each atomic claim and attach its own evidence. Claims sharing an exact `source_id + locator + excerpt` tuple with a non-empty excerpt may be grouped in the explorer.
-- Evidence-context grouping is a display convention, not a stable source-statement, account, evidence-unit or claim-group identity. Claims remain independently attributable and reviewable.
-- Use one event anchor when the evidence explicitly presents alternative details for the same occurrence. Use separate provisional events when it is unresolved whether sources describe the same occurrence.
+- Create one provisional event anchor for each source-reported account or explicitly paired alternative account. Merge event anchors only when the project is sufficiently confident that the claims describe one occurrence.
+- Unresolved accounts remain separate provisional events. Do not infer that two provisional events represent the same historical occurrence.
 - Do not infer ownership, title, legality, authority or consent from a transfer or relocation event.
 
 ## Evidence relationships
