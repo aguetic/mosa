@@ -55,6 +55,11 @@ async function verifyDatabase(): Promise<void> {
     ["test", "db", "supabase/tests/database/phase-2-la-serena-moai.test.sql", "--local"],
     { cwd: projectRoot },
   );
+  await runCommand(
+    supabase,
+    ["test", "db", "supabase/tests/database/phase-2-benin-ama.test.sql", "--local"],
+    { cwd: projectRoot },
+  );
 }
 
 async function main(): Promise<void> {

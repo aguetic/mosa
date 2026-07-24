@@ -53,6 +53,7 @@ An event is also an `entities.entity` row with `entity_type = 'event'`. Phase 2 
 - Case 06: Te Papa moai kavakava provenance
 - Case 07: Hoa Hakananaiʻa provenance
 - Case 08: La Serena moai provenance
+- Case 09: Benin Ama provenance
 
 The first vertical slice represents two unresolved early accounts, two separate provisional Paris deposit accounts, and a later sequence of institutional relocations while keeping one stable Mamari item identity. Each Paris account distinguishes `occurred_at → Paris` from `transferred_to → Missionary Museum`. The Mamari case introduces the predicates its competency questions require: `moved_item`, `moved_from`, `moved_to`, `carried_out_by` and `transferred_to`.
 
@@ -63,6 +64,8 @@ Case 07 extends Phase 2 with one well-attested removal event that carries instit
 Case 07 also distinguishes production place, findspot, movement origin and current location. Source qualification of `made_at → Rano Kao` is represented through `qualifies` evidence rather than a qualification-specific predicate. Item pages project reported production and current recorded state ahead of findspot and the provenance-event sequence, with readable source labels and inline qualification wording.
 
 Case 08 extends Phase 2 with a sparse provisional relocation: year-level `occurred_during`, `moved_item`, and an indirectly evidenced `described_as` gift characterisation with no asserting agent. It does not invent origin, destination, participants or a “Rapa Nui people” agent. Later museum custody remains a direct item state. Explorer presentation leads with positively recorded movement facts and source wording, using at most one incompleteness notice for unrecorded route and participants.
+
+Case 09 tests a documented military removal followed by government custody, a possible temporary institutional loan and a later gift. Direct object-level claims remain distinct from collection-level contextual evidence. The case does not create a canonical stolen status or reintroduce explicit event-chain ordering.
 
 ## Deferred
 
