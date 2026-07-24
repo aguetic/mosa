@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { readFile, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { runCommand } from "./lib/run-command";
-import { getSupabaseExecutable } from "./lib/supabase-local";
+import { getLocalDatabaseUrl, getSupabaseExecutable } from "./lib/supabase-local";
 
 const projectRoot = path.resolve(__dirname, "..");
 const outputPath = path.join(projectRoot, "src/lib/database.types.ts");
@@ -12,10 +12,23 @@ function normalizeGeneratedTypes(output: string): string {
 }
 
 async function generateDatabaseTypes(): Promise<string> {
-  const supabase = getSupabaseExecutable();
+  const supabase = getSupabaseExecutable(projectRoot);
+  const databaseUrl = await getLocalDatabaseUrl(projectRoot);
   const output = await runCommand(
     supabase,
-    ["gen", "types", "typescript", "--local", "--schema", "entities", "--schema", "knowledge"],
+    [
+      "gen",
+      "types",
+      "typescript",
+      "--db-url",
+      databaseUrl,
+      "--schema",
+      "entities",
+      "--schema",
+      "knowledge",
+      "--schema",
+      "provenance",
+    ],
     {
       cwd: projectRoot,
       captureOutput: true,

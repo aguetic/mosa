@@ -1,8 +1,8 @@
-# MoSA Phase 1 explorer
+# MoSA research explorer
 
-A local, read-only Astro interface for visually inspecting the synthetic Phase 1 database fixtures while the model is being developed.
+A local, read-only Astro interface for visually inspecting the synthetic Phase 1 and Phase 2 database fixtures while the model is being developed.
 
-It is intentionally not an authoring interface. It does not provide authentication, entity creation, claim creation, evidence entry, editing, deletion, import, provenance, restitution, publication, or workflow controls.
+It is intentionally not an authoring interface. It does not provide authentication, entity creation, claim creation, evidence entry, editing, deletion, import, restitution, publication, or workflow controls. It can inspect Phase 2 provenance events but cannot create or edit them.
 
 ## Run locally
 
@@ -20,6 +20,8 @@ The app defaults to the standard local Supabase PostgreSQL URL. Override it by c
 
 ## Views
 
-- `/` searches entities by working label or external identifier.
+- `/` searches entities by derived display label, `has_name` values, external identifiers, or source references.
 - `/entities/:id` shows subtype data, identifiers, outgoing claims, incoming claims, and evidence summaries.
 - `/claims/:id` shows one claim and all attached evidence.
+- `/events/:id` shows one provenance event and its attributed statements.
+- Item pages show sourced provenance events ordered by reported date.

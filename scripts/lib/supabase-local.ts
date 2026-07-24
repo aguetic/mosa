@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { runCommand } from "./run-command";
 
 const DATABASE_URL_ENV_KEYS = ["LOCAL_DATABASE_URL", "SUPABASE_DB_URL"] as const;
@@ -33,9 +35,19 @@ export function parseEnvironmentOutput(output: string): Map<string, string> {
   return values;
 }
 
-export function getSupabaseExecutable(): string {
+export function getSupabaseExecutable(projectRoot = process.cwd()): string {
   if (process.env.SUPABASE_BIN) {
     return process.env.SUPABASE_BIN;
+  }
+
+  const localBinary = path.join(
+    projectRoot,
+    "node_modules",
+    ".bin",
+    process.platform === "win32" ? "supabase.cmd" : "supabase",
+  );
+  if (existsSync(localBinary)) {
+    return localBinary;
   }
 
   return process.platform === "win32" ? "supabase.cmd" : "supabase";
@@ -49,10 +61,14 @@ export async function getLocalDatabaseUrl(projectRoot: string): Promise<string> 
     }
   }
 
-  const output = await runCommand(getSupabaseExecutable(), ["status", "--output", "env"], {
-    cwd: projectRoot,
-    captureOutput: true,
-  });
+  const output = await runCommand(
+    getSupabaseExecutable(projectRoot),
+    ["status", "--output", "env"],
+    {
+      cwd: projectRoot,
+      captureOutput: true,
+    },
+  );
 
   const values = parseEnvironmentOutput(output);
   const databaseUrl = values.get("DB_URL");

@@ -30,6 +30,13 @@ export type Database = {
             referencedRelation: "entity"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "agent_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "entity_display"
+            referencedColumns: ["id"]
+          },
         ]
       }
       entity: {
@@ -38,30 +45,24 @@ export type Database = {
           created_by: string | null
           entity_type: string
           id: string
-          notes: string | null
           updated_at: string
           updated_by: string | null
-          working_label: string
         }
         Insert: {
           created_at?: string
           created_by?: string | null
           entity_type: string
           id?: string
-          notes?: string | null
           updated_at?: string
           updated_by?: string | null
-          working_label: string
         }
         Update: {
           created_at?: string
           created_by?: string | null
           entity_type?: string
           id?: string
-          notes?: string | null
           updated_at?: string
           updated_by?: string | null
-          working_label?: string
         }
         Relationships: []
       }
@@ -99,6 +100,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "external_identifier_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entity_display"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "external_identifier_source_id_fkey"
             columns: ["source_id"]
             isOneToOne: false
@@ -128,6 +136,13 @@ export type Database = {
             referencedRelation: "entity"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "item_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "entity_display"
+            referencedColumns: ["id"]
+          },
         ]
       }
       place: {
@@ -149,6 +164,13 @@ export type Database = {
             columns: ["id"]
             isOneToOne: true
             referencedRelation: "entity"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "place_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "entity_display"
             referencedColumns: ["id"]
           },
         ]
@@ -180,46 +202,47 @@ export type Database = {
             referencedRelation: "entity"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "source_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "entity_display"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      entity_display: {
+        Row: {
+          display_label: string | null
+          display_label_basis: string | null
+          display_label_claim_id: string | null
+          entity_type: string | null
+          id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      create_agent: {
-        Args: {
-          p_agent_kind?: string
-          p_notes?: string
-          p_working_label: string
-        }
-        Returns: string
-      }
-      create_item: {
-        Args: {
-          p_item_kind?: string
-          p_notes?: string
-          p_working_label: string
-        }
-        Returns: string
-      }
-      create_place: {
-        Args: {
-          p_notes?: string
-          p_place_kind?: string
-          p_working_label: string
-        }
-        Returns: string
-      }
+      create_agent: { Args: { p_agent_kind?: string }; Returns: string }
+      create_item: { Args: { p_item_kind?: string }; Returns: string }
+      create_place: { Args: { p_place_kind?: string }; Returns: string }
       create_source: {
         Args: {
-          p_notes?: string
           p_reference?: string
           p_retrieved_at?: string
           p_source_kind: string
-          p_working_label: string
         }
         Returns: string
+      }
+      entity_display_label: {
+        Args: { p_entity_id: string }
+        Returns: {
+          display_label: string
+          display_label_basis: string
+          display_label_claim_id: string
+        }[]
       }
     }
     Enums: {
@@ -443,6 +466,37 @@ export type Database = {
       [_ in never]: never
     }
   }
+  provenance: {
+    Tables: {
+      event: {
+        Row: {
+          event_kind: string
+          id: string
+        }
+        Insert: {
+          event_kind: string
+          id: string
+        }
+        Update: {
+          event_kind?: string
+          id?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      create_event: { Args: { p_event_kind?: string }; Returns: string }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
@@ -567,6 +621,9 @@ export const Constants = {
     Enums: {},
   },
   knowledge: {
+    Enums: {},
+  },
+  provenance: {
     Enums: {},
   },
 } as const

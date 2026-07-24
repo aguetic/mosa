@@ -4,14 +4,22 @@ import { type ExternalIdentifier, parseIdentifiers } from "./values";
 
 export type { ExternalIdentifier };
 
-export const ENTITY_TYPES = ["item", "agent", "place", "source"] as const;
+export const ENTITY_TYPES = ["item", "agent", "place", "source", "event"] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
+
+export type DisplayLabelBasis =
+  | "has_name"
+  | "external_identifier"
+  | "source_reference"
+  | "event_summary"
+  | "entity_id";
 
 export interface EntitySummary {
   id: string;
   entityType: EntityType;
-  workingLabel: string;
-  notes: string | null;
+  displayLabel: string;
+  displayLabelBasis: DisplayLabelBasis;
+  displayLabelClaimId: string | null;
   subtypeKind: string | null;
   identifiers: ExternalIdentifier[];
 }
@@ -41,6 +49,7 @@ export interface ClaimDetail {
   objectEntityId: string | null;
   objectEntityLabel: string | null;
   objectEntityType: EntityType | null;
+  objectPlaceKind: string | null;
   literalValue: unknown;
   literalDisplayValue: string | null;
   literalLanguage: string | null;
@@ -56,8 +65,9 @@ export interface ClaimDetail {
 interface EntityRow extends QueryResultRow {
   id: string;
   entity_type: EntityType;
-  working_label: string;
-  notes: string | null;
+  display_label: string;
+  display_label_basis: DisplayLabelBasis;
+  display_label_claim_id: string | null;
   subtype_kind: string | null;
   reference?: string | null;
   retrieved_at?: Date | string | null;
@@ -74,6 +84,7 @@ interface ClaimRow extends QueryResultRow {
   object_entity_id: string | null;
   object_entity_label: string | null;
   object_entity_type: EntityType | null;
+  object_place_kind: string | null;
   literal_value: unknown;
   literal_display_value: string | null;
   literal_language: string | null;
@@ -100,8 +111,9 @@ function toEntitySummary(row: EntityRow): EntitySummary {
   return {
     id: row.id,
     entityType: row.entity_type,
-    workingLabel: row.working_label,
-    notes: row.notes,
+    displayLabel: row.display_label,
+    displayLabelBasis: row.display_label_basis,
+    displayLabelClaimId: row.display_label_claim_id,
     subtypeKind: row.subtype_kind,
     identifiers: parseIdentifiers(row.identifiers),
   };
@@ -133,6 +145,7 @@ function toClaim(
     objectEntityId: row.object_entity_id,
     objectEntityLabel: row.object_entity_label,
     objectEntityType: row.object_entity_type,
+    objectPlaceKind: row.object_place_kind,
     literalValue: row.literal_value,
     literalDisplayValue: row.literal_display_value,
     literalLanguage: row.literal_language,
@@ -150,35 +163,39 @@ const ENTITY_SELECT = `
   select
       e.id::text,
       e.entity_type,
-      e.working_label,
-      e.notes,
+      display.display_label,
+      display.display_label_basis,
+      display.display_label_claim_id::text,
       case e.entity_type
           when 'item' then i.item_kind
           when 'agent' then a.agent_kind
           when 'place' then p.place_kind
           when 'source' then s.source_kind
+          when 'event' then event.event_kind
       end as subtype_kind,
       s.reference,
       s.retrieved_at,
       coalesce(ids.identifiers, '[]'::jsonb) as identifiers
   from entities.entity as e
+  join entities.entity_display as display on display.id = e.id
   left join entities.item as i on i.id = e.id
   left join entities.agent as a on a.id = e.id
   left join entities.place as p on p.id = e.id
   left join entities.source as s on s.id = e.id
+  left join provenance.event as event on event.id = e.id
   left join lateral (
       select jsonb_agg(
           jsonb_build_object(
               'namespace', identifier.namespace,
               'value', identifier.value,
               'source_id', identifier.source_id,
-              'source_label', identifier_source.working_label
+              'source_label', identifier_source_display.display_label
           )
           order by identifier.namespace, identifier.value
       ) as identifiers
       from entities.external_identifier as identifier
-      left join entities.entity as identifier_source
-          on identifier_source.id = identifier.source_id
+      left join entities.entity_display as identifier_source_display
+          on identifier_source_display.id = identifier.source_id
       where identifier.entity_id = e.id
   ) as ids on true
 `;
@@ -191,7 +208,15 @@ export async function searchEntities(
     `${ENTITY_SELECT}
      where (
          $1::text = ''
-         or strpos(lower(e.working_label), lower($1)) > 0
+         or strpos(lower(display.display_label), lower($1)) > 0
+         or exists (
+             select 1
+             from knowledge.claim as name_claim
+             where name_claim.subject_id = e.id
+               and name_claim.predicate = 'has_name'
+               and name_claim.status = 'active'
+               and strpos(lower(coalesce(name_claim.literal_value ->> 'value', '')), lower($1)) > 0
+         )
          or exists (
              select 1
              from entities.external_identifier as search_identifier
@@ -201,9 +226,14 @@ export async function searchEntities(
                    or strpos(lower(search_identifier.namespace), lower($1)) > 0
                )
          )
+         or (
+             e.entity_type = 'source'
+             and s.reference is not null
+             and strpos(lower(s.reference), lower($1)) > 0
+         )
      )
        and ($2::text is null or e.entity_type = $2)
-     order by e.working_label, e.id
+     order by display.display_label, e.id
      limit 100`,
     [searchText.trim(), entityType],
   );
@@ -265,32 +295,35 @@ async function getEvidenceForClaims(
 
 const CLAIM_SELECT = `
   select
-      claim_id::text,
-      subject_id::text,
-      subject_label,
-      subject_type,
-      predicate,
-      value_kind,
-      object_entity_id::text,
-      object_entity_label,
-      object_entity_type,
-      literal_value,
-      literal_display_value,
-      literal_language,
-      asserted_by_agent_id::text,
-      asserted_by_label,
-      status,
-      supersedes_claim_id::text,
-      notes,
-      created_at
-  from knowledge.claim_details
+      details.claim_id::text,
+      details.subject_id::text,
+      details.subject_label,
+      details.subject_type,
+      details.predicate,
+      details.value_kind,
+      details.object_entity_id::text,
+      details.object_entity_label,
+      details.object_entity_type,
+      place.place_kind as object_place_kind,
+      details.literal_value,
+      details.literal_display_value,
+      details.literal_language,
+      details.asserted_by_agent_id::text,
+      details.asserted_by_label,
+      details.status,
+      details.supersedes_claim_id::text,
+      details.notes,
+      details.created_at
+  from knowledge.claim_details as details
+  left join entities.place as place
+    on place.id = details.object_entity_id
 `;
 
 export async function getClaimsForEntity(id: string): Promise<ClaimDetail[]> {
   const rows = await query<ClaimRow>(
     `${CLAIM_SELECT}
-     where subject_id = $1::uuid or object_entity_id = $1::uuid
-     order by created_at, claim_id`,
+     where details.subject_id = $1::uuid or details.object_entity_id = $1::uuid
+     order by details.created_at, details.claim_id`,
     [id],
   );
   const evidenceByClaim = await getEvidenceForClaims(rows.map((row) => row.claim_id));
@@ -301,7 +334,7 @@ export async function getClaimsForEntity(id: string): Promise<ClaimDetail[]> {
 export async function getClaim(id: string): Promise<ClaimDetail | null> {
   const rows = await query<ClaimRow>(
     `${CLAIM_SELECT}
-     where claim_id = $1::uuid`,
+     where details.claim_id = $1::uuid`,
     [id],
   );
   const row = rows[0];

@@ -1,0 +1,62 @@
+---
+import type { ProvenanceEvent } from "../lib/provenance";
+import { summarizeProvenanceEvent } from "../lib/provenance-presentation";
+
+interface Props {
+  event: ProvenanceEvent;
+}
+
+const { event } = Astro.props;
+const summary = summarizeProvenanceEvent(event);
+---
+
+<article class="claim-card">
+  <div class="claim-card__top">
+    <p class="eyebrow">{summary.dateLabel}</p>
+    <h3><a href={`/events/${summary.eventId}`}>{summary.title}</a></h3>
+  </div>
+
+  {
+    summary.summaryText && <p class="lede">{summary.summaryText}</p>
+  }
+
+  {
+    summary.facts.length > 0 && (
+      <dl class="metadata">
+        {summary.facts.map((fact) => (
+          <div>
+            <dt>{fact.label}</dt>
+            <dd>
+              {fact.href ? <a href={fact.href}>{fact.value}</a> : <span>{fact.value}</span>}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+
+  {
+    summary.notices.length > 0 && (
+      <ul class="evidence-list">
+        {summary.notices.map((notice) => (
+          <li>{notice}</li>
+        ))}
+      </ul>
+    )
+  }
+
+  {
+    summary.sources.length > 0 && (
+      <p class="claim-meta">
+        {summary.sources.map((source, index) => (
+          <>
+            {index > 0 ? " · " : ""}
+            <a href={`/entities/${source.id}`}>{source.label}</a>
+          </>
+        ))}
+      </p>
+    )
+  }
+
+  <p class="claim-meta"><a href={`/events/${summary.eventId}`}>View event</a></p>
+</article>
