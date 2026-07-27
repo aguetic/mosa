@@ -483,9 +483,7 @@ describe("summarizeProvenanceEvent dates and notices", () => {
 
     expect(summary.title).toBe("Reported movement of La Serena moai");
     expect(summary.dateLabel).toBe("1952");
-    expect(summary.summaryText).toBe(
-      "Paula Rossetti's note reports that the item “fue llevado en 1952”.",
-    );
+    expect(summary.summaryText).toBe("According to Paula Rossetti's note: “fue llevado en 1952”.");
     expect(summary.notices).toEqual([
       "Source wording: “se dice que fue un regalo del pueblo Rapa Nui”",
       ROUTE_AND_PARTICIPANTS_NOT_RECORDED,

@@ -420,7 +420,7 @@ export function sparseMovementSummaryText(event: ProvenanceEvent): string | null
   const excerpt = evidence?.excerpt?.trim() || null;
 
   if (sourceLabel && excerpt) {
-    return `${sourceLabel} reports that the item “${excerpt}”.`;
+    return `According to ${sourceLabel}: “${excerpt}”.`;
   }
 
   if (sourceLabel) {
