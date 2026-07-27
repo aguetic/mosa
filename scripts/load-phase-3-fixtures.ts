@@ -10,6 +10,12 @@ const aberdeenFixturePath = path.join(
   "fixtures",
   "phase-3-aberdeen-head.sql",
 );
+const hoaFixturePath = path.join(
+  projectRoot,
+  "supabase",
+  "fixtures",
+  "phase-3-hoa-hakananai-a.sql",
+);
 
 async function loadFixtureSql(fixturePath: string, label: string): Promise<void> {
   const [databaseUrl, fixtureSql] = await Promise.all([
@@ -37,8 +43,13 @@ export async function loadPhase3AberdeenHead(): Promise<void> {
   await loadFixtureSql(aberdeenFixturePath, "Phase 3 Aberdeen Head restitution fixture");
 }
 
+export async function loadPhase3HoaHakananaia(): Promise<void> {
+  await loadFixtureSql(hoaFixturePath, "Phase 3 Hoa Hakananaiʻa restitution fixture");
+}
+
 export async function loadPhase3Fixtures(): Promise<void> {
   await loadPhase3AberdeenHead();
+  await loadPhase3HoaHakananaia();
 }
 
 async function main(): Promise<void> {
