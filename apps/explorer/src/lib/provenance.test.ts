@@ -3,6 +3,7 @@ import type { ProvenanceEvent, ProvenanceStatement } from "./provenance";
 import {
   generateProvenanceEventTitle,
   orderProvenanceEvents,
+  partitionProvenanceEvents,
   provenanceEventDetailView,
   provenanceStatementValue,
   REPORTED_MOVEMENT_ACTION,
@@ -648,5 +649,26 @@ describe("orderProvenanceEvents", () => {
       "Arrival in England",
       "Arrival in England",
     ]);
+  });
+});
+
+describe("partitionProvenanceEvents", () => {
+  it("separates undated events from the dated sequence", () => {
+    const undated = event("u", [entityStatement("holding_agent", "a", "Oldman Collection")]);
+    const dated = event("d", [
+      statement({
+        predicate: "occurred_during",
+        literalValue: {
+          earliest: "1870",
+          latest: "1870",
+          verbatim: "1870",
+          interpretation: "exact",
+        },
+      }),
+    ]);
+
+    const groups = partitionProvenanceEvents([undated, dated]);
+    expect(groups.dated.map(({ id }) => id)).toEqual(["d"]);
+    expect(groups.undated.map(({ id }) => id)).toEqual(["u"]);
   });
 });

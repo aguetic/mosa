@@ -8,6 +8,7 @@ import { itemPageView } from "../../lib/object-presentation";
 import { buildItemSummary } from "../../lib/object-summary";
 import { formatDate, isHttpReference } from "../../lib/presentation";
 import { getProvenanceEventsForItem, type ProvenanceEvent } from "../../lib/provenance";
+import { partitionProvenanceEvents } from "../../lib/provenance-presentation";
 import {
   type ClaimDetail,
   type EntityDetail,
@@ -63,6 +64,8 @@ const itemSummary =
       })
     : null;
 const itemView = itemSummary ? itemPageView(itemSummary) : null;
+
+const provenanceGroups = partitionProvenanceEvents(provenanceEvents);
 
 const outgoingClaims = entity
   ? claims.filter((claim) => claim.subjectId === entity?.id)
@@ -246,11 +249,26 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
               {provenanceEvents.length === 0 ? (
                 <div class="empty">{itemView.provenanceEmptyText}</div>
               ) : (
-                <section class="claims" aria-label="Provenance events">
-                  {provenanceEvents.map((event) => (
-                    <ProvenanceEventSummaryCard event={event} />
-                  ))}
-                </section>
+                <>
+                  {provenanceGroups.dated.length > 0 && (
+                    <section class="claims" aria-label="Provenance events">
+                      {provenanceGroups.dated.map((event) => (
+                        <ProvenanceEventSummaryCard event={event} />
+                      ))}
+                    </section>
+                  )}
+                  {provenanceGroups.undated.length > 0 && (
+                    <>
+                      <h3>Events without a recorded date</h3>
+                      <p class="lede">Their position in the sequence is not recorded.</p>
+                      <section class="claims" aria-label="Undated provenance events">
+                        {provenanceGroups.undated.map((event) => (
+                          <ProvenanceEventSummaryCard event={event} />
+                        ))}
+                      </section>
+                    </>
+                  )}
+                </>
               )}
 
               {restitutionCases.length > 0 && (

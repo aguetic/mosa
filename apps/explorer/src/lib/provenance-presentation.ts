@@ -687,6 +687,20 @@ export function summarizeProvenanceEvent(event: ProvenanceEvent): ProvenanceEven
   };
 }
 
+export function partitionProvenanceEvents(events: readonly ProvenanceEvent[]): {
+  dated: ProvenanceEvent[];
+  undated: ProvenanceEvent[];
+} {
+  const ordered = orderProvenanceEvents(events);
+  const isDated = (event: ProvenanceEvent) =>
+    summarizeProvenanceDate(event.statements).category === "dated";
+
+  return {
+    dated: ordered.filter(isDated),
+    undated: ordered.filter((event) => !isDated(event)),
+  };
+}
+
 export function orderProvenanceEvents(events: readonly ProvenanceEvent[]): ProvenanceEvent[] {
   return [...events].sort((left, right) => {
     const leftDate = summarizeProvenanceDate(left.statements);
