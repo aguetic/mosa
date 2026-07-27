@@ -90,16 +90,18 @@ const { title } = Astro.props;
       button { cursor: pointer; border-color: var(--accent); color: white; background: var(--accent); font-weight: 700; }
       button:hover { filter: brightness(0.94); }
 
-      .results, .claims { display: grid; gap: 0.8rem; }
-      .result-card, .claim-card { padding: 1rem 1.1rem; }
+      .results, .claims { display: grid; gap: 0.55rem; }
+      .result-card { padding: 0.65rem 0.9rem; }
+      .claim-card { padding: 1rem 1.1rem; }
       .result-card__top, .claim-card__top {
         display: flex;
         justify-content: space-between;
         gap: 1rem;
         align-items: start;
       }
-      .result-card h2, .claim-card h3 { margin: 0; font-size: 1.05rem; }
-      .result-card h2 a, .claim-card h3 a { color: inherit; }
+      .result-card h3, .claim-card h3 { margin: 0; font-size: 1.05rem; }
+      .result-card h3 a, .claim-card h3 a { color: inherit; }
+      .pagination { display: flex; gap: 1rem; align-items: center; margin-top: 2rem; }
       .badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
       .badge {
         display: inline-flex;
@@ -124,6 +126,7 @@ const { title } = Astro.props;
       .claim-meta { margin: 0.75rem 0 0; color: var(--ink-muted); font-size: 0.86rem; }
       .evidence-list { margin: 0.8rem 0 0; padding-left: 1.2rem; color: var(--ink-muted); font-size: 0.86rem; }
       .evidence-list li + li { margin-top: 0.45rem; }
+      .result-card .claim-meta, .result-card .identifier-list { margin-top: 0.3rem; }
 
       .empty { padding: 1.2rem; border: 1px dashed #aaa497; border-radius: 0.65rem; color: var(--ink-muted); }
       .literal { white-space: pre-wrap; overflow-wrap: anywhere; }

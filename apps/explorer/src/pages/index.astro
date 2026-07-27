@@ -1,10 +1,13 @@
 ---
 import RestitutionCaseSummaryCard from "../components/RestitutionCaseSummaryCard.astro";
 import Layout from "../layouts/Layout.astro";
+import { formatLiteralValue } from "../lib/presentation";
 import {
   ENTITY_TYPES,
   type EntitySummary,
+  type EntityType,
   isEntityType,
+  SEARCH_PAGE_SIZE,
   searchEntities,
 } from "../lib/queries";
 import { type RestitutionCaseSummary, searchRestitutionCases } from "../lib/restitution";
@@ -12,31 +15,66 @@ import { type RestitutionCaseSummary, searchRestitutionCases } from "../lib/rest
 const searchText = Astro.url.searchParams.get("q")?.trim() ?? "";
 const requestedType = Astro.url.searchParams.get("type") ?? "";
 const entityType = isEntityType(requestedType) ? requestedType : null;
+const requestedPage = Number(Astro.url.searchParams.get("page") ?? "1");
+const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
 let entities: EntitySummary[] = [];
+let totalCount = 0;
 let restitutionCases: RestitutionCaseSummary[] = [];
 let loadFailed = false;
 
 const entityHref = (entity: EntitySummary): string =>
   entity.entityType === "event" ? `/events/${entity.id}` : `/entities/${entity.id}`;
 
+const GROUP_LABELS: Record<EntityType, string> = {
+  item: "Items",
+  agent: "Agents",
+  place: "Places",
+  source: "Sources",
+  event: "Events",
+};
+
 try {
-  [entities, restitutionCases] = await Promise.all([
-    searchEntities(searchText, entityType),
-    entityType === null ? searchRestitutionCases(searchText) : Promise.resolve([]),
+  const [searchResult, caseResults] = await Promise.all([
+    searchEntities(searchText, entityType, page),
+    entityType === null && page === 1
+      ? searchRestitutionCases(searchText)
+      : Promise.resolve([]),
   ]);
+  entities = searchResult.entities;
+  totalCount = searchResult.totalCount;
+  restitutionCases = caseResults;
 } catch (error) {
   loadFailed = true;
   console.error("Unable to load entities", error);
 }
+
+const groups = ENTITY_TYPES.map((type) => ({
+  type,
+  label: GROUP_LABELS[type],
+  entities: entities.filter((entity) => entity.entityType === type),
+})).filter((group) => group.entities.length > 0);
+
+const totalPages = Math.max(1, Math.ceil(totalCount / SEARCH_PAGE_SIZE));
+const pageHref = (target: number): string => {
+  const params = new URLSearchParams();
+  if (searchText) params.set("q", searchText);
+  if (entityType) params.set("type", entityType);
+  if (target > 1) params.set("page", String(target));
+  const queryString = params.toString();
+  return queryString ? `/?${queryString}` : "/";
+};
+
+const resultCount = totalCount + (page === 1 ? restitutionCases.length : 0);
 ---
 
-<Layout title="Entities">
+<Layout title="Search">
   <p class="eyebrow">Model inspection</p>
   <h1>Explore the current model</h1>
   <p class="lede">
-    Search the current synthetic entities and provenance events, then follow their claims,
-    attribution, relationships, and evidence. This interface does not modify the database.
+    Search the current synthetic entities, provenance events and restitution cases, then follow
+    their claims, attribution, relationships, and evidence. This interface does not modify the
+    database.
   </p>
 
   <form class="search-form" method="get" action="/">
@@ -62,9 +100,14 @@ try {
       </div>
     ) : (
       <>
+        <p class="muted">
+          Showing {resultCount} {resultCount === 1 ? "result" : "results"}
+          {totalPages > 1 ? ` (page ${page} of ${totalPages})` : ""}.
+        </p>
+
         {restitutionCases.length > 0 && (
           <>
-            <h2>Restitution cases</h2>
+            <h2>Restitution cases <span class="muted">({restitutionCases.length})</span></h2>
             <section class="claims" aria-label="Restitution case results">
               {restitutionCases.map((restitutionCase) => (
                 <RestitutionCaseSummaryCard restitutionCase={restitutionCase} />
@@ -72,38 +115,51 @@ try {
             </section>
           </>
         )}
-        <p class="muted">
-          Showing {entities.length} {entities.length === 1 ? "entity" : "entities"}
-          {entities.length === 100 ? " (result limit reached)" : ""}.
-        </p>
-        <section class="results" aria-label="Entity results">
-          {
-            entities.length === 0 ? (
-              <div class="empty">No entities match this search.</div>
-            ) : (
-              entities.map((entity) => (
-                <article class="result-card">
-                  <div class="result-card__top">
-                    <h2><a href={entityHref(entity)}>{entity.displayLabel}</a></h2>
-                    <div class="badges">
-                      <span class="badge">{entity.entityType}</span>
-                      {entity.subtypeKind && <span class="badge">{entity.subtypeKind}</span>}
+
+        {entities.length === 0 && restitutionCases.length === 0 ? (
+          <div class="empty">
+            No records match this search. Check the spelling, try fewer or shorter words, or
+            clear the entity type filter.
+          </div>
+        ) : (
+          groups.map((group) => (
+            <>
+              <h2>{group.label} <span class="muted">({group.entities.length})</span></h2>
+              <section class="results" aria-label={`${group.label} results`}>
+                {group.entities.map((entity) => (
+                  <article class="result-card">
+                    <div class="result-card__top">
+                      <h3><a href={entityHref(entity)}>{entity.displayLabel}</a></h3>
+                      <div class="badges">
+                        {entity.subtypeKind && <span class="badge">{entity.subtypeKind}</span>}
+                      </div>
                     </div>
-                  </div>
-                  {
-                    entity.identifiers.length > 0 && (
+                    {entity.entityType === "event" && (
+                      <p class="claim-meta">
+                        {formatLiteralValue(entity.eventDate) ?? "Date not recorded"}
+                      </p>
+                    )}
+                    {entity.identifiers.length > 0 && (
                       <ul class="identifier-list">
                         {entity.identifiers.map((identifier) => (
                           <li><code>{identifier.namespace}:{identifier.value}</code></li>
                         ))}
                       </ul>
-                    )
-                  }
-                </article>
-              ))
-            )
-          }
-        </section>
+                    )}
+                  </article>
+                ))}
+              </section>
+            </>
+          ))
+        )}
+
+        {totalPages > 1 && (
+          <nav class="pagination" aria-label="Search result pages">
+            {page > 1 && <a href={pageHref(page - 1)}>← Previous</a>}
+            <span class="muted">Page {page} of {totalPages}</span>
+            {page < totalPages && <a href={pageHref(page + 1)}>Next →</a>}
+          </nav>
+        )}
       </>
     )
   }
