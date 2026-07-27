@@ -203,20 +203,20 @@ Closure is an internal MoSA workflow state. It does not need to reproduce langua
 
 ## Documents
 
-Associate at least these public records with the case:
+Associate at least these public records with the case. Every document is a case-level record; action links are optional and many-to-many.
 
 1. University of Aberdeen, `Benin bronze to return`, 25 March 2021.
    - document role: institutional decision announcement;
-   - associated action: decision recorded.
+   - related actions: recommendation and decision.
 2. Museums Galleries Scotland, `Returning a Benin Bronze to its rightful place: Benin City`.
    - document role: process account;
-   - associated with the case.
+   - related actions: outreach, request, recommendation, decision and both handovers.
 3. A record of the October 2021 handover.
    - document role: handover record;
-   - associated action: handover in Aberdeen.
+   - related action: handover in Aberdeen.
 4. A record of the February 2022 palace handover.
    - document role: handover record;
-   - associated action: handover at the Oba's palace.
+   - related action: handover at the Oba's palace.
 
 These records are case documents, not `knowledge.claim_evidence` rows.
 
@@ -279,19 +279,17 @@ The fixture must not infer:
 
 ## Explorer expectation
 
-The item page should list this case under a restitution section.
+The item page should list this case under a restitution section with title, reference, status and a link to the case. It should not narrate the process or count actions.
 
-The case page should show:
+The case page should begin with title, reference, closed status and the concerned item, then show:
 
-- title and reference;
-- closed status;
-- concerned item;
 - parties grouped by role;
 - a dated action history;
 - two distinct handovers;
-- associated documents.
+- related documents beneath their actions;
+- any remaining case-level documents without action links.
 
-The display may use `Completed return process` as interface wording only if it is clearly an operational projection from the closed case and recorded handovers. It must not display `rightful owner`, `valid claim` or similar judgments.
+The interface must not display a free-text case summary, `rightful owner`, `valid claim` or similar judgments.
 
 ## Source basis
 

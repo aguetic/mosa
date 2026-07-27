@@ -237,21 +237,14 @@ The Hoa Hakananaiʻa item page should expose separate sections for:
 - provenance;
 - restitution cases.
 
-The restitution case page should show:
+The restitution case page should begin with title, reference, open status and Hoa as the concerned item, then show:
 
-- title and reference;
-- open status;
-- Hoa as the concerned item;
 - three requesting organisations;
 - the British Museum as respondent;
 - request and engagement history;
 - associated documents.
 
-A suitable summary is:
-
-> Request recorded; subsequent engagement recorded; no decision or handover recorded.
-
-The interface must not label the case `denied`, `approved`, `successful`, `failed` or `completed`.
+The interface must not invent a free-text case summary. Absence of decision or handover must be visible from the recorded actions. The interface must not label the case `denied`, `approved`, `successful`, `failed` or `completed`.
 
 ## Source basis
 

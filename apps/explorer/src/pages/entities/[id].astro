@@ -1,6 +1,7 @@
 ---
 import ClaimCard from "../../components/ClaimCard.astro";
 import ProvenanceEventSummaryCard from "../../components/ProvenanceEventSummaryCard.astro";
+import RestitutionCaseSummaryCard from "../../components/RestitutionCaseSummaryCard.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate, isHttpReference, literalLabel } from "../../lib/presentation";
 import { getProvenanceEventsForItem, type ProvenanceEvent } from "../../lib/provenance";
@@ -10,20 +11,26 @@ import {
   getClaimsForEntity,
   getEntity,
 } from "../../lib/queries";
+import {
+  getRestitutionCasesForItem,
+  type RestitutionCaseSummary,
+} from "../../lib/restitution";
 import { isUuid } from "../../lib/values";
 
 const id = Astro.params.id ?? "";
 let entity: EntityDetail | null = null;
 let claims: ClaimDetail[] = [];
 let provenanceEvents: ProvenanceEvent[] = [];
+let restitutionCases: RestitutionCaseSummary[] = [];
 let loadFailed = false;
 
 if (isUuid(id)) {
   try {
-    [entity, claims, provenanceEvents] = await Promise.all([
+    [entity, claims, provenanceEvents, restitutionCases] = await Promise.all([
       getEntity(id),
       getClaimsForEntity(id),
       getProvenanceEventsForItem(id),
+      getRestitutionCasesForItem(id),
     ]);
   } catch (error) {
     loadFailed = true;
@@ -316,6 +323,19 @@ function sourceQualifications(claim: ClaimDetail): string[] {
               <section class="claims" aria-label="Provenance events">
                 {provenanceEvents.map((event) => (
                   <ProvenanceEventSummaryCard event={event} />
+                ))}
+              </section>
+            </>
+          )
+        }
+
+        {
+          entity.entityType === "item" && restitutionCases.length > 0 && (
+            <>
+              <h2>Restitution cases</h2>
+              <section class="claims" aria-label="Restitution cases">
+                {restitutionCases.map((restitutionCase) => (
+                  <RestitutionCaseSummaryCard restitutionCase={restitutionCase} />
                 ))}
               </section>
             </>

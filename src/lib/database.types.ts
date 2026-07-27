@@ -497,6 +497,305 @@ export type Database = {
       [_ in never]: never
     }
   }
+  restitution: {
+    Tables: {
+      action_document: {
+        Row: {
+          action_id: string
+          case_id: string
+          created_at: string
+          created_by: string | null
+          document_id: string
+          id: string
+          relationship: string | null
+        }
+        Insert: {
+          action_id: string
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          document_id: string
+          id?: string
+          relationship?: string | null
+        }
+        Update: {
+          action_id?: string
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          document_id?: string
+          id?: string
+          relationship?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_document_action_case_fkey"
+            columns: ["action_id", "case_id"]
+            isOneToOne: false
+            referencedRelation: "case_action"
+            referencedColumns: ["id", "case_id"]
+          },
+          {
+            foreignKeyName: "action_document_document_case_fkey"
+            columns: ["document_id", "case_id"]
+            isOneToOne: false
+            referencedRelation: "case_document"
+            referencedColumns: ["id", "case_id"]
+          },
+        ]
+      }
+      action_party: {
+        Row: {
+          action_id: string
+          agent_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          action_id: string
+          agent_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role: string
+        }
+        Update: {
+          action_id?: string
+          agent_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_party_case_action_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "case_action"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_action: {
+        Row: {
+          action_kind: string
+          case_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          occurred_end: string | null
+          occurred_precision: string | null
+          occurred_start: string | null
+          sequence_number: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          action_kind: string
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          occurred_end?: string | null
+          occurred_precision?: string | null
+          occurred_start?: string | null
+          sequence_number: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          action_kind?: string
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          occurred_end?: string | null
+          occurred_precision?: string | null
+          occurred_start?: string | null
+          sequence_number?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_action_case_record_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_record"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_document: {
+        Row: {
+          case_id: string
+          created_at: string
+          created_by: string | null
+          document_role: string
+          id: string
+          source_id: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          document_role: string
+          id?: string
+          source_id: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          document_role?: string
+          id?: string
+          source_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_document_case_record_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_record"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_item: {
+        Row: {
+          case_id: string
+          created_at: string
+          created_by: string | null
+          item_id: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          item_id: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_item_case_record_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_record"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_party: {
+        Row: {
+          agent_id: string
+          case_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          agent_id: string
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role: string
+        }
+        Update: {
+          agent_id?: string
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_party_case_record_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "case_record"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_record: {
+        Row: {
+          closed_end: string | null
+          closed_precision: string | null
+          closed_start: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          opened_end: string | null
+          opened_precision: string | null
+          opened_start: string | null
+          reference: string
+          status: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          closed_end?: string | null
+          closed_precision?: string | null
+          closed_start?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          opened_end?: string | null
+          opened_precision?: string | null
+          opened_start?: string | null
+          reference: string
+          status: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          closed_end?: string | null
+          closed_precision?: string | null
+          closed_start?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          opened_end?: string | null
+          opened_precision?: string | null
+          opened_start?: string | null
+          reference?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
@@ -624,6 +923,9 @@ export const Constants = {
     Enums: {},
   },
   provenance: {
+    Enums: {},
+  },
+  restitution: {
     Enums: {},
   },
 } as const

@@ -132,7 +132,7 @@ Phase 3 records request actions and their documents directly. It does not initia
 
 ### Case documents
 
-Documents are administrative records associated with a case and, optionally, with a particular action.
+Documents are administrative records associated with a case. They may also be linked to one or more actions through a separate association.
 
 Examples include:
 
@@ -145,19 +145,17 @@ Examples include:
 - a handover receipt;
 - a public institutional statement.
 
+A document may remain case-level only, for example a general process report. A document may also relate to several actions when one source covers recommendation and decision, or several stages of a process. Assigning each document to exactly one action would be arbitrary in those cases.
+
 A case document is not automatically claim evidence. Phase 3 may reuse an existing source or file identity rather than duplicating document content.
 
 ### Read-only exploration
 
-The first explorer slice should show:
+The item page should show only the existence of linked restitution cases: title, reference, operational status and a link to the case. It should not narrate process or summarise action counts.
 
-- case title and reference;
-- operational status;
-- concerned items;
-- parties grouped by role;
-- dated action history;
-- associated documents;
-- a clear absence of a recorded decision or handover when relevant.
+The case page should begin with minimal metadata — title, reference, status and concerned items — then move directly into parties and actions. Related documents appear beneath their actions; remaining case-level documents appear separately. Absence of a recorded decision or handover must remain visible from the action history.
+
+Do not store a free-text case summary or generic notes fields. Title identifies the case; actions and documents record what happened. A public or generated summary may later be derived as a presentation projection. A more specific annotation field can be added later when a test case identifies information that cannot otherwise be represented.
 
 The explorer must not describe a case as approved, denied, successful, rightful, illegitimate or complete unless the corresponding operational record exists.
 
@@ -170,7 +168,8 @@ The initial implementation is expected to pressure a small set of restitution-ow
 - `restitution.case_party`;
 - `restitution.case_action`;
 - `restitution.action_party`;
-- `restitution.case_document`.
+- `restitution.case_document`;
+- `restitution.action_document`.
 
 The exact columns and database API should be chosen by the competency tests. The following concepts must remain directly queryable:
 
@@ -179,7 +178,8 @@ The exact columns and database API should be chosen by the competency tests. The
 - party identities and roles;
 - action kind, description and date;
 - action participants and roles;
-- document identity and relationship to the case or action.
+- document identity at case level;
+- optional many-to-many links from documents to actions.
 
 Restitution cases and actions are not required to be `entities.entity` rows in the initial slice.
 

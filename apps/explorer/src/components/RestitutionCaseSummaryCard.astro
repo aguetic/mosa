@@ -1,0 +1,23 @@
+---
+import type { RestitutionCaseSummary } from "../lib/restitution";
+import { summarizeRestitutionCase } from "../lib/restitution-presentation";
+
+interface Props {
+  restitutionCase: RestitutionCaseSummary;
+}
+
+const { restitutionCase } = Astro.props;
+const summary = summarizeRestitutionCase(restitutionCase);
+---
+
+<article class="claim-card">
+  <div class="claim-card__top">
+    <h3>
+      <a href={summary.href}>{summary.title}</a>
+    </h3>
+  </div>
+
+  <p class="claim-meta">{summary.reference} · {summary.statusLabel}</p>
+
+  <p class="claim-meta"><a href={summary.href}>View case →</a></p>
+</article>
