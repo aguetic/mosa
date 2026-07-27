@@ -25,7 +25,15 @@ const view = detail ? restitutionCaseDetailView(detail) : null;
 ---
 
 <Layout title={view ? `${view.reference} — ${view.title}` : "Restitution case not found"}>
-  <p class="breadcrumb"><a href="/">← Entity search</a></p>
+  <p class="breadcrumb">
+    <a href="/">← Entity search</a>
+    {view?.items.map((item) => (
+      <>
+        {" · "}
+        <a href={item.href}>{item.itemLabel}</a>
+      </>
+    ))}
+  </p>
 
   {
     loadFailed ? (
@@ -67,10 +75,11 @@ const view = detail ? restitutionCaseDetailView(detail) : null;
           </div>
         </dl>
 
-        <h2>Parties</h2>
+        <h2>Recorded participants</h2>
+        <p class="muted">Only participants recorded in the case file are listed.</p>
         {
           view.partyGroups.length === 0 ? (
-            <div class="empty">No parties are recorded for this case.</div>
+            <div class="empty">No participants are recorded for this case.</div>
           ) : (
             <dl class="metadata panel">
               {view.partyGroups.map((group) => (
@@ -91,6 +100,20 @@ const view = detail ? restitutionCaseDetailView(detail) : null;
         }
 
         <h2>Action history</h2>
+        {
+          view.sharedActionDocuments.length > 0 && (
+            <p class="claim-meta">
+              Also linked to every action:{" "}
+              {view.sharedActionDocuments.map((document, index) => (
+                <>
+                  {index > 0 ? "; " : ""}
+                  <a href={document.sourceHref}>{document.sourceLabel}</a> · {document.roleLabel}
+                  {document.relationshipLabel ? ` · ${document.relationshipLabel}` : ""}
+                </>
+              ))}
+            </p>
+          )
+        }
         {
           view.actions.length === 0 ? (
             <div class="empty">No actions are recorded for this case.</div>

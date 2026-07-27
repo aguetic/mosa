@@ -60,6 +60,7 @@ export interface RestitutionCaseDetailView {
   }>;
   partyGroups: RestitutionPartyGroup[];
   actions: RestitutionActionView[];
+  sharedActionDocuments: RestitutionDocumentView[];
   otherDocuments: RestitutionDocumentView[];
 }
 
@@ -214,9 +215,37 @@ function toActionView(action: RestitutionCaseAction): RestitutionActionView {
   };
 }
 
+function documentKey(document: RestitutionDocumentView): string {
+  return `${document.sourceId}|${document.roleLabel}|${document.relationshipLabel ?? ""}`;
+}
+
+function extractSharedDocuments(actions: RestitutionActionView[]): RestitutionDocumentView[] {
+  if (actions.length < 2) {
+    return [];
+  }
+
+  const shared = (actions[0]?.documents ?? []).filter((document) =>
+    actions.every((action) =>
+      action.documents.some((candidate) => documentKey(candidate) === documentKey(document)),
+    ),
+  );
+
+  const sharedKeys = new Set(shared.map(documentKey));
+  for (const action of actions) {
+    action.documents = action.documents.filter(
+      (document) => !sharedKeys.has(documentKey(document)),
+    );
+  }
+
+  return shared;
+}
+
 export function restitutionCaseDetailView(
   detail: RestitutionCaseDetail,
 ): RestitutionCaseDetailView {
+  const actions = detail.actions.map(toActionView);
+  const sharedActionDocuments = extractSharedDocuments(actions);
+
   return {
     reference: detail.reference,
     title: detail.title,
@@ -227,7 +256,8 @@ export function restitutionCaseDetailView(
       href: `/entities/${item.itemId}`,
     })),
     partyGroups: groupParties(detail.parties),
-    actions: detail.actions.map(toActionView),
+    actions,
+    sharedActionDocuments,
     otherDocuments: detail.otherDocuments.map(toDocumentView),
   };
 }
