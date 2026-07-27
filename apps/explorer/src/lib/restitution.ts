@@ -170,6 +170,14 @@ function toCaseSummary(row: CaseSummaryRow): RestitutionCaseSummary {
   };
 }
 
+export interface RestitutionItemDocument {
+  caseId: string;
+  caseReference: string;
+  sourceId: string;
+  sourceLabel: string;
+  documentRole: string;
+}
+
 export async function getRestitutionCasesForItem(
   itemId: string,
 ): Promise<RestitutionCaseSummary[]> {
@@ -191,6 +199,49 @@ export async function getRestitutionCasesForItem(
   );
 
   return rows.map(toCaseSummary);
+}
+
+interface ItemDocumentRow extends QueryResultRow {
+  case_id: string;
+  case_reference: string;
+  source_id: string;
+  source_label: string;
+  document_role: string;
+}
+
+export async function getRestitutionDocumentsForItem(
+  itemId: string,
+): Promise<RestitutionItemDocument[]> {
+  const rows = await query<ItemDocumentRow>(
+    `select
+         case_record.id::text as case_id,
+         case_record.reference as case_reference,
+         document.source_id::text,
+         display.display_label as source_label,
+         document.document_role
+     from restitution.case_item as case_item
+     join restitution.case_record as case_record
+       on case_record.id = case_item.case_id
+     join restitution.case_document as document
+       on document.case_id = case_record.id
+     join entities.entity_display as display
+       on display.id = document.source_id
+     where case_item.item_id = $1::uuid
+     order by
+         case_record.reference,
+         document.document_role,
+         display.display_label,
+         document.source_id`,
+    [itemId],
+  );
+
+  return rows.map((row) => ({
+    caseId: row.case_id,
+    caseReference: row.case_reference,
+    sourceId: row.source_id,
+    sourceLabel: row.source_label,
+    documentRole: row.document_role,
+  }));
 }
 
 export async function getRestitutionCase(caseId: string): Promise<RestitutionCaseDetail | null> {
