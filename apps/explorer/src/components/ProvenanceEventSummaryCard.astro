@@ -59,5 +59,7 @@ const summary = summarizeProvenanceEvent(event);
     )
   }
 
-  <p class="claim-meta"><a href={`/events/${summary.eventId}`}>View event</a></p>
+  <p class="claim-meta">
+    <a href={`/events/${summary.eventId}`} aria-label={`View event: ${summary.title}`}>View event</a>
+  </p>
 </article>

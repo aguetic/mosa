@@ -19,5 +19,7 @@ const summary = summarizeRestitutionCase(restitutionCase);
 
   <p class="claim-meta">{summary.reference} · {summary.statusLabel}</p>
 
-  <p class="claim-meta"><a href={summary.href}>View case →</a></p>
+  <p class="claim-meta">
+    <a href={summary.href} aria-label={`View case ${summary.reference}: ${summary.title}`}>View case →</a>
+  </p>
 </article>

@@ -108,7 +108,7 @@ const resultCount = totalCount + (page === 1 ? restitutionCases.length : 0);
 
         {restitutionCases.length > 0 && (
           <>
-            <h2>Restitution cases <span class="muted">({restitutionCases.length})</span></h2>
+            <h2 id="cases">Restitution cases <span class="muted">({restitutionCases.length})</span></h2>
             <section class="claims" aria-label="Restitution case results">
               {restitutionCases.map((restitutionCase) => (
                 <RestitutionCaseSummaryCard restitutionCase={restitutionCase} />

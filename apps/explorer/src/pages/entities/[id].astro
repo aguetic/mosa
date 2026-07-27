@@ -138,7 +138,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                         ))}
 
                         <p class="claim-meta">
-                          <a href={`/claims/${row.claim.id}`}>View claim</a>
+                          <a href={`/claims/${row.claim.id}`} aria-label={`View ${row.label} claim`}>View claim</a>
                           {" · "}
                           Asserted by{" "}
                           {row.claim.assertedByAgentId ? (
@@ -194,7 +194,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                         ))}
 
                         <p class="claim-meta">
-                          <a href={`/claims/${row.claim.id}`}>View claim</a>
+                          <a href={`/claims/${row.claim.id}`} aria-label={`View ${row.label} claim`}>View claim</a>
                           {" · "}
                           Asserted by{" "}
                           {row.claim.assertedByAgentId ? (
