@@ -108,6 +108,22 @@ export function literalLabel(claim: ClaimDetail): string {
     : JSON.stringify(claim.literalValue);
 }
 
+export interface ClaimGroup {
+  predicate: string;
+  claims: ClaimDetail[];
+}
+
+export function groupClaimsByPredicate(claims: readonly ClaimDetail[]): ClaimGroup[] {
+  const groups = new Map<string, ClaimDetail[]>();
+  for (const claim of claims) {
+    const grouped = groups.get(claim.predicate) ?? [];
+    grouped.push(claim);
+    groups.set(claim.predicate, grouped);
+  }
+
+  return [...groups.entries()].map(([predicate, grouped]) => ({ predicate, claims: grouped }));
+}
+
 export function isHttpReference(value: string | null): boolean {
   if (!value) {
     return false;

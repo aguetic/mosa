@@ -1,0 +1,91 @@
+---
+import { formatSourceLabel, predicateLabel } from "../lib/labels";
+import { literalLabel } from "../lib/presentation";
+import type { ClaimDetail } from "../lib/queries";
+
+interface Props {
+  predicate: string;
+  claims: ClaimDetail[];
+  direction: "outgoing" | "incoming";
+}
+
+const { predicate, claims, direction } = Astro.props;
+
+function entityHref(id: string, entityType: string | null): string {
+  return entityType === "event" ? `/events/${id}` : `/entities/${id}`;
+}
+
+function claimValue(claim: ClaimDetail): { label: string; href: string | null } {
+  if (direction === "incoming") {
+    return {
+      label:
+        claim.subjectType === "source" ? formatSourceLabel(claim.subjectLabel) : claim.subjectLabel,
+      href: entityHref(claim.subjectId, claim.subjectType),
+    };
+  }
+
+  if (claim.valueKind === "entity" && claim.objectEntityId) {
+    return {
+      label: claim.objectEntityLabel ?? claim.objectEntityId,
+      href: entityHref(claim.objectEntityId, claim.objectEntityType),
+    };
+  }
+
+  return { label: literalLabel(claim), href: null };
+}
+---
+
+<article class="claim-card">
+  <div class="claim-card__top">
+    <h3>{predicateLabel(predicate)}</h3>
+    {claims.length > 1 && (
+      <div class="badges">
+        <span class="badge">{claims.length} claims</span>
+      </div>
+    )}
+  </div>
+
+  <ul class="claim-group">
+    {
+      claims.map((claim) => {
+        const value = claimValue(claim);
+        return (
+          <li>
+            {value.href ? (
+              <a href={value.href}>{value.label}</a>
+            ) : (
+              <span class="literal">{value.label}</span>
+            )}
+            {claim.literalLanguage && <span class="muted"> ({claim.literalLanguage})</span>}
+            <p class="claim-meta">
+              <a href={`/claims/${claim.id}`} aria-label={`View ${predicateLabel(predicate)} claim`}>
+                View claim
+              </a>{" "}
+              · Asserted by{" "}
+              {claim.assertedByAgentId ? (
+                <a href={`/entities/${claim.assertedByAgentId}`}>
+                  {claim.assertedByLabel ?? claim.assertedByAgentId}
+                </a>
+              ) : (
+                "unrecorded agent"
+              )}
+            </p>
+            {claim.evidence.length > 0 && (
+              <ul class="evidence-list">
+                {claim.evidence.map((evidence) => (
+                  <li>
+                    <strong>{evidence.relationship}</strong> ·{" "}
+                    <a href={`/entities/${evidence.sourceId}`}>
+                      {formatSourceLabel(evidence.sourceLabel)}
+                    </a>
+                    {evidence.locator ? ` · ${evidence.locator}` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        );
+      })
+    }
+  </ul>
+</article>

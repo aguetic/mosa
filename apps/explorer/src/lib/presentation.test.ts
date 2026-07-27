@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatLiteralValue, isHttpReference, literalLabel } from "./presentation";
+import {
+  formatDate,
+  formatLiteralValue,
+  groupClaimsByPredicate,
+  isHttpReference,
+  literalLabel,
+} from "./presentation";
 import type { ClaimDetail } from "./queries";
 
 function claim(overrides: Partial<ClaimDetail> = {}): ClaimDetail {
@@ -114,5 +120,19 @@ describe("literalLabel", () => {
 
   it("labels missing literals", () => {
     expect(literalLabel(claim({ literalValue: null }))).toBe("Empty literal");
+  });
+});
+
+describe("groupClaimsByPredicate", () => {
+  it("groups claims by predicate preserving order", () => {
+    const grouped = groupClaimsByPredicate([
+      claim({ id: "1", predicate: "has_name" }),
+      claim({ id: "2", predicate: "made_of" }),
+      claim({ id: "3", predicate: "has_name" }),
+    ]);
+
+    expect(grouped.map((group) => group.predicate)).toEqual(["has_name", "made_of"]);
+    expect(grouped[0]?.claims.map(({ id }) => id)).toEqual(["1", "3"]);
+    expect(grouped[1]?.claims.map(({ id }) => id)).toEqual(["2"]);
   });
 });

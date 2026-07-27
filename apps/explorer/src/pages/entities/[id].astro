@@ -1,12 +1,12 @@
 ---
-import ClaimCard from "../../components/ClaimCard.astro";
+import ClaimGroupCard from "../../components/ClaimGroupCard.astro";
 import ProvenanceEventSummaryCard from "../../components/ProvenanceEventSummaryCard.astro";
 import RestitutionCaseSummaryCard from "../../components/RestitutionCaseSummaryCard.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatSourceLabel } from "../../lib/labels";
 import { itemPageView } from "../../lib/object-presentation";
 import { buildItemSummary } from "../../lib/object-summary";
-import { formatDate, isHttpReference } from "../../lib/presentation";
+import { formatDate, groupClaimsByPredicate, isHttpReference } from "../../lib/presentation";
 import { getProvenanceEventsForItem, type ProvenanceEvent } from "../../lib/provenance";
 import { partitionProvenanceEvents } from "../../lib/provenance-presentation";
 import {
@@ -287,7 +287,9 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                 {itemView.remainingOutgoingClaims.length === 0 ? (
                   <div class="empty">No additional outgoing claims.</div>
                 ) : (
-                  itemView.remainingOutgoingClaims.map((claim) => <ClaimCard claim={claim} />)
+                  groupClaimsByPredicate(itemView.remainingOutgoingClaims).map((group) => (
+                    <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="outgoing" />
+                  ))
                 )}
               </section>
 
@@ -296,7 +298,9 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                 {itemView.remainingIncomingClaims.length === 0 ? (
                   <div class="empty">No additional incoming claims.</div>
                 ) : (
-                  itemView.remainingIncomingClaims.map((claim) => <ClaimCard claim={claim} />)
+                  groupClaimsByPredicate(itemView.remainingIncomingClaims).map((group) => (
+                    <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
+                  ))
                 )}
               </section>
             </>
@@ -311,7 +315,9 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                 {nonItemOutgoing.length === 0 ? (
                   <div class="empty">No outgoing claims.</div>
                 ) : (
-                  nonItemOutgoing.map((claim) => <ClaimCard claim={claim} />)
+                  groupClaimsByPredicate(nonItemOutgoing).map((group) => (
+                    <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="outgoing" />
+                  ))
                 )}
               </section>
 
@@ -320,7 +326,9 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                 {nonItemIncoming.length === 0 ? (
                   <div class="empty">No incoming claims.</div>
                 ) : (
-                  nonItemIncoming.map((claim) => <ClaimCard claim={claim} />)
+                  groupClaimsByPredicate(nonItemIncoming).map((group) => (
+                    <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
+                  ))
                 )}
               </section>
             </>
