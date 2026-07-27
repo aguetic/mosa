@@ -208,28 +208,31 @@ export async function searchEntities(
     `${ENTITY_SELECT}
      where (
          $1::text = ''
-         or strpos(lower(display.display_label), lower($1)) > 0
+         or strpos(entities.search_normalise(display.display_label), entities.search_normalise($1)) > 0
          or exists (
              select 1
              from knowledge.claim as name_claim
              where name_claim.subject_id = e.id
                and name_claim.predicate = 'has_name'
                and name_claim.status = 'active'
-               and strpos(lower(coalesce(name_claim.literal_value ->> 'value', '')), lower($1)) > 0
+               and strpos(
+                   entities.search_normalise(coalesce(name_claim.literal_value ->> 'value', '')),
+                   entities.search_normalise($1)
+               ) > 0
          )
          or exists (
              select 1
              from entities.external_identifier as search_identifier
              where search_identifier.entity_id = e.id
                and (
-                   strpos(lower(search_identifier.value), lower($1)) > 0
-                   or strpos(lower(search_identifier.namespace), lower($1)) > 0
+                   strpos(entities.search_normalise(search_identifier.value), entities.search_normalise($1)) > 0
+                   or strpos(entities.search_normalise(search_identifier.namespace), entities.search_normalise($1)) > 0
                )
          )
          or (
              e.entity_type = 'source'
              and s.reference is not null
-             and strpos(lower(s.reference), lower($1)) > 0
+             and strpos(entities.search_normalise(s.reference), entities.search_normalise($1)) > 0
          )
      )
        and ($2::text is null or e.entity_type = $2)
