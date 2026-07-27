@@ -1,3 +1,4 @@
+import { formatSourceLabel } from "./labels";
 import type {
   RestitutionCaseAction,
   RestitutionCaseDetail,
@@ -188,7 +189,7 @@ function toDocumentView(
   return {
     roleLabel: restitutionDocumentRoleLabel(document.documentRole),
     sourceId: document.sourceId,
-    sourceLabel: document.sourceLabel,
+    sourceLabel: formatSourceLabel(document.sourceLabel),
     sourceHref: `/entities/${document.sourceId}`,
     relationshipLabel:
       "relationship" in document && document.relationship

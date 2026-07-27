@@ -1,4 +1,5 @@
 ---
+import { formatSourceLabel } from "../lib/labels";
 import type { ProvenanceEvent } from "../lib/provenance";
 import { summarizeProvenanceEvent } from "../lib/provenance-presentation";
 
@@ -51,7 +52,7 @@ const summary = summarizeProvenanceEvent(event);
         {summary.sources.map((source, index) => (
           <>
             {index > 0 ? " · " : ""}
-            <a href={`/entities/${source.id}`}>{source.label}</a>
+            <a href={`/entities/${source.id}`}>{formatSourceLabel(source.label)}</a>
           </>
         ))}
       </p>

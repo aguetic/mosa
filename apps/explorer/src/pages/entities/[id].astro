@@ -3,6 +3,7 @@ import ClaimCard from "../../components/ClaimCard.astro";
 import ProvenanceEventSummaryCard from "../../components/ProvenanceEventSummaryCard.astro";
 import RestitutionCaseSummaryCard from "../../components/RestitutionCaseSummaryCard.astro";
 import Layout from "../../layouts/Layout.astro";
+import { formatSourceLabel } from "../../lib/labels";
 import { itemPageView } from "../../lib/object-presentation";
 import { buildItemSummary } from "../../lib/object-summary";
 import { formatDate, isHttpReference } from "../../lib/presentation";
@@ -140,7 +141,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                                 </strong>
                                 {" · "}
                                 <a href={`/entities/${evidence.sourceId}`}>
-                                  {evidence.sourceLabel}
+                                  {formatSourceLabel(evidence.sourceLabel)}
                                 </a>
                                 {evidence.locator ? ` · ${evidence.locator}` : ""}
                                 {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
@@ -196,7 +197,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                                 </strong>
                                 {" · "}
                                 <a href={`/entities/${evidence.sourceId}`}>
-                                  {evidence.sourceLabel}
+                                  {formatSourceLabel(evidence.sourceLabel)}
                                 </a>
                                 {evidence.locator ? ` · ${evidence.locator}` : ""}
                                 {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
@@ -219,7 +220,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                   <ul class="identifier-list">
                     {itemView.documents.rows.map((document) => (
                       <li>
-                        <a href={document.sourceHref}>{document.sourceLabel}</a>
+                        <a href={document.sourceHref}>{formatSourceLabel(document.sourceLabel)}</a>
                         {document.associations.length > 0 && (
                           <>
                             {" · "}
@@ -358,7 +359,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                   <li>
                     <code>{identifier.namespace}:{identifier.value}</code>
                     {identifier.sourceId && identifier.sourceLabel && (
-                      <> · source <a href={`/entities/${identifier.sourceId}`}>{identifier.sourceLabel}</a></>
+                      <> · source <a href={`/entities/${identifier.sourceId}`}>{formatSourceLabel(identifier.sourceLabel)}</a></>
                     )}
                   </li>
                 ))}

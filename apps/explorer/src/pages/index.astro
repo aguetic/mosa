@@ -1,6 +1,7 @@
 ---
 import RestitutionCaseSummaryCard from "../components/RestitutionCaseSummaryCard.astro";
 import Layout from "../layouts/Layout.astro";
+import { formatSourceLabel } from "../lib/labels";
 import { formatLiteralValue } from "../lib/presentation";
 import {
   ENTITY_TYPES,
@@ -129,7 +130,13 @@ const resultCount = totalCount + (page === 1 ? restitutionCases.length : 0);
                 {group.entities.map((entity) => (
                   <article class="result-card">
                     <div class="result-card__top">
-                      <h3><a href={entityHref(entity)}>{entity.displayLabel}</a></h3>
+                      <h3>
+                        <a href={entityHref(entity)}>
+                          {entity.entityType === "source"
+                            ? formatSourceLabel(entity.displayLabel)
+                            : entity.displayLabel}
+                        </a>
+                      </h3>
                       <div class="badges">
                         {entity.subtypeKind && <span class="badge">{entity.subtypeKind}</span>}
                       </div>

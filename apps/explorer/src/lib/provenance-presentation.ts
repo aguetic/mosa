@@ -1,3 +1,4 @@
+import { formatSourceLabel } from "./labels";
 import type { ProvenanceEvent, ProvenanceStatement } from "./provenance";
 
 export interface ProvenanceDateLiteral {
@@ -414,7 +415,8 @@ export function sparseMovementSummaryText(event: ProvenanceEvent): string | null
   }
 
   const evidence = primaryMovedItemEvidence(event);
-  const sourceLabel = evidence?.sourceLabel?.trim() || null;
+  const rawSourceLabel = evidence?.sourceLabel?.trim() || null;
+  const sourceLabel = rawSourceLabel ? formatSourceLabel(rawSourceLabel) : null;
   const excerpt = evidence?.excerpt?.trim() || null;
 
   if (sourceLabel && excerpt) {
@@ -559,12 +561,13 @@ function characterisationRows(statement: ProvenanceStatement): ProvenanceEventDe
   }
 
   if (evidence?.sourceLabel) {
+    const sourceLabel = formatSourceLabel(evidence.sourceLabel);
     const relationshipLabel =
       evidence.relationship === "mentions"
-        ? `Indirect report in ${evidence.sourceLabel}`
+        ? `Indirect report in ${sourceLabel}`
         : evidence.relationship === "supports"
-          ? `Direct support in ${evidence.sourceLabel}`
-          : `${evidence.relationship} in ${evidence.sourceLabel}`;
+          ? `Direct support in ${sourceLabel}`
+          : `${evidence.relationship} in ${sourceLabel}`;
 
     rows.push({
       label: "Evidence type",

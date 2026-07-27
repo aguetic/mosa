@@ -1,4 +1,5 @@
 ---
+import { formatSourceLabel, predicateLabel } from "../lib/labels";
 import type { ProvenanceEvent, ProvenanceStatement } from "../lib/provenance";
 import {
   generateProvenanceEventTitle,
@@ -57,7 +58,7 @@ function entityHref(id: string, entityType: string | null): string {
 }
 
 function fieldLabel(statement: ProvenanceStatement): string {
-  return FIELD_LABELS[statement.predicate] ?? statement.predicate;
+  return FIELD_LABELS[statement.predicate] ?? predicateLabel(statement.predicate);
 }
 ---
 
@@ -104,7 +105,7 @@ function fieldLabel(statement: ProvenanceStatement): string {
                   {statement.evidence.map((evidence) => (
                     <li>
                       <strong>{evidence.relationship}</strong> ·{" "}
-                      <a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a>
+                      <a href={`/entities/${evidence.sourceId}`}>{formatSourceLabel(evidence.sourceLabel)}</a>
                       {evidence.locator ? ` · ${evidence.locator}` : ""}
                       {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
                     </li>

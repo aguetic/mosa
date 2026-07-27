@@ -1,6 +1,7 @@
 ---
 import ProvenanceEventCard from "../../components/ProvenanceEventCard.astro";
 import Layout from "../../layouts/Layout.astro";
+import { predicatePhrase } from "../../lib/labels";
 import { getProvenanceEvent, type ProvenanceEventDetail } from "../../lib/provenance";
 import {
   generateProvenanceEventTitle,
@@ -87,7 +88,7 @@ const detailView = event ? provenanceEventDetailView(event) : null;
                   <article class="claim-card">
                     <p class="claim-expression">
                       <a href={`/events/${statement.subjectId}`}>{statement.subjectLabel}</a>{" "}
-                      <span class="predicate">{statement.predicate}</span>{" "}
+                      <span class="predicate">{predicatePhrase(statement.predicate)}</span>{" "}
                       <span>{provenanceStatementValue(statement)}</span>
                     </p>
                     <p class="claim-meta">
