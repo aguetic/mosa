@@ -69,6 +69,10 @@ Stop Supabase:
 mise x -- pnpm exec supabase stop
 ```
 
+## Git hooks
+
+Git hooks run via [lefthook](https://lefthook.dev/). After cloning or pulling hook changes, run `mise x -- pnpm install` so `prepare` reinstalls them. Hooks use `mise x` for the tool versions in `mise.toml`, including when committing from a GUI client.
+
 ## Development principles
 
 - Database changes must be made through committed migrations.

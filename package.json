@@ -26,9 +26,9 @@
     "verify": "pnpm run verify:static && pnpm run test:db && pnpm run db:types:check",
     "db:start": "supabase start",
     "db:reset": "supabase db reset --local --no-seed",
-    "db:fixtures": "pnpm run db:fixtures:phase1 && pnpm run db:fixtures:phase2",
+    "db:fixtures": "pnpm run db:fixtures:phase1 && pnpm run db:fixtures:phase2 && pnpm run db:fixtures:phase3",
     "db:lint": "supabase db lint --local --level error",
-    "db:test": "supabase test db supabase/tests/database/phase-1-cases.test.sql --local && supabase test db supabase/tests/database/phase-2-mamari.test.sql --local && supabase test db supabase/tests/database/phase-2-te-papa-moai-kavakava.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a-community.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a-production.test.sql --local && supabase test db supabase/tests/database/phase-2-la-serena-moai.test.sql --local && supabase test db supabase/tests/database/phase-2-benin-ama.test.sql --local",
+    "db:test": "supabase test db supabase/tests/database/phase-1-cases.test.sql --local && supabase test db supabase/tests/database/phase-2-mamari.test.sql --local && supabase test db supabase/tests/database/phase-2-te-papa-moai-kavakava.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a-community.test.sql --local && supabase test db supabase/tests/database/phase-2-hoa-hakananai-a-production.test.sql --local && supabase test db supabase/tests/database/phase-2-la-serena-moai.test.sql --local && supabase test db supabase/tests/database/phase-2-benin-ama.test.sql --local && supabase test db supabase/tests/database/phase-3-aberdeen-head.test.sql --local && supabase test db supabase/tests/database/phase-3-hoa-hakananai-a.test.sql --local",
     "db:verify": "tsx scripts/verify-database.ts",
     "db:types": "tsx scripts/generate-database-types.ts",
     "db:types:check": "tsx scripts/generate-database-types.ts --check",
@@ -36,7 +36,9 @@
     "explorer:check": "pnpm --filter @mosa/explorer check",
     "explorer:build": "pnpm --filter @mosa/explorer build",
     "db:fixtures:phase1": "tsx scripts/load-phase-1-fixtures.ts",
-    "db:fixtures:phase2": "tsx scripts/load-phase-2-fixtures.ts"
+    "db:fixtures:phase2": "tsx scripts/load-phase-2-fixtures.ts",
+    "db:fixtures:phase3": "tsx scripts/load-phase-3-fixtures.ts",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.4",

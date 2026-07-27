@@ -1,0 +1,165 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { getRestitutionCase } from "../../../lib/restitution";
+import { restitutionCaseDetailView } from "../../../lib/restitution-presentation";
+import { isUuid } from "../../../lib/values";
+
+const id = Astro.params.id ?? "";
+let detail = null;
+let loadFailed = false;
+
+if (isUuid(id)) {
+  try {
+    detail = await getRestitutionCase(id);
+  } catch (error) {
+    loadFailed = true;
+    console.error(`Unable to load restitution case ${id}`, error);
+  }
+}
+
+if (!detail && !loadFailed) {
+  Astro.response.status = 404;
+}
+
+const view = detail ? restitutionCaseDetailView(detail) : null;
+---
+
+<Layout title={view ? `${view.reference} — ${view.title}` : "Restitution case not found"}>
+  <p class="breadcrumb"><a href="/">← Entity search</a></p>
+
+  {
+    loadFailed ? (
+      <div class="notice">
+        The local database could not be read. Check the Astro server console for details.
+      </div>
+    ) : !detail || !view ? (
+      <>
+        <h1>Restitution case not found</h1>
+        <p class="lede">No Phase 3 restitution case exists with this identifier.</p>
+      </>
+    ) : (
+      <>
+        <h1>{view.title}</h1>
+
+        <dl class="metadata panel">
+          <div>
+            <dt>Reference</dt>
+            <dd>{view.reference}</dd>
+          </div>
+          <div>
+            <dt>Status</dt>
+            <dd>{view.statusLabel}</dd>
+          </div>
+          <div>
+            <dt>{view.items.length === 1 ? "Concerned item" : "Concerned items"}</dt>
+            <dd>
+              {view.items.length === 0 ? (
+                "None recorded"
+              ) : (
+                view.items.map((item, index) => (
+                  <>
+                    {index > 0 ? "; " : ""}
+                    <a href={item.href}>{item.itemLabel}</a>
+                  </>
+                ))
+              )}
+            </dd>
+          </div>
+        </dl>
+
+        <h2>Parties</h2>
+        {
+          view.partyGroups.length === 0 ? (
+            <div class="empty">No parties are recorded for this case.</div>
+          ) : (
+            <dl class="metadata panel">
+              {view.partyGroups.map((group) => (
+                <div>
+                  <dt>{group.roleLabel}</dt>
+                  <dd>
+                    {group.parties.map((party, index) => (
+                      <>
+                        {index > 0 ? "; " : ""}
+                        <a href={party.href}>{party.agentLabel}</a>
+                      </>
+                    ))}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )
+        }
+
+        <h2>Action history</h2>
+        {
+          view.actions.length === 0 ? (
+            <div class="empty">No actions are recorded for this case.</div>
+          ) : (
+            <section class="claims" aria-label="Action history">
+              {view.actions.map((action) => (
+                <article class="claim-card">
+                  <div class="claim-card__top">
+                    <p class="eyebrow">
+                      {action.sequenceNumber}. {action.kindLabel}
+                    </p>
+                    <h3>{action.dateLabel}</h3>
+                  </div>
+                  <p class="lede">{action.description}</p>
+                  {action.parties.length > 0 && (
+                    <dl class="metadata">
+                      {action.parties.map((party) => (
+                        <div>
+                          <dt>{party.roleLabel}</dt>
+                          <dd>
+                            <a href={party.href}>{party.agentLabel}</a>
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
+                  {action.documents.length > 0 && (
+                    <div>
+                      <p class="claim-meta">Related documents</p>
+                      <ul class="identifier-list">
+                        {action.documents.map((document) => (
+                          <li>
+                            <a href={document.sourceHref}>{document.sourceLabel}</a>
+                            {" · "}
+                            {document.roleLabel}
+                            {document.relationshipLabel
+                              ? ` · ${document.relationshipLabel}`
+                              : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </article>
+              ))}
+            </section>
+          )
+        }
+
+        {
+          view.otherDocuments.length > 0 && (
+            <>
+              <h2>Other case documents</h2>
+              <section class="claims" aria-label="Other case documents">
+                {view.otherDocuments.map((document) => (
+                  <article class="claim-card">
+                    <div class="claim-card__top">
+                      <p class="eyebrow">{document.roleLabel}</p>
+                      <h3>
+                        <a href={document.sourceHref}>{document.sourceLabel}</a>
+                      </h3>
+                    </div>
+                  </article>
+                ))}
+              </section>
+            </>
+          )
+        }
+      </>
+    )
+  }
+</Layout>

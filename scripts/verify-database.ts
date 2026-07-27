@@ -3,6 +3,7 @@ import { runCommand } from "./lib/run-command";
 import { getSupabaseExecutable } from "./lib/supabase-local";
 import { loadPhase1Fixtures } from "./load-phase-1-fixtures";
 import { loadPhase2Fixtures } from "./load-phase-2-fixtures";
+import { loadPhase3Fixtures } from "./load-phase-3-fixtures";
 
 const projectRoot = path.resolve(__dirname, "..");
 const supabase = getSupabaseExecutable(projectRoot);
@@ -13,6 +14,7 @@ async function verifyDatabase(): Promise<void> {
 
   await loadPhase1Fixtures();
   await loadPhase2Fixtures();
+  await loadPhase3Fixtures();
 
   await runCommand(supabase, ["db", "lint", "--local", "--level", "error"], { cwd: projectRoot });
   await runCommand(
@@ -58,6 +60,16 @@ async function verifyDatabase(): Promise<void> {
   await runCommand(
     supabase,
     ["test", "db", "supabase/tests/database/phase-2-benin-ama.test.sql", "--local"],
+    { cwd: projectRoot },
+  );
+  await runCommand(
+    supabase,
+    ["test", "db", "supabase/tests/database/phase-3-aberdeen-head.test.sql", "--local"],
+    { cwd: projectRoot },
+  );
+  await runCommand(
+    supabase,
+    ["test", "db", "supabase/tests/database/phase-3-hoa-hakananai-a.test.sql", "--local"],
     { cwd: projectRoot },
   );
 }

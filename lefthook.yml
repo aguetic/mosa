@@ -1,3 +1,5 @@
+rc: .lefthook/env.sh
+
 pre-commit:
   parallel: true
   commands:
