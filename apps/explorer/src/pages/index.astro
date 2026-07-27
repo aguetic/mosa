@@ -70,13 +70,8 @@ const resultCount = totalCount + (page === 1 ? restitutionCases.length : 0);
 ---
 
 <Layout title="Search">
-  <p class="eyebrow">Model inspection</p>
-  <h1>Explore the current model</h1>
-  <p class="lede">
-    Search the current synthetic entities, provenance events and restitution cases, then follow
-    their claims, attribution, relationships, and evidence. This interface does not modify the
-    database.
-  </p>
+  <h1>Search</h1>
+  <p class="lede">Find items, agents, places, sources, events and restitution cases.</p>
 
   <form class="search-form" method="get" action="/">
     <label>
@@ -84,7 +79,7 @@ const resultCount = totalCount + (page === 1 ? restitutionCases.length : 0);
       <input name="q" type="search" value={searchText} placeholder="MPE 32571" />
     </label>
     <label>
-      Entity type
+      Type
       <select name="type">
         <option value="">All types</option>
         {ENTITY_TYPES.map((type) => <option value={type} selected={type === entityType}>{type}</option>)}
@@ -95,10 +90,7 @@ const resultCount = totalCount + (page === 1 ? restitutionCases.length : 0);
 
   {
     loadFailed ? (
-      <div class="notice">
-        The local database could not be read. Start Supabase with <code>pnpm run db:start</code>,
-        load the fixtures with <code>pnpm run db:fixtures</code>, and reload this page.
-      </div>
+      <div class="notice">Unable to load results. Check that the database is available and reload this page.</div>
     ) : (
       <>
         <p class="muted">
@@ -108,7 +100,7 @@ const resultCount = totalCount + (page === 1 ? restitutionCases.length : 0);
 
         {restitutionCases.length > 0 && (
           <>
-            <h2 id="cases">Restitution cases <span class="muted">({restitutionCases.length})</span></h2>
+            <h2>Restitution cases <span class="muted">({restitutionCases.length})</span></h2>
             <section class="claims" aria-label="Restitution case results">
               {restitutionCases.map((restitutionCase) => (
                 <RestitutionCaseSummaryCard restitutionCase={restitutionCase} />
@@ -119,8 +111,7 @@ const resultCount = totalCount + (page === 1 ? restitutionCases.length : 0);
 
         {entities.length === 0 && restitutionCases.length === 0 ? (
           <div class="empty">
-            No records match this search. Check the spelling, try fewer or shorter words, or
-            clear the entity type filter.
+            No records match this search. Check the spelling, try fewer words, or clear the type filter.
           </div>
         ) : (
           groups.map((group) => (

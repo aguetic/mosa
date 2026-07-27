@@ -97,15 +97,15 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
 ---
 
 <Layout title={entity?.displayLabel ?? "Entity not found"}>
-  <p class="breadcrumb"><a href="/">← Entity search</a></p>
+  <p class="breadcrumb"><a href="/">← Search</a></p>
 
   {
     loadFailed ? (
-      <div class="notice">The local database could not be read. Check the Astro server console for details.</div>
+      <div class="notice">Unable to load this record. Check that the database is available and reload this page.</div>
     ) : !entity ? (
       <>
-        <h1>Entity not found</h1>
-        <p class="lede">No entity exists with this identifier.</p>
+        <h1>Not found</h1>
+        <p class="lede">No record matches this identifier.</p>
       </>
     ) : (
       <>
@@ -120,7 +120,6 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
           itemView && (
             <>
               <h2>{itemView.origin.title}</h2>
-              <p class="lede">{itemView.origin.description}</p>
               {itemView.origin.rows.length === 0 ? (
                 <div class="empty">{itemView.origin.emptyText}</div>
               ) : (
@@ -176,7 +175,6 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
               )}
 
               <h2>{itemView.currentState.title}</h2>
-              <p class="lede">{itemView.currentState.description}</p>
               {itemView.currentState.rows.length === 0 ? (
                 <div class="empty">{itemView.currentState.emptyText}</div>
               ) : (
@@ -232,7 +230,6 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
               )}
 
               <h2>{itemView.documents.title}</h2>
-              <p class="lede">{itemView.documents.description}</p>
               {itemView.documents.rows.length === 0 ? (
                 <div class="empty">{itemView.documents.emptyText}</div>
               ) : (
@@ -260,9 +257,6 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
               )}
 
               <h2>Provenance events</h2>
-              <p class="lede">
-                Displayed by reported date. This does not assert a complete or continuous chronology.
-              </p>
               {provenanceEvents.length === 0 ? (
                 <div class="empty">{itemView.provenanceEmptyText}</div>
               ) : (
@@ -277,7 +271,6 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                   {provenanceGroups.undated.length > 0 && (
                     <>
                       <h3>Events without a recorded date</h3>
-                      <p class="lede">Their position in the sequence is not recorded.</p>
                       <section class="claims" aria-label="Undated provenance events">
                         {provenanceGroups.undated.map((event) => (
                           <ProvenanceEventSummaryCard event={event} />
@@ -299,10 +292,10 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                 </>
               )}
 
-              <h2>Claims about this entity</h2>
+              <h2>Claims</h2>
               <section class="claims" aria-label="Other outgoing claims">
                 {itemView.remainingOutgoingClaims.length === 0 ? (
-                  <div class="empty">No additional outgoing claims.</div>
+                  <div class="empty">No other claims.</div>
                 ) : (
                   groupClaimsByPredicate(itemView.remainingOutgoingClaims).map((group) => (
                     <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="outgoing" />
@@ -310,10 +303,10 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                 )}
               </section>
 
-              <h2>Claims pointing to this entity</h2>
+              <h2>Incoming claims</h2>
               <section class="claims" aria-label="Incoming claims">
                 {itemView.remainingIncomingClaims.length === 0 ? (
-                  <div class="empty">No additional incoming claims.</div>
+                  <div class="empty">No incoming claims.</div>
                 ) : (
                   groupClaimsByPredicate(itemView.remainingIncomingClaims).map((group) => (
                     <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
@@ -327,10 +320,10 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
         {
           !isItem && (
             <>
-              <h2>Claims about this entity</h2>
+              <h2>Claims</h2>
               <section class="claims" aria-label="Outgoing claims">
                 {nonItemOutgoing.length === 0 ? (
-                  <div class="empty">No outgoing claims.</div>
+                  <div class="empty">No claims.</div>
                 ) : (
                   groupClaimsByPredicate(nonItemOutgoing).map((group) => (
                     <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="outgoing" />
@@ -338,7 +331,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                 )}
               </section>
 
-              <h2>Claims pointing to this entity</h2>
+              <h2>Incoming claims</h2>
               <section class="claims" aria-label="Incoming claims">
                 {nonItemIncoming.length === 0 ? (
                   <div class="empty">No incoming claims.</div>
@@ -351,7 +344,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
 
               {agentCases.length > 0 && (
                 <>
-                  <h2>Restitution case involvement</h2>
+                  <h2>Restitution cases</h2>
                   <section class="claims" aria-label="Restitution case involvement">
                     {agentCases.map((involvement) => (
                       <article class="claim-card">
@@ -384,7 +377,6 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
               {citingClaims.length > 0 && (
                 <>
                   <h2>Used as evidence</h2>
-                  <p class="lede">Claims this source supports, mentions or qualifies.</p>
                   <section class="claims" aria-label="Claims citing this source">
                     {groupClaimsByPredicate(citingClaims).map((group) => (
                       <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
@@ -399,24 +391,12 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
         <h2>Record details</h2>
         <dl class="metadata panel">
           <div>
-            <dt>Entity ID</dt>
+            <dt>Identifier</dt>
             <dd><code>{entity.id}</code></dd>
           </div>
           <div>
             <dt>Subtype</dt>
             <dd>{entity.subtypeKind ?? "Not recorded"}</dd>
-          </div>
-          <div>
-            <dt>Display label basis</dt>
-            <dd>
-              {entity.displayLabelBasis}
-              {entity.displayLabelClaimId && (
-                <>
-                  {" · "}
-                  <a href={`/claims/${entity.displayLabelClaimId}`}>view claim</a>
-                </>
-              )}
-            </dd>
           </div>
           {
             entity.reference && (
@@ -438,7 +418,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
         <h2>External identifiers</h2>
         {
           entity.identifiers.length === 0 ? (
-            <div class="empty">No external identifiers are recorded.</div>
+            <div class="empty">No external identifiers recorded.</div>
           ) : (
             <div class="panel">
               <ul class="identifier-list">
