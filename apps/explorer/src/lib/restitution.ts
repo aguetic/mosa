@@ -178,6 +178,27 @@ export interface RestitutionItemDocument {
   documentRole: string;
 }
 
+export async function searchRestitutionCases(
+  searchText: string,
+): Promise<RestitutionCaseSummary[]> {
+  const rows = await query<CaseSummaryRow>(
+    `select
+         case_record.id::text,
+         case_record.reference,
+         case_record.title,
+         case_record.status
+     from restitution.case_record as case_record
+     where $1::text = ''
+        or strpos(entities.search_normalise(case_record.reference), entities.search_normalise($1)) > 0
+        or strpos(entities.search_normalise(case_record.title), entities.search_normalise($1)) > 0
+     order by case_record.reference, case_record.id
+     limit 100`,
+    [searchText.trim()],
+  );
+
+  return rows.map(toCaseSummary);
+}
+
 export async function getRestitutionCasesForItem(
   itemId: string,
 ): Promise<RestitutionCaseSummary[]> {
