@@ -364,6 +364,35 @@ export async function getClaimsForEntity(id: string): Promise<ClaimDetail[]> {
   return rows.map((row) => toClaim(row, evidenceByClaim));
 }
 
+export async function getClaimsAssertedByAgent(agentId: string): Promise<ClaimDetail[]> {
+  const rows = await query<ClaimRow>(
+    `${CLAIM_SELECT}
+     where details.asserted_by_agent_id = $1::uuid
+     order by details.created_at, details.claim_id`,
+    [agentId],
+  );
+  const evidenceByClaim = await getEvidenceForClaims(rows.map((row) => row.claim_id));
+
+  return rows.map((row) => toClaim(row, evidenceByClaim));
+}
+
+export async function getClaimsCitingSource(sourceId: string): Promise<ClaimDetail[]> {
+  const rows = await query<ClaimRow>(
+    `${CLAIM_SELECT}
+     where exists (
+         select 1
+         from knowledge.claim_evidence_details as usage
+         where usage.claim_id = details.claim_id
+           and usage.source_id = $1::uuid
+     )
+     order by details.created_at, details.claim_id`,
+    [sourceId],
+  );
+  const evidenceByClaim = await getEvidenceForClaims(rows.map((row) => row.claim_id));
+
+  return rows.map((row) => toClaim(row, evidenceByClaim));
+}
+
 export async function getClaim(id: string): Promise<ClaimDetail | null> {
   const rows = await query<ClaimRow>(
     `${CLAIM_SELECT}

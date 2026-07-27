@@ -12,15 +12,20 @@ import { partitionProvenanceEvents } from "../../lib/provenance-presentation";
 import {
   type ClaimDetail,
   type EntityDetail,
+  getClaimsAssertedByAgent,
+  getClaimsCitingSource,
   getClaimsForEntity,
   getEntity,
 } from "../../lib/queries";
 import {
+  type AgentCaseInvolvement,
+  getRestitutionCasesForAgent,
   getRestitutionCasesForItem,
   getRestitutionDocumentsForItem,
   type RestitutionCaseSummary,
   type RestitutionItemDocument,
 } from "../../lib/restitution";
+import { restitutionRoleLabel, restitutionStatusLabel } from "../../lib/restitution-presentation";
 import { isUuid } from "../../lib/values";
 
 const id = Astro.params.id ?? "";
@@ -29,6 +34,9 @@ let claims: ClaimDetail[] = [];
 let provenanceEvents: ProvenanceEvent[] = [];
 let restitutionCases: RestitutionCaseSummary[] = [];
 let restitutionDocuments: RestitutionItemDocument[] = [];
+let agentCases: AgentCaseInvolvement[] = [];
+let assertedClaims: ClaimDetail[] = [];
+let citingClaims: ClaimDetail[] = [];
 let loadFailed = false;
 
 if (isUuid(id)) {
@@ -41,6 +49,15 @@ if (isUuid(id)) {
         getRestitutionCasesForItem(id),
         getRestitutionDocumentsForItem(id),
       ]);
+
+    if (entity?.entityType === "agent") {
+      [agentCases, assertedClaims] = await Promise.all([
+        getRestitutionCasesForAgent(id),
+        getClaimsAssertedByAgent(id),
+      ]);
+    } else if (entity?.entityType === "source") {
+      citingClaims = await getClaimsCitingSource(id);
+    }
   } catch (error) {
     loadFailed = true;
     console.error(`Unable to load entity ${id}`, error);
@@ -331,6 +348,50 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                   ))
                 )}
               </section>
+
+              {agentCases.length > 0 && (
+                <>
+                  <h2>Restitution case involvement</h2>
+                  <section class="claims" aria-label="Restitution case involvement">
+                    {agentCases.map((involvement) => (
+                      <article class="claim-card">
+                        <div class="claim-card__top">
+                          <h3>
+                            <a href={`/restitution/cases/${involvement.id}`}>{involvement.title}</a>
+                          </h3>
+                        </div>
+                        <p class="claim-meta">
+                          {involvement.reference} · {restitutionStatusLabel(involvement.status)} ·
+                          Role: {involvement.roles.map(restitutionRoleLabel).join(", ")}
+                        </p>
+                      </article>
+                    ))}
+                  </section>
+                </>
+              )}
+
+              {assertedClaims.length > 0 && (
+                <>
+                  <h2>Claims asserted by this agent</h2>
+                  <section class="claims" aria-label="Claims asserted by this agent">
+                    {groupClaimsByPredicate(assertedClaims).map((group) => (
+                      <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
+                    ))}
+                  </section>
+                </>
+              )}
+
+              {citingClaims.length > 0 && (
+                <>
+                  <h2>Used as evidence</h2>
+                  <p class="lede">Claims this source supports, mentions or qualifies.</p>
+                  <section class="claims" aria-label="Claims citing this source">
+                    {groupClaimsByPredicate(citingClaims).map((group) => (
+                      <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
+                    ))}
+                  </section>
+                </>
+              )}
             </>
           )
         }

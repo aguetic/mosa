@@ -199,6 +199,41 @@ export async function searchRestitutionCases(
   return rows.map(toCaseSummary);
 }
 
+export interface AgentCaseInvolvement extends RestitutionCaseSummary {
+  roles: string[];
+}
+
+export async function getRestitutionCasesForAgent(
+  agentId: string,
+): Promise<AgentCaseInvolvement[]> {
+  const rows = await query<CaseSummaryRow & { roles: string[] }>(
+    `select
+         case_record.id::text,
+         case_record.reference,
+         case_record.title,
+         case_record.status,
+         array_agg(distinct involvement.role) as roles
+     from restitution.case_record as case_record
+     join (
+         select case_id, role
+         from restitution.case_party
+         where agent_id = $1::uuid
+         union
+         select action.case_id, action_party.role
+         from restitution.action_party as action_party
+         join restitution.case_action as action
+           on action.id = action_party.action_id
+         where action_party.agent_id = $1::uuid
+     ) as involvement
+       on involvement.case_id = case_record.id
+     group by case_record.id
+     order by case_record.reference, case_record.id`,
+    [agentId],
+  );
+
+  return rows.map((row) => ({ ...toCaseSummary(row), roles: row.roles }));
+}
+
 export async function getRestitutionCasesForItem(
   itemId: string,
 ): Promise<RestitutionCaseSummary[]> {
