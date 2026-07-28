@@ -4,6 +4,7 @@ import { getSupabaseExecutable } from "./lib/supabase-local";
 import { loadPhase1Fixtures } from "./load-phase-1-fixtures";
 import { loadPhase2Fixtures } from "./load-phase-2-fixtures";
 import { loadPhase3Fixtures } from "./load-phase-3-fixtures";
+import { verifyObjectDossierImport } from "./verify-object-dossier-import";
 
 const projectRoot = path.resolve(__dirname, "..");
 const supabase = getSupabaseExecutable(projectRoot);
@@ -77,6 +78,10 @@ async function verifyDatabase(): Promise<void> {
     ["test", "db", "supabase/tests/database/explorer-reader-role.test.sql", "--local"],
     { cwd: projectRoot },
   );
+
+  // Runs last because it writes canonical rows the pgTAP fixtures tests
+  // must not see.
+  await verifyObjectDossierImport();
 }
 
 async function main(): Promise<void> {
