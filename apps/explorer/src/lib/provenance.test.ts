@@ -3,6 +3,7 @@ import type { ProvenanceEvent, ProvenanceStatement } from "./provenance";
 import {
   generateProvenanceEventTitle,
   orderProvenanceEvents,
+  partitionProvenanceEvents,
   provenanceEventDetailView,
   provenanceStatementValue,
   REPORTED_MOVEMENT_ACTION,
@@ -483,9 +484,7 @@ describe("summarizeProvenanceEvent dates and notices", () => {
 
     expect(summary.title).toBe("Reported movement of La Serena moai");
     expect(summary.dateLabel).toBe("1952");
-    expect(summary.summaryText).toBe(
-      "Paula Rossetti's note reports that the item “fue llevado en 1952”.",
-    );
+    expect(summary.summaryText).toBe("According to Paula Rossetti's note: “fue llevado en 1952”.");
     expect(summary.notices).toEqual([
       "Source wording: “se dice que fue un regalo del pueblo Rapa Nui”",
       ROUTE_AND_PARTICIPANTS_NOT_RECORDED,
@@ -650,5 +649,26 @@ describe("orderProvenanceEvents", () => {
       "Arrival in England",
       "Arrival in England",
     ]);
+  });
+});
+
+describe("partitionProvenanceEvents", () => {
+  it("separates undated events from the dated sequence", () => {
+    const undated = event("u", [entityStatement("holding_agent", "a", "Oldman Collection")]);
+    const dated = event("d", [
+      statement({
+        predicate: "occurred_during",
+        literalValue: {
+          earliest: "1870",
+          latest: "1870",
+          verbatim: "1870",
+          interpretation: "exact",
+        },
+      }),
+    ]);
+
+    const groups = partitionProvenanceEvents([undated, dated]);
+    expect(groups.dated.map(({ id }) => id)).toEqual(["d"]);
+    expect(groups.undated.map(({ id }) => id)).toEqual(["u"]);
   });
 });

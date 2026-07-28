@@ -230,9 +230,11 @@ describe("itemPageView", () => {
 
     expect(view.origin.title).toBe("Origin");
     expect(view.origin.rows).toEqual([]);
-    expect(view.origin.emptyText).toBe("Origin is not recorded.");
-    expect(view.documents.emptyText).toBe("No documents about this object are recorded.");
-    expect(view.provenanceEmptyText).toBe("No provenance events are recorded.");
+    expect(view.origin.emptyText).toBe("No origin recorded.");
+    expect(view.documents.emptyText).toBe("No documents recorded.");
+    expect(view.provenanceEmptyText).toBe("No provenance events recorded.");
+    expect(view.currentState.title).toBe("Current state");
+    expect(view.documents.title).toBe("Documents");
   });
 
   it("labels gallery locations as display locations", () => {

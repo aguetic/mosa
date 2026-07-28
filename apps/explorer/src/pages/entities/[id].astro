@@ -1,24 +1,31 @@
 ---
-import ClaimCard from "../../components/ClaimCard.astro";
+import ClaimGroupCard from "../../components/ClaimGroupCard.astro";
 import ProvenanceEventSummaryCard from "../../components/ProvenanceEventSummaryCard.astro";
 import RestitutionCaseSummaryCard from "../../components/RestitutionCaseSummaryCard.astro";
 import Layout from "../../layouts/Layout.astro";
+import { formatSourceLabel } from "../../lib/labels";
 import { itemPageView } from "../../lib/object-presentation";
 import { buildItemSummary } from "../../lib/object-summary";
-import { formatDate, isHttpReference } from "../../lib/presentation";
+import { formatDate, groupClaimsByPredicate, isHttpReference } from "../../lib/presentation";
 import { getProvenanceEventsForItem, type ProvenanceEvent } from "../../lib/provenance";
+import { partitionProvenanceEvents } from "../../lib/provenance-presentation";
 import {
   type ClaimDetail,
   type EntityDetail,
+  getClaimsAssertedByAgent,
+  getClaimsCitingSource,
   getClaimsForEntity,
   getEntity,
 } from "../../lib/queries";
 import {
+  type AgentCaseInvolvement,
+  getRestitutionCasesForAgent,
   getRestitutionCasesForItem,
   getRestitutionDocumentsForItem,
   type RestitutionCaseSummary,
   type RestitutionItemDocument,
 } from "../../lib/restitution";
+import { restitutionRoleLabel, restitutionStatusLabel } from "../../lib/restitution-presentation";
 import { isUuid } from "../../lib/values";
 
 const id = Astro.params.id ?? "";
@@ -27,6 +34,9 @@ let claims: ClaimDetail[] = [];
 let provenanceEvents: ProvenanceEvent[] = [];
 let restitutionCases: RestitutionCaseSummary[] = [];
 let restitutionDocuments: RestitutionItemDocument[] = [];
+let agentCases: AgentCaseInvolvement[] = [];
+let assertedClaims: ClaimDetail[] = [];
+let citingClaims: ClaimDetail[] = [];
 let loadFailed = false;
 
 if (isUuid(id)) {
@@ -39,6 +49,15 @@ if (isUuid(id)) {
         getRestitutionCasesForItem(id),
         getRestitutionDocumentsForItem(id),
       ]);
+
+    if (entity?.entityType === "agent") {
+      [agentCases, assertedClaims] = await Promise.all([
+        getRestitutionCasesForAgent(id),
+        getClaimsAssertedByAgent(id),
+      ]);
+    } else if (entity?.entityType === "source") {
+      citingClaims = await getClaimsCitingSource(id);
+    }
   } catch (error) {
     loadFailed = true;
     console.error(`Unable to load entity ${id}`, error);
@@ -63,6 +82,8 @@ const itemSummary =
     : null;
 const itemView = itemSummary ? itemPageView(itemSummary) : null;
 
+const provenanceGroups = partitionProvenanceEvents(provenanceEvents);
+
 const outgoingClaims = entity
   ? claims.filter((claim) => claim.subjectId === entity?.id)
   : [];
@@ -76,15 +97,15 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
 ---
 
 <Layout title={entity?.displayLabel ?? "Entity not found"}>
-  <p class="breadcrumb"><a href="/">← Entity search</a></p>
+  <p class="breadcrumb"><a href="/">← Search</a></p>
 
   {
     loadFailed ? (
-      <div class="notice">The local database could not be read. Check the Astro server console for details.</div>
+      <div class="notice">Unable to load this record. Check that the database is available and reload this page.</div>
     ) : !entity ? (
       <>
-        <h1>Entity not found</h1>
-        <p class="lede">No Phase 1 entity exists with this identifier.</p>
+        <h1>Not found</h1>
+        <p class="lede">No record matches this identifier.</p>
       </>
     ) : (
       <>
@@ -99,7 +120,6 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
           itemView && (
             <>
               <h2>{itemView.origin.title}</h2>
-              <p class="lede">{itemView.origin.description}</p>
               {itemView.origin.rows.length === 0 ? (
                 <div class="empty">{itemView.origin.emptyText}</div>
               ) : (
@@ -117,7 +137,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                         ))}
 
                         <p class="claim-meta">
-                          <a href={`/claims/${row.claim.id}`}>View claim</a>
+                          <a href={`/claims/${row.claim.id}`} aria-label={`View ${row.label} claim`}>View claim</a>
                           {" · "}
                           Asserted by{" "}
                           {row.claim.assertedByAgentId ? (
@@ -140,7 +160,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                                 </strong>
                                 {" · "}
                                 <a href={`/entities/${evidence.sourceId}`}>
-                                  {evidence.sourceLabel}
+                                  {formatSourceLabel(evidence.sourceLabel)}
                                 </a>
                                 {evidence.locator ? ` · ${evidence.locator}` : ""}
                                 {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
@@ -155,7 +175,6 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
               )}
 
               <h2>{itemView.currentState.title}</h2>
-              <p class="lede">{itemView.currentState.description}</p>
               {itemView.currentState.rows.length === 0 ? (
                 <div class="empty">{itemView.currentState.emptyText}</div>
               ) : (
@@ -173,7 +192,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                         ))}
 
                         <p class="claim-meta">
-                          <a href={`/claims/${row.claim.id}`}>View claim</a>
+                          <a href={`/claims/${row.claim.id}`} aria-label={`View ${row.label} claim`}>View claim</a>
                           {" · "}
                           Asserted by{" "}
                           {row.claim.assertedByAgentId ? (
@@ -196,7 +215,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                                 </strong>
                                 {" · "}
                                 <a href={`/entities/${evidence.sourceId}`}>
-                                  {evidence.sourceLabel}
+                                  {formatSourceLabel(evidence.sourceLabel)}
                                 </a>
                                 {evidence.locator ? ` · ${evidence.locator}` : ""}
                                 {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
@@ -211,7 +230,6 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
               )}
 
               <h2>{itemView.documents.title}</h2>
-              <p class="lede">{itemView.documents.description}</p>
               {itemView.documents.rows.length === 0 ? (
                 <div class="empty">{itemView.documents.emptyText}</div>
               ) : (
@@ -219,7 +237,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                   <ul class="identifier-list">
                     {itemView.documents.rows.map((document) => (
                       <li>
-                        <a href={document.sourceHref}>{document.sourceLabel}</a>
+                        <a href={document.sourceHref}>{formatSourceLabel(document.sourceLabel)}</a>
                         {document.associations.length > 0 && (
                           <>
                             {" · "}
@@ -239,17 +257,28 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
               )}
 
               <h2>Provenance events</h2>
-              <p class="lede">
-                Displayed by reported date. This does not assert a complete or continuous chronology.
-              </p>
               {provenanceEvents.length === 0 ? (
                 <div class="empty">{itemView.provenanceEmptyText}</div>
               ) : (
-                <section class="claims" aria-label="Provenance events">
-                  {provenanceEvents.map((event) => (
-                    <ProvenanceEventSummaryCard event={event} />
-                  ))}
-                </section>
+                <>
+                  {provenanceGroups.dated.length > 0 && (
+                    <section class="claims" aria-label="Provenance events">
+                      {provenanceGroups.dated.map((event) => (
+                        <ProvenanceEventSummaryCard event={event} />
+                      ))}
+                    </section>
+                  )}
+                  {provenanceGroups.undated.length > 0 && (
+                    <>
+                      <h3>Events without a recorded date</h3>
+                      <section class="claims" aria-label="Undated provenance events">
+                        {provenanceGroups.undated.map((event) => (
+                          <ProvenanceEventSummaryCard event={event} />
+                        ))}
+                      </section>
+                    </>
+                  )}
+                </>
               )}
 
               {restitutionCases.length > 0 && (
@@ -263,21 +292,25 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                 </>
               )}
 
-              <h2>Claims about this entity</h2>
+              <h2>Claims</h2>
               <section class="claims" aria-label="Other outgoing claims">
                 {itemView.remainingOutgoingClaims.length === 0 ? (
-                  <div class="empty">No additional outgoing claims.</div>
+                  <div class="empty">No other claims.</div>
                 ) : (
-                  itemView.remainingOutgoingClaims.map((claim) => <ClaimCard claim={claim} />)
+                  groupClaimsByPredicate(itemView.remainingOutgoingClaims).map((group) => (
+                    <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="outgoing" />
+                  ))
                 )}
               </section>
 
-              <h2>Claims pointing to this entity</h2>
+              <h2>Incoming claims</h2>
               <section class="claims" aria-label="Incoming claims">
                 {itemView.remainingIncomingClaims.length === 0 ? (
-                  <div class="empty">No additional incoming claims.</div>
+                  <div class="empty">No incoming claims.</div>
                 ) : (
-                  itemView.remainingIncomingClaims.map((claim) => <ClaimCard claim={claim} />)
+                  groupClaimsByPredicate(itemView.remainingIncomingClaims).map((group) => (
+                    <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
+                  ))
                 )}
               </section>
             </>
@@ -287,23 +320,70 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
         {
           !isItem && (
             <>
-              <h2>Claims about this entity</h2>
+              <h2>Claims</h2>
               <section class="claims" aria-label="Outgoing claims">
                 {nonItemOutgoing.length === 0 ? (
-                  <div class="empty">No outgoing claims.</div>
+                  <div class="empty">No claims.</div>
                 ) : (
-                  nonItemOutgoing.map((claim) => <ClaimCard claim={claim} />)
+                  groupClaimsByPredicate(nonItemOutgoing).map((group) => (
+                    <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="outgoing" />
+                  ))
                 )}
               </section>
 
-              <h2>Claims pointing to this entity</h2>
+              <h2>Incoming claims</h2>
               <section class="claims" aria-label="Incoming claims">
                 {nonItemIncoming.length === 0 ? (
                   <div class="empty">No incoming claims.</div>
                 ) : (
-                  nonItemIncoming.map((claim) => <ClaimCard claim={claim} />)
+                  groupClaimsByPredicate(nonItemIncoming).map((group) => (
+                    <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
+                  ))
                 )}
               </section>
+
+              {agentCases.length > 0 && (
+                <>
+                  <h2>Restitution cases</h2>
+                  <section class="claims" aria-label="Restitution case involvement">
+                    {agentCases.map((involvement) => (
+                      <article class="claim-card">
+                        <div class="claim-card__top">
+                          <h3>
+                            <a href={`/restitution/cases/${involvement.id}`}>{involvement.title}</a>
+                          </h3>
+                        </div>
+                        <p class="claim-meta">
+                          {involvement.reference} · {restitutionStatusLabel(involvement.status)} ·
+                          Role: {involvement.roles.map(restitutionRoleLabel).join(", ")}
+                        </p>
+                      </article>
+                    ))}
+                  </section>
+                </>
+              )}
+
+              {assertedClaims.length > 0 && (
+                <>
+                  <h2>Claims asserted by this agent</h2>
+                  <section class="claims" aria-label="Claims asserted by this agent">
+                    {groupClaimsByPredicate(assertedClaims).map((group) => (
+                      <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
+                    ))}
+                  </section>
+                </>
+              )}
+
+              {citingClaims.length > 0 && (
+                <>
+                  <h2>Used as evidence</h2>
+                  <section class="claims" aria-label="Claims citing this source">
+                    {groupClaimsByPredicate(citingClaims).map((group) => (
+                      <ClaimGroupCard predicate={group.predicate} claims={group.claims} direction="incoming" />
+                    ))}
+                  </section>
+                </>
+              )}
             </>
           )
         }
@@ -311,24 +391,12 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
         <h2>Record details</h2>
         <dl class="metadata panel">
           <div>
-            <dt>Entity ID</dt>
+            <dt>Identifier</dt>
             <dd><code>{entity.id}</code></dd>
           </div>
           <div>
             <dt>Subtype</dt>
             <dd>{entity.subtypeKind ?? "Not recorded"}</dd>
-          </div>
-          <div>
-            <dt>Display label basis</dt>
-            <dd>
-              {entity.displayLabelBasis}
-              {entity.displayLabelClaimId && (
-                <>
-                  {" · "}
-                  <a href={`/claims/${entity.displayLabelClaimId}`}>view claim</a>
-                </>
-              )}
-            </dd>
           </div>
           {
             entity.reference && (
@@ -350,7 +418,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
         <h2>External identifiers</h2>
         {
           entity.identifiers.length === 0 ? (
-            <div class="empty">No external identifiers are recorded.</div>
+            <div class="empty">No external identifiers recorded.</div>
           ) : (
             <div class="panel">
               <ul class="identifier-list">
@@ -358,7 +426,7 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
                   <li>
                     <code>{identifier.namespace}:{identifier.value}</code>
                     {identifier.sourceId && identifier.sourceLabel && (
-                      <> · source <a href={`/entities/${identifier.sourceId}`}>{identifier.sourceLabel}</a></>
+                      <> · source <a href={`/entities/${identifier.sourceId}`}>{formatSourceLabel(identifier.sourceLabel)}</a></>
                     )}
                   </li>
                 ))}

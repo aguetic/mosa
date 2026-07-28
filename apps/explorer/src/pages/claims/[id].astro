@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import { formatSourceLabel, predicateLabel } from "../../lib/labels";
 import { formatDate, literalLabel } from "../../lib/presentation";
 import { type ClaimDetail, getClaim } from "../../lib/queries";
 import { isUuid } from "../../lib/values";
@@ -35,27 +36,27 @@ const objectHref =
       : null;
 ---
 
-<Layout title={claim ? claim.predicate : "Claim not found"}>
+<Layout title={claim ? predicateLabel(claim.predicate) : "Claim not found"}>
   <p class="breadcrumb">
-    <a href="/">Entity search</a>
+    <a href="/">← Search</a>
     {claim && <> · <a href={subjectHref}>{claim.subjectLabel}</a></>}
   </p>
 
   {
     loadFailed ? (
-      <div class="notice">The local database could not be read. Check the Astro server console for details.</div>
+      <div class="notice">Unable to load this claim. Check that the database is available and reload this page.</div>
     ) : !claim ? (
       <>
-        <h1>Claim not found</h1>
-        <p class="lede">No claim exists with this identifier.</p>
+        <h1>Not found</h1>
+        <p class="lede">No claim matches this identifier.</p>
       </>
     ) : (
       <>
         <p class="eyebrow">Claim</p>
-        <h1>{claim.predicate}</h1>
+        <h1>{predicateLabel(claim.predicate)}</h1>
         <div class="badges">
-          <span class="badge">{claim.valueKind}</span>
-          <span class="badge">{claim.status}</span>
+          <span class="badge">value: {claim.valueKind}</span>
+          <span class="badge">status: {claim.status}</span>
         </div>
 
         <dl class="metadata panel">
@@ -90,16 +91,15 @@ const objectHref =
               ) : "Not recorded"}
             </dd>
           </div>
-          <div><dt>Claim ID</dt><dd><code>{claim.id}</code></dd></div>
-          {createdAt && <div><dt>Created</dt><dd>{createdAt}</dd></div>}
           {claim.supersedesClaimId && <div><dt>Supersedes</dt><dd><a href={`/claims/${claim.supersedesClaimId}`}>{claim.supersedesClaimId}</a></dd></div>}
-          {claim.notes && <div><dt>Editorial note</dt><dd>{claim.notes}</dd></div>}
+          {claim.notes && <div><dt>Note</dt><dd>{claim.notes}</dd></div>}
+          {createdAt && <div><dt>Created</dt><dd>{createdAt}</dd></div>}
         </dl>
 
         {
           claim.valueKind === "literal" && claim.literalValue !== null && (
             <>
-              <h2>Structured literal</h2>
+              <h2>Literal value</h2>
               <pre class="literal-json">{JSON.stringify(claim.literalValue, null, 2)}</pre>
             </>
           )
@@ -108,7 +108,7 @@ const objectHref =
         <h2>Evidence</h2>
         {
           claim.evidence.length === 0 ? (
-            <div class="empty">No evidence links are attached to this claim.</div>
+            <div class="empty">No evidence attached.</div>
           ) : (
             <section class="claims" aria-label="Claim evidence">
               {claim.evidence.map((evidence) => (
@@ -117,11 +117,11 @@ const objectHref =
                     <h3>{evidence.relationship}</h3>
                     <span class="badge">evidence</span>
                   </div>
-                  <p><a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a></p>
+                  <p><a href={`/entities/${evidence.sourceId}`}>{formatSourceLabel(evidence.sourceLabel)}</a></p>
                   {evidence.locator && <p><strong>Locator:</strong> {evidence.locator}</p>}
                   {evidence.excerpt && <blockquote>{evidence.excerpt}</blockquote>}
                   {evidence.notes && (
-                    <p class="muted"><strong>Editorial note:</strong> {evidence.notes}</p>
+                    <p class="muted"><strong>Note:</strong> {evidence.notes}</p>
                   )}
                 </article>
               ))}

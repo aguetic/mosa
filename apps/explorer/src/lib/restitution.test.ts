@@ -200,5 +200,34 @@ describe("restitutionCaseDetailView", () => {
         relationshipLabel: null,
       },
     ]);
+    expect(view.sharedActionDocuments).toEqual([]);
+  });
+
+  it("collapses documents repeated under every action into a shared list", () => {
+    const repeated = linkedDocument({ id: "case-file", sourceLabel: "Case file" });
+    const specific = linkedDocument({
+      id: "reply",
+      sourceId: "reply-source",
+      sourceLabel: "Museum reply",
+      documentRole: "reply",
+    });
+    const view = restitutionCaseDetailView(
+      detail({
+        actions: [
+          action({ documents: [repeated] }),
+          action({
+            id: "action-2",
+            sequenceNumber: 2,
+            documents: [repeated, specific],
+          }),
+        ],
+      }),
+    );
+
+    expect(view.sharedActionDocuments.map(({ sourceLabel }) => sourceLabel)).toEqual(["Case file"]);
+    expect(view.actions[0]?.documents).toEqual([]);
+    expect(view.actions[1]?.documents.map(({ sourceLabel }) => sourceLabel)).toEqual([
+      "Museum reply",
+    ]);
   });
 });

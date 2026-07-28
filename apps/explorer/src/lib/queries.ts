@@ -22,6 +22,12 @@ export interface EntitySummary {
   displayLabelClaimId: string | null;
   subtypeKind: string | null;
   identifiers: ExternalIdentifier[];
+  eventDate: unknown;
+}
+
+export interface EntitySearchResult {
+  entities: EntitySummary[];
+  totalCount: number;
 }
 
 export interface EntityDetail extends EntitySummary {
@@ -72,6 +78,8 @@ interface EntityRow extends QueryResultRow {
   reference?: string | null;
   retrieved_at?: Date | string | null;
   identifiers: unknown;
+  event_date: unknown;
+  total_count?: string;
 }
 
 interface ClaimRow extends QueryResultRow {
@@ -116,6 +124,7 @@ function toEntitySummary(row: EntityRow): EntitySummary {
     displayLabelClaimId: row.display_label_claim_id,
     subtypeKind: row.subtype_kind,
     identifiers: parseIdentifiers(row.identifiers),
+    eventDate: row.event_date ?? null,
   };
 }
 
@@ -161,6 +170,7 @@ function toClaim(
 
 const ENTITY_SELECT = `
   select
+      count(*) over () as total_count,
       e.id::text,
       e.entity_type,
       display.display_label,
@@ -175,7 +185,8 @@ const ENTITY_SELECT = `
       end as subtype_kind,
       s.reference,
       s.retrieved_at,
-      coalesce(ids.identifiers, '[]'::jsonb) as identifiers
+      coalesce(ids.identifiers, '[]'::jsonb) as identifiers,
+      event_date.literal_value as event_date
   from entities.entity as e
   join entities.entity_display as display on display.id = e.id
   left join entities.item as i on i.id = e.id
@@ -198,47 +209,69 @@ const ENTITY_SELECT = `
           on identifier_source_display.id = identifier.source_id
       where identifier.entity_id = e.id
   ) as ids on true
+  left join lateral (
+      select date_claim.literal_value
+      from knowledge.claim as date_claim
+      where e.entity_type = 'event'
+        and date_claim.subject_id = e.id
+        and date_claim.predicate = 'occurred_during'
+        and date_claim.status = 'active'
+      order by date_claim.id
+      limit 1
+  ) as event_date on true
 `;
+
+export const SEARCH_PAGE_SIZE = 50;
 
 export async function searchEntities(
   searchText: string,
   entityType: EntityType | null,
-): Promise<EntitySummary[]> {
+  page = 1,
+): Promise<EntitySearchResult> {
   const rows = await query<EntityRow>(
     `${ENTITY_SELECT}
      where (
          $1::text = ''
-         or strpos(lower(display.display_label), lower($1)) > 0
+         or strpos(entities.search_normalise(display.display_label), entities.search_normalise($1)) > 0
          or exists (
              select 1
              from knowledge.claim as name_claim
              where name_claim.subject_id = e.id
                and name_claim.predicate = 'has_name'
                and name_claim.status = 'active'
-               and strpos(lower(coalesce(name_claim.literal_value ->> 'value', '')), lower($1)) > 0
+               and strpos(
+                   entities.search_normalise(coalesce(name_claim.literal_value ->> 'value', '')),
+                   entities.search_normalise($1)
+               ) > 0
          )
          or exists (
              select 1
              from entities.external_identifier as search_identifier
              where search_identifier.entity_id = e.id
                and (
-                   strpos(lower(search_identifier.value), lower($1)) > 0
-                   or strpos(lower(search_identifier.namespace), lower($1)) > 0
+                   strpos(entities.search_normalise(search_identifier.value), entities.search_normalise($1)) > 0
+                   or strpos(entities.search_normalise(search_identifier.namespace), entities.search_normalise($1)) > 0
                )
          )
          or (
              e.entity_type = 'source'
              and s.reference is not null
-             and strpos(lower(s.reference), lower($1)) > 0
+             and strpos(entities.search_normalise(s.reference), entities.search_normalise($1)) > 0
          )
      )
        and ($2::text is null or e.entity_type = $2)
-     order by display.display_label, e.id
-     limit 100`,
-    [searchText.trim(), entityType],
+     order by
+         array_position(array['item', 'agent', 'place', 'source', 'event'], e.entity_type),
+         display.display_label,
+         e.id
+     limit $3 offset $4`,
+    [searchText.trim(), entityType, SEARCH_PAGE_SIZE, (page - 1) * SEARCH_PAGE_SIZE],
   );
 
-  return rows.map(toEntitySummary);
+  return {
+    entities: rows.map(toEntitySummary),
+    totalCount: rows[0] ? Number(rows[0].total_count) : 0,
+  };
 }
 
 export async function getEntity(id: string): Promise<EntityDetail | null> {
@@ -325,6 +358,35 @@ export async function getClaimsForEntity(id: string): Promise<ClaimDetail[]> {
      where details.subject_id = $1::uuid or details.object_entity_id = $1::uuid
      order by details.created_at, details.claim_id`,
     [id],
+  );
+  const evidenceByClaim = await getEvidenceForClaims(rows.map((row) => row.claim_id));
+
+  return rows.map((row) => toClaim(row, evidenceByClaim));
+}
+
+export async function getClaimsAssertedByAgent(agentId: string): Promise<ClaimDetail[]> {
+  const rows = await query<ClaimRow>(
+    `${CLAIM_SELECT}
+     where details.asserted_by_agent_id = $1::uuid
+     order by details.created_at, details.claim_id`,
+    [agentId],
+  );
+  const evidenceByClaim = await getEvidenceForClaims(rows.map((row) => row.claim_id));
+
+  return rows.map((row) => toClaim(row, evidenceByClaim));
+}
+
+export async function getClaimsCitingSource(sourceId: string): Promise<ClaimDetail[]> {
+  const rows = await query<ClaimRow>(
+    `${CLAIM_SELECT}
+     where exists (
+         select 1
+         from knowledge.claim_evidence_details as usage
+         where usage.claim_id = details.claim_id
+           and usage.source_id = $1::uuid
+     )
+     order by details.created_at, details.claim_id`,
+    [sourceId],
   );
   const evidenceByClaim = await getEvidenceForClaims(rows.map((row) => row.claim_id));
 

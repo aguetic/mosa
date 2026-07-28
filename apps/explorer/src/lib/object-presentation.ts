@@ -12,7 +12,6 @@ export interface ItemClaimRowView {
 
 export interface ItemSectionView {
   title: string;
-  description: string;
   emptyText: string;
   rows: ItemClaimRowView[];
 }
@@ -34,7 +33,6 @@ export interface ItemPageView {
   currentState: ItemSectionView;
   documents: {
     title: string;
-    description: string;
     emptyText: string;
     rows: ItemDocumentRowView[];
   };
@@ -132,28 +130,22 @@ export function itemPageView(summary: ItemSummary): ItemPageView {
   return {
     origin: {
       title: "Origin",
-      description:
-        "Where and when the item was reportedly made, and any documented findspot before removal. Production place, findspot, and later movement origins remain distinct.",
-      emptyText: "Origin is not recorded.",
+      emptyText: "No origin recorded.",
       rows: summary.originClaims.map((claim) => toClaimRow(claim, originClaimLabel(claim))),
     },
     currentState: {
-      title: "Current recorded state",
-      description:
-        "Current custody and location claims do not imply ownership, lawful title, or legitimate acquisition.",
-      emptyText: "Current custodian and location are not recorded.",
+      title: "Current state",
+      emptyText: "No current custodian or location recorded.",
       rows: summary.currentStateClaims.map((claim) =>
         toClaimRow(claim, currentStateClaimLabel(claim, summary.currentStateClaims)),
       ),
     },
     documents: {
-      title: "Documents about this object",
-      description:
-        "Sources that refer to, depict, evidence, identify, or administratively document this object.",
-      emptyText: "No documents about this object are recorded.",
+      title: "Documents",
+      emptyText: "No documents recorded.",
       rows: summary.documents.map(toDocumentRow),
     },
-    provenanceEmptyText: "No provenance events are recorded.",
+    provenanceEmptyText: "No provenance events recorded.",
     remainingOutgoingClaims: summary.remainingOutgoingClaims,
     remainingIncomingClaims: summary.remainingIncomingClaims,
   };

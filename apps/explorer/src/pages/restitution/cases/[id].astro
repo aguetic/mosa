@@ -25,17 +25,23 @@ const view = detail ? restitutionCaseDetailView(detail) : null;
 ---
 
 <Layout title={view ? `${view.reference} — ${view.title}` : "Restitution case not found"}>
-  <p class="breadcrumb"><a href="/">← Entity search</a></p>
+  <p class="breadcrumb">
+    <a href="/">← Search</a>
+    {view?.items.map((item) => (
+      <>
+        {" · "}
+        <a href={item.href}>{item.itemLabel}</a>
+      </>
+    ))}
+  </p>
 
   {
     loadFailed ? (
-      <div class="notice">
-        The local database could not be read. Check the Astro server console for details.
-      </div>
+      <div class="notice">Unable to load this case. Check that the database is available and reload this page.</div>
     ) : !detail || !view ? (
       <>
-        <h1>Restitution case not found</h1>
-        <p class="lede">No Phase 3 restitution case exists with this identifier.</p>
+        <h1>Not found</h1>
+        <p class="lede">No restitution case matches this identifier.</p>
       </>
     ) : (
       <>
@@ -67,10 +73,10 @@ const view = detail ? restitutionCaseDetailView(detail) : null;
           </div>
         </dl>
 
-        <h2>Parties</h2>
+        <h2>Participants</h2>
         {
           view.partyGroups.length === 0 ? (
-            <div class="empty">No parties are recorded for this case.</div>
+            <div class="empty">No participants recorded.</div>
           ) : (
             <dl class="metadata panel">
               {view.partyGroups.map((group) => (
@@ -92,8 +98,22 @@ const view = detail ? restitutionCaseDetailView(detail) : null;
 
         <h2>Action history</h2>
         {
+          view.sharedActionDocuments.length > 0 && (
+            <p class="claim-meta">
+              Also linked to every action:{" "}
+              {view.sharedActionDocuments.map((document, index) => (
+                <>
+                  {index > 0 ? "; " : ""}
+                  <a href={document.sourceHref}>{document.sourceLabel}</a> · {document.roleLabel}
+                  {document.relationshipLabel ? ` · ${document.relationshipLabel}` : ""}
+                </>
+              ))}
+            </p>
+          )
+        }
+        {
           view.actions.length === 0 ? (
-            <div class="empty">No actions are recorded for this case.</div>
+            <div class="empty">No actions recorded.</div>
           ) : (
             <section class="claims" aria-label="Action history">
               {view.actions.map((action) => (

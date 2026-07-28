@@ -1,6 +1,7 @@
 ---
 import ProvenanceEventCard from "../../components/ProvenanceEventCard.astro";
 import Layout from "../../layouts/Layout.astro";
+import { predicatePhrase } from "../../lib/labels";
 import { getProvenanceEvent, type ProvenanceEventDetail } from "../../lib/provenance";
 import {
   generateProvenanceEventTitle,
@@ -33,15 +34,15 @@ const detailView = event ? provenanceEventDetailView(event) : null;
 ---
 
 <Layout title={title ?? "Provenance event not found"}>
-  <p class="breadcrumb"><a href="/">← Entity search</a></p>
+  <p class="breadcrumb"><a href="/">← Search</a></p>
 
   {
     loadFailed ? (
-      <div class="notice">The local database could not be read. Check the Astro server console for details.</div>
+      <div class="notice">Unable to load this event. Check that the database is available and reload this page.</div>
     ) : !event || !detailView ? (
       <>
-        <h1>Provenance event not found</h1>
-        <p class="lede">No Phase 2 event exists with this identifier.</p>
+        <h1>Not found</h1>
+        <p class="lede">No provenance event matches this identifier.</p>
       </>
     ) : (
       <>
@@ -49,8 +50,7 @@ const detailView = event ? provenanceEventDetailView(event) : null;
         <h1>{title}</h1>
         {summaryText && <p class="lede">{summaryText}</p>}
         <dl class="metadata panel">
-          <div><dt>Event ID</dt><dd><code>{event.id}</code></dd></div>
-          <div><dt>Operational kind</dt><dd>{event.eventKind}</dd></div>
+          <div><dt>Kind</dt><dd>{event.eventKind}</dd></div>
         </dl>
 
         {
@@ -75,24 +75,25 @@ const detailView = event ? provenanceEventDetailView(event) : null;
           )
         }
 
-        <h2>Attributed event statements</h2>
+        <h2>Statements</h2>
         <ProvenanceEventCard event={event} />
 
         {
           event.incomingStatements.length > 0 && (
             <>
-              <h2>Claims pointing to this event</h2>
+              <h2>Incoming claims</h2>
               <section class="claims">
                 {event.incomingStatements.map((statement) => (
                   <article class="claim-card">
                     <p class="claim-expression">
                       <a href={`/events/${statement.subjectId}`}>{statement.subjectLabel}</a>{" "}
-                      <span class="predicate">{statement.predicate}</span>{" "}
+                      <span class="predicate">{predicatePhrase(statement.predicate)}</span>{" "}
                       <span>{provenanceStatementValue(statement)}</span>
                     </p>
                     <p class="claim-meta">
                       Asserted by {statement.assertedByLabel ?? "unrecorded agent"} ·{" "}
-                      {statement.evidence.length} evidence {statement.evidence.length === 1 ? "link" : "links"}
+                      {statement.evidence.length}{" "}
+                      {statement.evidence.length === 1 ? "evidence link" : "evidence links"}
                     </p>
                   </article>
                 ))}

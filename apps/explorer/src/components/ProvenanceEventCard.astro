@@ -1,4 +1,5 @@
 ---
+import { formatSourceLabel, predicateLabel } from "../lib/labels";
 import type { ProvenanceEvent, ProvenanceStatement } from "../lib/provenance";
 import {
   generateProvenanceEventTitle,
@@ -57,8 +58,27 @@ function entityHref(id: string, entityType: string | null): string {
 }
 
 function fieldLabel(statement: ProvenanceStatement): string {
-  return FIELD_LABELS[statement.predicate] ?? statement.predicate;
+  return FIELD_LABELS[statement.predicate] ?? predicateLabel(statement.predicate);
 }
+
+function attributionKey(statement: ProvenanceStatement): string {
+  return JSON.stringify([
+    statement.assertedByAgentId,
+    statement.status,
+    statement.evidence.map((evidence) => [
+      evidence.relationship,
+      evidence.sourceId,
+      evidence.locator,
+      evidence.excerpt,
+    ]),
+  ]);
+}
+
+const sharedAttribution =
+  statements.length > 1 &&
+  statements.every((statement) => attributionKey(statement) === attributionKey(statements[0]))
+    ? statements[0]
+    : null;
 ---
 
 <article class="claim-card">
@@ -70,8 +90,37 @@ function fieldLabel(statement: ProvenanceStatement): string {
   </div>
 
   {
+    sharedAttribution && (
+      <>
+        <p class="claim-meta">
+          All statements status {sharedAttribution.status} · asserted by{" "}
+          {sharedAttribution.assertedByAgentId ? (
+            <a href={`/entities/${sharedAttribution.assertedByAgentId}`}>
+              {sharedAttribution.assertedByLabel ?? sharedAttribution.assertedByAgentId}
+            </a>
+          ) : (
+            "unrecorded agent"
+          )}
+        </p>
+        {sharedAttribution.evidence.length > 0 && (
+          <ul class="evidence-list">
+            {sharedAttribution.evidence.map((evidence) => (
+              <li>
+                <strong>{evidence.relationship}</strong> ·{" "}
+                <a href={`/entities/${evidence.sourceId}`}>{formatSourceLabel(evidence.sourceLabel)}</a>
+                {evidence.locator ? ` · ${evidence.locator}` : ""}
+                {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
+              </li>
+            ))}
+          </ul>
+        )}
+      </>
+    )
+  }
+
+  {
     statements.length === 0 ? (
-      <div class="empty">No attributed event statements.</div>
+      <div class="empty">No statements recorded.</div>
     ) : (
       <dl class="metadata panel">
         {statements.map((statement) => (
@@ -88,28 +137,42 @@ function fieldLabel(statement: ProvenanceStatement): string {
               {statement.literalLanguage && (
                 <span class="muted"> ({statement.literalLanguage})</span>
               )}
-              <p class="claim-meta">
-                <a href={`/claims/${statement.id}`}>View claim</a> · status {statement.status} ·
-                Asserted by{" "}
-                {statement.assertedByAgentId ? (
-                  <a href={`/entities/${statement.assertedByAgentId}`}>
-                    {statement.assertedByLabel ?? statement.assertedByAgentId}
+              {sharedAttribution ? (
+                <p class="claim-meta">
+                  <a href={`/claims/${statement.id}`} aria-label={`View ${fieldLabel(statement)} claim`}>
+                    View claim
                   </a>
-                ) : (
-                  "unrecorded agent"
-                )}
-              </p>
-              {statement.evidence.length > 0 && (
-                <ul class="evidence-list">
-                  {statement.evidence.map((evidence) => (
-                    <li>
-                      <strong>{evidence.relationship}</strong> ·{" "}
-                      <a href={`/entities/${evidence.sourceId}`}>{evidence.sourceLabel}</a>
-                      {evidence.locator ? ` · ${evidence.locator}` : ""}
-                      {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
-                    </li>
-                  ))}
-                </ul>
+                </p>
+              ) : (
+                <>
+                  <p class="claim-meta">
+                    <a href={`/claims/${statement.id}`} aria-label={`View ${fieldLabel(statement)} claim`}>
+                      View claim
+                    </a>{" "}
+                    · status {statement.status} · Asserted by{" "}
+                    {statement.assertedByAgentId ? (
+                      <a href={`/entities/${statement.assertedByAgentId}`}>
+                        {statement.assertedByLabel ?? statement.assertedByAgentId}
+                      </a>
+                    ) : (
+                      "unrecorded agent"
+                    )}
+                  </p>
+                  {statement.evidence.length > 0 && (
+                    <ul class="evidence-list">
+                      {statement.evidence.map((evidence) => (
+                        <li>
+                          <strong>{evidence.relationship}</strong> ·{" "}
+                          <a href={`/entities/${evidence.sourceId}`}>
+                            {formatSourceLabel(evidence.sourceLabel)}
+                          </a>
+                          {evidence.locator ? ` · ${evidence.locator}` : ""}
+                          {evidence.excerpt ? ` · “${evidence.excerpt}”` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
               )}
             </dd>
           </div>

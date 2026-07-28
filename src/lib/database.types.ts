@@ -244,6 +244,7 @@ export type Database = {
           display_label_claim_id: string
         }[]
       }
+      search_normalise: { Args: { p_value: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

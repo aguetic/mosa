@@ -1,3 +1,4 @@
+import { formatSourceLabel } from "./labels";
 import type { ProvenanceEvent, ProvenanceStatement } from "./provenance";
 
 export interface ProvenanceDateLiteral {
@@ -414,11 +415,12 @@ export function sparseMovementSummaryText(event: ProvenanceEvent): string | null
   }
 
   const evidence = primaryMovedItemEvidence(event);
-  const sourceLabel = evidence?.sourceLabel?.trim() || null;
+  const rawSourceLabel = evidence?.sourceLabel?.trim() || null;
+  const sourceLabel = rawSourceLabel ? formatSourceLabel(rawSourceLabel) : null;
   const excerpt = evidence?.excerpt?.trim() || null;
 
   if (sourceLabel && excerpt) {
-    return `${sourceLabel} reports that the item “${excerpt}”.`;
+    return `According to ${sourceLabel}: “${excerpt}”.`;
   }
 
   if (sourceLabel) {
@@ -559,12 +561,13 @@ function characterisationRows(statement: ProvenanceStatement): ProvenanceEventDe
   }
 
   if (evidence?.sourceLabel) {
+    const sourceLabel = formatSourceLabel(evidence.sourceLabel);
     const relationshipLabel =
       evidence.relationship === "mentions"
-        ? `Indirect report in ${evidence.sourceLabel}`
+        ? `Indirect report in ${sourceLabel}`
         : evidence.relationship === "supports"
-          ? `Direct support in ${evidence.sourceLabel}`
-          : `${evidence.relationship} in ${evidence.sourceLabel}`;
+          ? `Direct support in ${sourceLabel}`
+          : `${evidence.relationship} in ${sourceLabel}`;
 
     rows.push({
       label: "Evidence type",
@@ -681,6 +684,20 @@ export function summarizeProvenanceEvent(event: ProvenanceEvent): ProvenanceEven
     facts: compactFacts(event),
     notices: eventNotices(event, dateSummary),
     sources: eventSources(event),
+  };
+}
+
+export function partitionProvenanceEvents(events: readonly ProvenanceEvent[]): {
+  dated: ProvenanceEvent[];
+  undated: ProvenanceEvent[];
+} {
+  const ordered = orderProvenanceEvents(events);
+  const isDated = (event: ProvenanceEvent) =>
+    summarizeProvenanceDate(event.statements).category === "dated";
+
+  return {
+    dated: ordered.filter(isDated),
+    undated: ordered.filter((event) => !isDated(event)),
   };
 }
 
