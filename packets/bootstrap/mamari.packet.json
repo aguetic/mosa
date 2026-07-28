@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "dataset": {
+    "key": "mosa-bootstrap",
+    "version": "2026-07-28",
+    "title": "MoSA bootstrap dossiers (allowlisted summary claims)"
+  },
+  "objects": [
+    {
+      "key": "item:mamari",
+      "kind": "artefact",
+      "externalIdentifiers": [
+        {
+          "namespace": "sscc-catalogue",
+          "value": "P 003",
+          "source": "source:beweb:sscc-3557"
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "key": "agent:wikipedia-contributors",
+      "kind": "organisation"
+    }
+  ],
+  "places": [],
+  "sources": [
+    {
+      "key": "source:wikipedia:rongorongo-text-c",
+      "kind": "webpage",
+      "url": "https://en.wikipedia.org/wiki/Rongorongo_text_C",
+      "retrievedAt": "2026-07-28T00:00:00Z",
+      "about": ["item:mamari"],
+      "assertedBy": "agent:wikipedia-contributors"
+    },
+    {
+      "key": "source:beweb:sscc-3557",
+      "kind": "institutional_record",
+      "url": "https://www.beweb.chiesacattolica.it/istituticulturali/istituto/3557",
+      "retrievedAt": "2026-07-28T00:00:00Z",
+      "about": ["item:mamari"]
+    }
+  ],
+  "claims": [
+    {
+      "key": "claim:wikipedia-contributors:name",
+      "subject": "agent:wikipedia-contributors",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Wikipedia contributors"
+      },
+      "assertedBy": "agent:wikipedia-contributors",
+      "evidence": {
+        "key": "evidence:wikipedia-contributors:name",
+        "source": "source:wikipedia:rongorongo-text-c",
+        "relationship": "supports",
+        "locator": "Page authorship",
+        "excerpt": "Wikipedia contributors"
+      }
+    },
+    {
+      "key": "claim:mamari:name",
+      "subject": "item:mamari",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Mamari"
+      },
+      "assertedBy": "agent:wikipedia-contributors",
+      "evidence": {
+        "key": "evidence:mamari:name",
+        "source": "source:wikipedia:rongorongo-text-c",
+        "relationship": "mentions",
+        "locator": "Article lead",
+        "excerpt": "Mamari"
+      }
+    },
+    {
+      "key": "claim:mamari:name:text-c",
+      "subject": "item:mamari",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Text C",
+        "language": "en"
+      },
+      "assertedBy": "agent:wikipedia-contributors",
+      "evidence": {
+        "key": "evidence:mamari:name:text-c",
+        "source": "source:wikipedia:rongorongo-text-c",
+        "relationship": "supports",
+        "locator": "Article title and scholarly designation",
+        "excerpt": "Text C"
+      }
+    }
+  ]
+}

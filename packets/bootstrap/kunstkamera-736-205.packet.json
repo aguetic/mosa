@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "dataset": {
+    "key": "mosa-bootstrap",
+    "version": "2026-07-28",
+    "title": "MoSA bootstrap dossiers (allowlisted summary claims)"
+  },
+  "objects": [
+    {
+      "key": "item:kunstkamera-736-205",
+      "kind": "artefact",
+      "externalIdentifiers": [
+        {
+          "namespace": "kunstkamera",
+          "value": "МАЭ № 736-205",
+          "source": "source:kunstkamera:267042"
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "key": "agent:kunstkamera",
+      "kind": "organisation"
+    }
+  ],
+  "places": [
+    {
+      "key": "place:saint-petersburg",
+      "kind": "city"
+    }
+  ],
+  "sources": [
+    {
+      "key": "source:kunstkamera:267042",
+      "kind": "institutional_record",
+      "url": "https://collection.kunstkamera.ru/en/entity/OBJECT/267042",
+      "retrievedAt": "2026-07-28T00:00:00Z",
+      "about": ["item:kunstkamera-736-205"],
+      "assertedBy": "agent:kunstkamera"
+    }
+  ],
+  "claims": [
+    {
+      "key": "claim:kunstkamera:name",
+      "subject": "agent:kunstkamera",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Kunstkamera"
+      },
+      "assertedBy": "agent:kunstkamera",
+      "evidence": {
+        "key": "evidence:kunstkamera:name",
+        "source": "source:kunstkamera:267042",
+        "relationship": "supports",
+        "locator": "Publisher or institution field",
+        "excerpt": "Kunstkamera"
+      }
+    },
+    {
+      "key": "claim:saint-petersburg:name",
+      "subject": "place:saint-petersburg",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Saint Petersburg"
+      },
+      "assertedBy": "agent:kunstkamera",
+      "evidence": {
+        "key": "evidence:saint-petersburg:name",
+        "source": "source:kunstkamera:267042",
+        "relationship": "supports",
+        "locator": "Institution location",
+        "excerpt": "Saint Petersburg"
+      }
+    },
+    {
+      "key": "claim:kk:held-by",
+      "subject": "item:kunstkamera-736-205",
+      "predicate": "held_by",
+      "object": "agent:kunstkamera",
+      "assertedBy": "agent:kunstkamera",
+      "evidence": {
+        "key": "evidence:kk:held-by",
+        "source": "source:kunstkamera:267042",
+        "relationship": "supports",
+        "locator": "Collection record",
+        "excerpt": "Kunstkamera"
+      }
+    },
+    {
+      "key": "claim:kk:located-at",
+      "subject": "item:kunstkamera-736-205",
+      "predicate": "located_at",
+      "object": "place:saint-petersburg",
+      "assertedBy": "agent:kunstkamera",
+      "evidence": {
+        "key": "evidence:kk:located-at",
+        "source": "source:kunstkamera:267042",
+        "relationship": "supports",
+        "locator": "Institution location",
+        "excerpt": "Saint Petersburg"
+      }
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "dataset": {
+    "key": "mosa-bootstrap",
+    "version": "2026-07-28",
+    "title": "MoSA bootstrap dossiers (allowlisted summary claims)"
+  },
+  "objects": [
+    {
+      "key": "item:te-papa-moai-kavakava",
+      "kind": "artefact",
+      "externalIdentifiers": [
+        {
+          "namespace": "te-papa-inventory",
+          "value": "OL000342",
+          "source": "source:te-papa:ol000342"
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "key": "agent:te-papa",
+      "kind": "organisation"
+    }
+  ],
+  "places": [
+    {
+      "key": "place:wellington",
+      "kind": "city"
+    }
+  ],
+  "sources": [
+    {
+      "key": "source:te-papa:ol000342",
+      "kind": "institutional_record",
+      "url": "https://collections.tepapa.govt.nz/object/OL000342",
+      "retrievedAt": "2026-07-28T00:00:00Z",
+      "about": ["item:te-papa-moai-kavakava"],
+      "assertedBy": "agent:te-papa"
+    }
+  ],
+  "claims": [
+    {
+      "key": "claim:te-papa:name",
+      "subject": "agent:te-papa",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Museum of New Zealand Te Papa Tongarewa"
+      },
+      "assertedBy": "agent:te-papa",
+      "evidence": {
+        "key": "evidence:te-papa:name",
+        "source": "source:te-papa:ol000342",
+        "relationship": "supports",
+        "locator": "Catalogue publisher",
+        "excerpt": "Museum of New Zealand Te Papa Tongarewa"
+      }
+    },
+    {
+      "key": "claim:wellington:name",
+      "subject": "place:wellington",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Wellington"
+      },
+      "assertedBy": "agent:te-papa",
+      "evidence": {
+        "key": "evidence:wellington:name",
+        "source": "source:te-papa:ol000342",
+        "relationship": "supports",
+        "locator": "Catalogue location",
+        "excerpt": "Wellington"
+      }
+    },
+    {
+      "key": "claim:te-papa-moai:name",
+      "subject": "item:te-papa-moai-kavakava",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "moai kavakava",
+        "language": "en"
+      },
+      "assertedBy": "agent:te-papa",
+      "evidence": {
+        "key": "evidence:te-papa-moai:name",
+        "source": "source:te-papa:ol000342",
+        "relationship": "supports",
+        "locator": "Object title",
+        "excerpt": "moai kavakava"
+      }
+    },
+    {
+      "key": "claim:te-papa-moai:held-by",
+      "subject": "item:te-papa-moai-kavakava",
+      "predicate": "held_by",
+      "object": "agent:te-papa",
+      "assertedBy": "agent:te-papa",
+      "evidence": {
+        "key": "evidence:te-papa-moai:held-by",
+        "source": "source:te-papa:ol000342",
+        "relationship": "supports",
+        "locator": "Catalogue holding institution",
+        "excerpt": "Museum of New Zealand Te Papa Tongarewa"
+      }
+    },
+    {
+      "key": "claim:te-papa-moai:located-at",
+      "subject": "item:te-papa-moai-kavakava",
+      "predicate": "located_at",
+      "object": "place:wellington",
+      "assertedBy": "agent:te-papa",
+      "evidence": {
+        "key": "evidence:te-papa-moai:located-at",
+        "source": "source:te-papa:ol000342",
+        "relationship": "supports",
+        "locator": "Catalogue location",
+        "excerpt": "Wellington"
+      }
+    }
+  ]
+}

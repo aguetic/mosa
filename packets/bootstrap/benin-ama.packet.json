@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "dataset": {
+    "key": "mosa-bootstrap",
+    "version": "2026-07-28",
+    "title": "MoSA bootstrap dossiers (allowlisted summary claims)"
+  },
+  "objects": [
+    {
+      "key": "item:benin-ama",
+      "kind": "artefact",
+      "externalIdentifiers": [
+        {
+          "namespace": "british-museum",
+          "value": "Af1898,0115.30",
+          "source": "source:bm:af1898-0115-30"
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "key": "agent:british-museum",
+      "kind": "organisation"
+    }
+  ],
+  "places": [
+    {
+      "key": "place:benin-city",
+      "kind": "city"
+    }
+  ],
+  "sources": [
+    {
+      "key": "source:bm:af1898-0115-30",
+      "kind": "institutional_record",
+      "url": "https://www.britishmuseum.org/collection/object/E_Af1898-0115-30",
+      "retrievedAt": "2026-07-28T00:00:00Z",
+      "about": ["item:benin-ama"],
+      "assertedBy": "agent:british-museum"
+    }
+  ],
+  "claims": [
+    {
+      "key": "claim:bm:name",
+      "subject": "agent:british-museum",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "British Museum"
+      },
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:bm:name:af1898",
+        "source": "source:bm:af1898-0115-30",
+        "relationship": "supports",
+        "locator": "Publisher or institution field",
+        "excerpt": "British Museum"
+      }
+    },
+    {
+      "key": "claim:benin-city:name",
+      "subject": "place:benin-city",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Benin City"
+      },
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:benin-city:name",
+        "source": "source:bm:af1898-0115-30",
+        "relationship": "supports",
+        "locator": "Production place",
+        "excerpt": "Benin City"
+      }
+    },
+    {
+      "key": "claim:benin-ama:name",
+      "subject": "item:benin-ama",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Plaque depicting an Oba with mudfish legs and two leopards",
+        "language": "en"
+      },
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:benin-ama:name",
+        "source": "source:bm:af1898-0115-30",
+        "relationship": "supports",
+        "locator": "Object title",
+        "excerpt": "Plaque depicting an Oba with mudfish legs and two leopards"
+      }
+    },
+    {
+      "key": "claim:benin-ama:made-at",
+      "subject": "item:benin-ama",
+      "predicate": "made_at",
+      "object": "place:benin-city",
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:benin-ama:made-at",
+        "source": "source:bm:af1898-0115-30",
+        "relationship": "supports",
+        "locator": "Production place",
+        "excerpt": "Made in: Benin City"
+      }
+    },
+    {
+      "key": "claim:benin-ama:held-by",
+      "subject": "item:benin-ama",
+      "predicate": "held_by",
+      "object": "agent:british-museum",
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:benin-ama:held-by",
+        "source": "source:bm:af1898-0115-30",
+        "relationship": "supports",
+        "locator": "Museum / Institution field",
+        "excerpt": "British Museum"
+      }
+    }
+  ]
+}
