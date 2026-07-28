@@ -26,6 +26,11 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
+      HEALTHCHECK_TOKEN: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
       // Deprecated local-development alias for DATABASE_URL.
       LOCAL_DATABASE_URL: envField.string({
         context: "server",
