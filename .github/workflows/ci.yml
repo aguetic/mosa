@@ -7,7 +7,7 @@ on:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   static:
@@ -79,3 +79,77 @@ jobs:
 
       - name: Check generated database types
         run: mise x -- pnpm run db:types:check
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Build production image
+        run: docker build -t mosa-explorer:ci .
+
+  deploy:
+    name: Deploy production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [static, database, docker]
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
+
+      - name: Resolve pnpm store path
+        run: echo "PNPM_STORE_PATH=$(mise x -- pnpm store path)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: mise x -- pnpm install --frozen-lockfile
+
+      - name: Apply production migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          mise x -- pnpm exec supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_ID }}"
+          mise x -- pnpm exec supabase db push --password "${{ secrets.SUPABASE_DB_PASSWORD }}"
+
+      - name: Trigger Coolify deployment
+        run: |
+          curl --fail --show-error --silent --request GET \
+            "${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}"
+
+      - name: Smoke-test production URL
+        env:
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PRODUCTION_URL}" ]; then
+            echo "PRODUCTION_URL secret is required" >&2
+            exit 1
+          fi
+          deadline=$((SECONDS + 180))
+          until curl --fail --show-error --silent --max-time 10 "${PRODUCTION_URL}" >/dev/null; do
+            if [ "${SECONDS}" -ge "${deadline}" ]; then
+              echo "Production URL did not become reachable within 180s: ${PRODUCTION_URL}" >&2
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Production smoke test passed for ${PRODUCTION_URL}"
+          echo "deployed_sha=${GITHUB_SHA}" >> "${GITHUB_STEP_SUMMARY}"
