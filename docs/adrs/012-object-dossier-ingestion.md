@@ -56,7 +56,7 @@ These costs are accepted because the alternative — hand-written SQL or fixture
 ## Deferred work
 
 - **Artifact preservation** (ADR 005): an additive `ingestion.artifact_version` table recording downloaded files, content hashes, media types and storage URIs per source. No existing entities, sources, claims, evidence or UUIDs need to change when it arrives. Downloads happen outside the import transaction.
-- **Bootstrap rollout**: once the single-object slice passes, translate the remaining fixture dossiers into packets, validate locally, import into fresh staging, compare competency-query results against fixtures, back up production, dry-run, review the planned creates and reuses, apply once, and verify that an immediate rerun reports a no-op.
+- **Bootstrap rollout**: bootstrap packets for URL-backed dossiers live under `packets/bootstrap/` (`dataset.key = mosa-bootstrap`). Remaining fixture cases without absolute http(s) sources, and all non-allowlisted claims (provenance events, restitution, classifications, etc.), stay deferred. Staging/production apply: validate with `pnpm run db:import:bootstrap:check`, dry-run then `--apply` against a write role, confirm an immediate re-run reports a no-op. Do not load fixture SQL into staging or production.
 - **AI staging**: extracted claims land in staging tables for review before promotion to `knowledge.claim`.
 
 ## Alternatives considered

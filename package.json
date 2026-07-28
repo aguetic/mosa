@@ -38,6 +38,8 @@
     "db:import:dossier": "tsx scripts/import-object-dossier.ts",
     "db:import:dossier:check": "tsx scripts/import-object-dossier.ts --check",
     "db:import:verify": "tsx scripts/verify-object-dossier-import.ts",
+    "db:import:bootstrap": "tsx scripts/import-bootstrap-packets.ts",
+    "db:import:bootstrap:check": "tsx scripts/import-bootstrap-packets.ts --check",
     "db:fixtures:phase1": "tsx scripts/load-phase-1-fixtures.ts",
     "db:fixtures:phase2": "tsx scripts/load-phase-2-fixtures.ts",
     "db:fixtures:phase3": "tsx scripts/load-phase-3-fixtures.ts",

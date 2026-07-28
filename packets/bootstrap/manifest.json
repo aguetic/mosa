@@ -1,0 +1,11 @@
+{
+  "datasetKey": "mosa-bootstrap",
+  "version": "2026-07-28",
+  "packets": [
+    "hoa-hakananai-a.packet.json",
+    "kunstkamera-736-205.packet.json",
+    "te-papa-moai-kavakava.packet.json",
+    "mamari.packet.json",
+    "benin-ama.packet.json"
+  ]
+}
