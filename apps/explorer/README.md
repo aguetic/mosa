@@ -16,7 +16,7 @@ pnpm run explorer:dev
 
 Open <http://localhost:4321>.
 
-The app defaults to the standard local Supabase PostgreSQL URL. Override it by copying `.env.example` to `.env` and changing `LOCAL_DATABASE_URL`. The explorer rejects non-loopback database hosts and opens every connection with PostgreSQL's read-only transaction setting.
+The app defaults to the standard local Supabase PostgreSQL URL. Override it by copying `.env.example` to `.env` and setting `DATABASE_URL` (or the deprecated `LOCAL_DATABASE_URL` alias). Outside production, only loopback hosts are accepted. Production requires `DATABASE_URL` and `DATABASE_SSL_CA`. Every connection opens with PostgreSQL's read-only transaction setting.
 
 ## Views
 
