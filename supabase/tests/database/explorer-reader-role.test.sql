@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
 
-select plan(11);
+select plan(12);
 
 select has_role('explorer_reader', 'explorer_reader role exists');
 
@@ -11,6 +11,10 @@ select isnt_superuser(
     'explorer_reader',
     'explorer_reader is not a superuser'
 );
+
+-- Seed under a privileged role, then assert RLS still returns the row to explorer_reader.
+insert into entities.entity (id, entity_type)
+values ('cccccccc-cccc-4ccc-8ccc-cccccccccccc', 'item');
 
 set local role explorer_reader;
 
@@ -26,6 +30,16 @@ select lives_ok(
     select entities.search_normalise('Hoa Hakananai''a');
     $$,
     'explorer_reader can select explorer query surfaces'
+);
+
+select is(
+    (
+        select count(*)::integer
+        from entities.entity
+        where id = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc'
+    ),
+    1,
+    'explorer_reader RLS policies expose entity rows'
 );
 
 select throws_ok(
