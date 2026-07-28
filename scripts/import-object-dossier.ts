@@ -4,7 +4,7 @@ import { runImport } from "./lib/object-dossier/import";
 import { readPacketFile } from "./lib/object-dossier/packet";
 import { formatOutcome } from "./lib/object-dossier/report";
 import { validatePacket } from "./lib/object-dossier/validate";
-import { getLocalDatabaseUrl } from "./lib/supabase-local";
+import { resolveImportDatabaseUrl } from "./lib/supabase-local";
 
 const projectRoot = path.resolve(__dirname, "..");
 
@@ -16,18 +16,21 @@ import plan without writing anything.
 Options:
   --check               Validate the packet only; do not connect to a database.
   --apply               Write the packet to the database in one transaction.
-  --database-url <url>  Target database. Defaults to LOCAL_DATABASE_URL,
-                        SUPABASE_DB_URL or the local Supabase stack.
+  --linked              Use the project from \`supabase link\` plus
+                        SUPABASE_DB_PASSWORD (same pattern as \`db push\`).
+  --database-url <url>  Explicit target database URL. Defaults to
+                        LOCAL_DATABASE_URL, SUPABASE_DB_URL or the local stack.
   --help                Show this message.
 `;
 
 async function main(): Promise<void> {
   const { values, positionals } = parseArgs({
-    args: process.argv.slice(2),
+    args: process.argv.slice(2).filter((arg) => arg !== "--"),
     allowPositionals: true,
     options: {
       check: { type: "boolean", default: false },
       apply: { type: "boolean", default: false },
+      linked: { type: "boolean", default: false },
       "database-url": { type: "string" },
       help: { type: "boolean", default: false },
     },
@@ -69,7 +72,10 @@ async function main(): Promise<void> {
     return;
   }
 
-  const databaseUrl = values["database-url"] ?? (await getLocalDatabaseUrl(projectRoot));
+  const databaseUrl = await resolveImportDatabaseUrl(projectRoot, {
+    databaseUrl: values["database-url"],
+    linked: values.linked,
+  });
   const outcome = await runImport(validation.packet, {
     databaseUrl,
     apply: values.apply,

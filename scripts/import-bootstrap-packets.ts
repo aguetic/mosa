@@ -5,7 +5,7 @@ import { runImport } from "./lib/object-dossier/import";
 import { readPacketFile } from "./lib/object-dossier/packet";
 import { formatOutcome } from "./lib/object-dossier/report";
 import { validatePacket } from "./lib/object-dossier/validate";
-import { getLocalDatabaseUrl } from "./lib/supabase-local";
+import { resolveImportDatabaseUrl } from "./lib/supabase-local";
 
 const projectRoot = path.resolve(__dirname, "..");
 const bootstrapDir = path.join(projectRoot, "packets", "bootstrap");
@@ -25,8 +25,10 @@ under dataset key mosa-bootstrap.
 Options:
   --check               Validate packets only; do not connect to a database.
   --apply               Write each packet (default is dry-run).
-  --database-url <url>  Target database. Defaults to LOCAL_DATABASE_URL,
-                        SUPABASE_DB_URL or the local Supabase stack.
+  --linked              Use the project from \`supabase link\` plus
+                        SUPABASE_DB_PASSWORD (same pattern as \`db push\`).
+  --database-url <url>  Explicit target database URL. Defaults to
+                        LOCAL_DATABASE_URL, SUPABASE_DB_URL or the local stack.
   --help                Show this message.
 `;
 
@@ -45,6 +47,7 @@ async function main(): Promise<void> {
     options: {
       check: { type: "boolean", default: false },
       apply: { type: "boolean", default: false },
+      linked: { type: "boolean", default: false },
       "database-url": { type: "string" },
       help: { type: "boolean", default: false },
     },
@@ -75,6 +78,13 @@ async function main(): Promise<void> {
     }
   }
 
+  const databaseUrl = values.check
+    ? undefined
+    : await resolveImportDatabaseUrl(projectRoot, {
+        databaseUrl: values["database-url"],
+        linked: values.linked,
+      });
+
   for (const packetPath of packetPaths) {
     const raw = await readPacketFile(packetPath);
     const validation = validatePacket(raw);
@@ -101,10 +111,9 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const databaseUrl = values["database-url"] ?? (await getLocalDatabaseUrl(projectRoot));
     process.stdout.write(`\n=== ${path.relative(projectRoot, packetPath)} ===\n`);
     const outcome = await runImport(validation.packet, {
-      databaseUrl,
+      databaseUrl: databaseUrl as string,
       apply: values.apply,
       applicationName: "mosa-bootstrap-importer",
     });

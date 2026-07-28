@@ -35,13 +35,24 @@ the bootstrap Hoa packet above for real imports.
 # Validate every bootstrap packet
 pnpm run db:import:bootstrap:check
 
-# Dry-run plan against local/staging/production
-pnpm run db:import:bootstrap --database-url "$DATABASE_URL"
+# Dry-run against the local stack (default)
+pnpm run db:import:bootstrap
 
-# Apply once, then re-run to confirm no-op
-pnpm run db:import:bootstrap --database-url "$DATABASE_URL" --apply
+# Dry-run / apply against the linked remote project
+# (same secrets pattern as `supabase db push`)
+export SUPABASE_DB_PASSWORD='…'   # database password for the linked project
+pnpm run db:import:bootstrap --linked
+pnpm run db:import:bootstrap --linked --apply
+pnpm run db:import:bootstrap --linked --apply   # expect no-op
+
+# Or pass an explicit URL (escape hatch)
 pnpm run db:import:bootstrap --database-url "$DATABASE_URL" --apply
 ```
+
+`--linked` and `--database-url` are mutually exclusive. Default (neither flag)
+is the local Supabase stack, so you cannot accidentally write to production.
+Use a write-capable database role (the project database password), not the
+read-only explorer runtime login.
 
 Do not load `supabase/fixtures/*.sql` into staging or production.
 
