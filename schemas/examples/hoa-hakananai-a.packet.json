@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "dataset": {
+    "key": "mosa-bootstrap-example",
+    "version": "2026-07-28",
+    "title": "Synthetic example dossier: Hoa Hakananai'a"
+  },
+  "objects": [
+    {
+      "key": "item:hoa-hakananai-a",
+      "kind": "artefact",
+      "externalIdentifiers": [
+        {
+          "namespace": "british-museum",
+          "value": "Oc1869,1005.1",
+          "source": "source:bm:oc1869-1005-1"
+        },
+        {
+          "namespace": "british-museum-aoa",
+          "value": "1869,10-5.1",
+          "source": "source:bm:oc1869-1005-1"
+        }
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "key": "agent:british-museum",
+      "kind": "organisation"
+    }
+  ],
+  "places": [
+    {
+      "key": "place:london",
+      "kind": "city"
+    },
+    {
+      "key": "place:rano-kao",
+      "kind": "volcano"
+    },
+    {
+      "key": "place:orongo",
+      "kind": "site"
+    }
+  ],
+  "sources": [
+    {
+      "key": "source:bm:oc1869-1005-1",
+      "kind": "institutional_record",
+      "url": "https://www.britishmuseum.org/collection/object/E_Oc1869-1005-1",
+      "retrievedAt": "2026-07-28T00:00:00Z",
+      "about": ["item:hoa-hakananai-a"],
+      "assertedBy": "agent:british-museum"
+    }
+  ],
+  "claims": [
+    {
+      "key": "claim:hoa:name:bm",
+      "subject": "item:hoa-hakananai-a",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Hoa Hakananaiʻa"
+      },
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:hoa:name:bm",
+        "source": "source:bm:oc1869-1005-1",
+        "relationship": "supports",
+        "locator": "Object name field",
+        "excerpt": "Hoa Hakananaiʻa"
+      }
+    },
+    {
+      "key": "claim:bm:name",
+      "subject": "agent:british-museum",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "British Museum"
+      },
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:bm:name",
+        "source": "source:bm:oc1869-1005-1",
+        "relationship": "supports",
+        "locator": "Publisher or institution field",
+        "excerpt": "British Museum"
+      }
+    },
+    {
+      "key": "claim:london:name",
+      "subject": "place:london",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "London"
+      },
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:london:name",
+        "source": "source:bm:oc1869-1005-1",
+        "relationship": "supports",
+        "locator": "Museum location field",
+        "excerpt": "London"
+      }
+    },
+    {
+      "key": "claim:rano-kao:name",
+      "subject": "place:rano-kao",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Rano Kao"
+      },
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:rano-kao:name",
+        "source": "source:bm:oc1869-1005-1",
+        "relationship": "supports",
+        "locator": "Production place",
+        "excerpt": "Rano Kao"
+      }
+    },
+    {
+      "key": "claim:orongo:name",
+      "subject": "place:orongo",
+      "predicate": "has_name",
+      "literal": {
+        "type": "text",
+        "value": "Orongo"
+      },
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:orongo:name",
+        "source": "source:bm:oc1869-1005-1",
+        "relationship": "supports",
+        "locator": "Findspot",
+        "excerpt": "Orongo, ceremonial centre"
+      }
+    },
+    {
+      "key": "claim:hoa:made-at:rano-kao",
+      "subject": "item:hoa-hakananai-a",
+      "predicate": "made_at",
+      "object": "place:rano-kao",
+      "assertedBy": "agent:british-museum",
+      "evidence": [
+        {
+          "key": "evidence:hoa:made-at:rano-kao",
+          "source": "source:bm:oc1869-1005-1",
+          "relationship": "supports",
+          "locator": "Production place",
+          "excerpt": "Made in: Rano Kao"
+        },
+        {
+          "key": "evidence:hoa:made-at:rano-kao:qualifier",
+          "source": "source:bm:oc1869-1005-1",
+          "relationship": "qualifies",
+          "locator": "Production place",
+          "excerpt": "likely"
+        }
+      ]
+    },
+    {
+      "key": "claim:hoa:found-at:orongo",
+      "subject": "item:hoa-hakananai-a",
+      "predicate": "found_at",
+      "object": "place:orongo",
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:hoa:found-at:orongo",
+        "source": "source:bm:oc1869-1005-1",
+        "relationship": "supports",
+        "locator": "Findspot",
+        "excerpt": "Found/Acquired: Orongo, ceremonial centre"
+      }
+    },
+    {
+      "key": "claim:hoa:current-location:london",
+      "subject": "item:hoa-hakananai-a",
+      "predicate": "located_at",
+      "object": "place:london",
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:hoa:current-location:london",
+        "source": "source:bm:oc1869-1005-1",
+        "relationship": "supports",
+        "locator": "Museum location field",
+        "excerpt": "London"
+      }
+    },
+    {
+      "key": "claim:hoa:held-by:bm",
+      "subject": "item:hoa-hakananai-a",
+      "predicate": "held_by",
+      "object": "agent:british-museum",
+      "assertedBy": "agent:british-museum",
+      "evidence": {
+        "key": "evidence:hoa:held-by:bm",
+        "source": "source:bm:oc1869-1005-1",
+        "relationship": "supports",
+        "locator": "Museum / Institution field",
+        "excerpt": "British Museum"
+      }
+    }
+  ]
+}
