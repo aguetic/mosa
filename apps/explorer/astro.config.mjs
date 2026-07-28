@@ -1,9 +1,12 @@
 import node from "@astrojs/node";
-import { defineConfig, envField } from "astro/config";
+import { defineConfig, envField, sessionDrivers } from "astro/config";
 
 export default defineConfig({
   output: "server",
   adapter: node({ mode: "standalone" }),
+  session: {
+    driver: sessionDrivers.memory(),
+  },
   env: {
     schema: {
       DATABASE_URL: envField.string({
