@@ -30,6 +30,8 @@ async function generateDatabaseTypes(): Promise<string> {
       "provenance",
       "--schema",
       "restitution",
+      "--schema",
+      "presentation",
     ],
     {
       cwd: projectRoot,

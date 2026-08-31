@@ -16,6 +16,7 @@ import {
   getClaimsCitingSource,
   getClaimsForEntity,
   getEntity,
+  getForegroundedClaimIdsForEntity,
 } from "../../lib/queries";
 import {
   type AgentCaseInvolvement,
@@ -37,18 +38,26 @@ let restitutionDocuments: RestitutionItemDocument[] = [];
 let agentCases: AgentCaseInvolvement[] = [];
 let assertedClaims: ClaimDetail[] = [];
 let citingClaims: ClaimDetail[] = [];
+let foregroundedClaimIds: string[] = [];
 let loadFailed = false;
 
 if (isUuid(id)) {
   try {
-    [entity, claims, provenanceEvents, restitutionCases, restitutionDocuments] =
-      await Promise.all([
-        getEntity(id),
-        getClaimsForEntity(id),
-        getProvenanceEventsForItem(id),
-        getRestitutionCasesForItem(id),
-        getRestitutionDocumentsForItem(id),
-      ]);
+    [
+      entity,
+      claims,
+      provenanceEvents,
+      restitutionCases,
+      restitutionDocuments,
+      foregroundedClaimIds,
+    ] = await Promise.all([
+      getEntity(id),
+      getClaimsForEntity(id),
+      getProvenanceEventsForItem(id),
+      getRestitutionCasesForItem(id),
+      getRestitutionDocumentsForItem(id),
+      getForegroundedClaimIdsForEntity(id),
+    ]);
 
     if (entity?.entityType === "agent") {
       [agentCases, assertedClaims] = await Promise.all([
@@ -90,6 +99,8 @@ const outgoingClaims = entity
 const incomingClaims = entity
   ? claims.filter((claim) => claim.objectEntityId === entity?.id)
   : [];
+const selectedClaimIds = new Set(foregroundedClaimIds);
+const foregroundedClaims = outgoingClaims.filter((claim) => selectedClaimIds.has(claim.id));
 const retrievedAt = entity ? formatDate(entity.retrievedAt) : null;
 
 const nonItemOutgoing = isItem ? [] : outgoingClaims;
@@ -115,6 +126,25 @@ const nonItemIncoming = isItem ? [] : incomingClaims;
           <span class="badge">{entity.entityType}</span>
           {entity.subtypeKind && <span class="badge">{entity.subtypeKind}</span>}
         </div>
+
+        {foregroundedClaims.length > 0 && (
+          <>
+            <h2>Foregrounded perspectives</h2>
+            <p class="lede">
+              MoSA has selected these attributed claims for editorial prominence. The selection does
+              not make them intrinsic or universally authoritative descriptions of this record.
+            </p>
+            <section class="claims" aria-label="Foregrounded perspectives">
+              {groupClaimsByPredicate(foregroundedClaims).map((group) => (
+                <ClaimGroupCard
+                  predicate={group.predicate}
+                  claims={group.claims}
+                  direction="outgoing"
+                />
+              ))}
+            </section>
+          </>
+        )}
 
         {
           itemView && (

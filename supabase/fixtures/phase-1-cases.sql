@@ -309,4 +309,10 @@ values
     ('60000000-0000-4000-8000-000000000060', '50000000-0000-4000-8000-000000000060', '40000000-0000-4000-8000-000000000006', 'supports', 'Documentary description', 'Curved wooden moai', null),
     ('60000000-0000-4000-8000-000000000061', '50000000-0000-4000-8000-000000000061', '40000000-0000-4000-8000-000000000007', 'supports', 'Document title', 'Cráneo humano', null);
 
+-- Example editorial foregrounding for Case 01. This selection does not alter
+-- the claim's wording, attribution, evidence or epistemic status.
+insert into presentation.foregrounded_claim (claim_id)
+values ('50000000-0000-4000-8000-000000000008')
+on conflict (claim_id) do nothing;
+
 commit;

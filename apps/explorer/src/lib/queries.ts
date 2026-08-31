@@ -364,6 +364,17 @@ export async function getClaimsForEntity(id: string): Promise<ClaimDetail[]> {
   return rows.map((row) => toClaim(row, evidenceByClaim));
 }
 
+export async function getForegroundedClaimIdsForEntity(id: string): Promise<string[]> {
+  const rows = await query<{ claim_id: string } & QueryResultRow>(
+    `select claim_id::text
+     from presentation.foregrounded_claim_details
+     where subject_id = $1::uuid`,
+    [id],
+  );
+
+  return rows.map((row) => row.claim_id);
+}
+
 export async function getClaimsAssertedByAgent(agentId: string): Promise<ClaimDetail[]> {
   const rows = await query<ClaimRow>(
     `${CLAIM_SELECT}
