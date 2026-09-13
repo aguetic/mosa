@@ -33,20 +33,20 @@ the bootstrap Hoa packet above for real imports.
 
 ```bash
 # Validate every bootstrap packet
-pnpm run db:import:bootstrap:check
+just db-import-bootstrap-check
 
 # Dry-run against the local stack (default)
-pnpm run db:import:bootstrap
+just db-import-bootstrap
 
 # Dry-run / apply against the linked remote project
 # (same secrets pattern as `supabase db push`)
 export SUPABASE_DB_PASSWORD='…'   # database password for the linked project
-pnpm run db:import:bootstrap --linked
-pnpm run db:import:bootstrap --linked --apply
-pnpm run db:import:bootstrap --linked --apply   # expect no-op
+just db-import-bootstrap --linked
+just db-import-bootstrap --linked --apply
+just db-import-bootstrap --linked --apply   # expect no-op
 
 # Or pass an explicit URL (escape hatch)
-pnpm run db:import:bootstrap --database-url "$DATABASE_URL" --apply
+just db-import-bootstrap --database-url "$DATABASE_URL" --apply
 ```
 
 `--linked` and `--database-url` are mutually exclusive. Default (neither flag)

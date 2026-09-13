@@ -34,19 +34,19 @@ jobs:
             pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies
-        run: mise x -- pnpm install --frozen-lockfile
+        run: mise x -- just install
 
       - name: Format and lint
-        run: mise x -- pnpm run check
+        run: mise x -- just check
 
       - name: Typecheck
-        run: mise x -- pnpm run typecheck
+        run: mise x -- just typecheck
 
       - name: Unit tests
-        run: mise x -- pnpm run test:unit
+        run: mise x -- just test-unit
 
       - name: Build
-        run: mise x -- pnpm run build
+        run: mise x -- just build
 
   database:
     name: Database verification
@@ -72,26 +72,31 @@ jobs:
             pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies
-        run: mise x -- pnpm install --frozen-lockfile
+        run: mise x -- just install
 
       - name: Verify database
-        run: mise x -- pnpm run test:db
+        run: mise x -- just test-db
 
       - name: Check generated database types
-        run: mise x -- pnpm run db:types:check
+        run: mise x -- just db-types-check
 
   docker:
-    name: Docker image
+    name: Explorer image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Build production image
-        run: docker build -t mosa-explorer:ci .
+      - name: Install mise
+        uses: jdx/mise-action@v3
+        with:
+          cache: true
 
-  deploy:
-    name: Deploy production
+      - name: Build production image
+        run: mise x -- just explorer-image
+
+  migrate:
+    name: Apply production migrations
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [static, database, docker]
     runs-on: ubuntu-latest
@@ -120,19 +125,33 @@ jobs:
             pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies
-        run: mise x -- pnpm install --frozen-lockfile
+        run: mise x -- just install
 
       - name: Apply production migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
-          mise x -- pnpm exec supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_ID }}"
-          mise x -- pnpm exec supabase db push --password "${{ secrets.SUPABASE_DB_PASSWORD }}"
+          mise x -- just supabase link --project-ref "$SUPABASE_PROJECT_ID"
+          mise x -- just supabase db push
 
+  deploy-explorer:
+    name: Deploy research explorer
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [migrate]
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: explorer-deploy
+      cancel-in-progress: false
+    steps:
       - name: Trigger Coolify deployment
+        env:
+          DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
         run: |
           curl --fail --show-error --silent --request GET \
-            "${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}"
+            "$DEPLOY_WEBHOOK"
 
       - name: Smoke-test production URL
         env:
@@ -152,4 +171,4 @@ jobs:
             sleep 5
           done
           echo "Production smoke test passed for ${PRODUCTION_URL}"
-          echo "deployed_sha=${GITHUB_SHA}" >> "${GITHUB_STEP_SUMMARY}"
+          echo "requested_sha=${GITHUB_SHA}; confirm the deployed revision in Coolify" >> "${GITHUB_STEP_SUMMARY}"

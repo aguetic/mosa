@@ -1,14 +1,11 @@
 # Operations
 
-Short operational notes for the Coolify + managed Supabase explorer deployment. No live credentials belong in this file.
+Operational notes for the MoSA applications on Coolify and the managed Supabase database. No live credentials belong in this file.
 
 ## Routine deployment
 
 1. Merge to `main` only after CI passes (`static`, `database`, `docker`).
-2. The `deploy` job:
-   - applies pending Supabase migrations with `supabase db push`
-   - triggers the Coolify deploy webhook
-   - retries `PRODUCTION_URL` for a bounded period
+2. The `migrate` job applies pending Supabase migrations. On success, `deploy-explorer` triggers the explorer Coolify webhook and retries `PRODUCTION_URL` for a bounded period.
 3. Keep Coolify auto-deploy disabled so the app never ships before migrations.
 
 Use expand/contract migrations so a successful migration remains compatible with both old and new containers during rolling updates.
@@ -38,7 +35,7 @@ Use expand/contract migrations so a successful migration remains compatible with
 
 - **Backups:** use Supabase managed daily backups for the production project. Restore through the Supabase dashboard/support flow when needed.
 - **Application logs:** Coolify application logs for the explorer container.
-- **Migration / deploy logs:** GitHub Actions `deploy` job for the `production` environment.
+- **Migration / deploy logs:** GitHub Actions `migrate` and `deploy-explorer` jobs for `production`; the `Website` workflow for `website-production`.
 - **Database logs:** Supabase project logs.
 
 ## Basic outage checks
@@ -49,3 +46,7 @@ Use expand/contract migrations so a successful migration remains compatible with
 4. Is the Supabase project up? Can you connect with verified TLS from the Coolify host?
 5. Did the latest GitHub deploy job fail on migrations or on the smoke test?
 6. Were Coolify runtime secrets recently changed (`DATABASE_URL`, `DATABASE_SSL_CA`, `HEALTHCHECK_TOKEN`)?
+
+## Website releases
+
+Run the `Website` workflow manually on `main` with `deploy` enabled after configuring `website-production`. It builds and deploys the static website without database operations. Roll back using the website's own Coolify deployment history. An HTTP success confirms reachability; verify the actual deployed revision in Coolify.

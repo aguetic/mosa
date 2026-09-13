@@ -105,7 +105,7 @@ async function verifyObjectDossierImport(): Promise<void> {
       staleDatasets.rowCount === 0,
       `verification datasets already exist (${staleDatasets.rows
         .map((row) => row.key)
-        .join(", ")}); run pnpm run db:verify against a reset database`,
+        .join(", ")}); run just db-verify against a reset database`,
     );
 
     step("dry run matches fixture entities and writes nothing");

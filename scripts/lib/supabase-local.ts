@@ -99,7 +99,7 @@ export async function getLocalDatabaseUrl(projectRoot: string): Promise<string> 
 
   if (!databaseUrl) {
     throw new Error(
-      "The local Supabase stack did not return DB_URL. Run `pnpm run db:start` first or set LOCAL_DATABASE_URL.",
+      "The local Supabase stack did not return DB_URL. Run `just db-start` first or set LOCAL_DATABASE_URL.",
     );
   }
 
@@ -141,7 +141,7 @@ export async function getLinkedDatabaseUrl(projectRoot: string): Promise<string>
   }
 
   throw new Error(
-    "No linked Supabase project found under supabase/.temp. Run `pnpm exec supabase link --project-ref <ref>` first.",
+    "No linked Supabase project found under supabase/.temp. Run `just supabase link --project-ref <ref>` first.",
   );
 }
 

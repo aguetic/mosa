@@ -1,4 +1,4 @@
-project_id = "mosa-db"
+project_id = "mosa"
 
 [api]
 enabled = false
