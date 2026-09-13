@@ -1,0 +1,15 @@
+---
+import { navigation } from "../data/site";
+---
+<footer class="site-footer">
+  <div class="footer-statement"><span>Volver a poner en relación lo que fue separado.</span></div>
+  <div class="container footer-grid">
+    <a href="/" class="brand" aria-label="MoSA — Inicio"><img src="/images/logo-light.png" alt="Museum of Stolen Artefacts" width="303" height="162" loading="lazy" /></a>
+    <nav aria-label="Navegación del pie de página">{navigation.map(({ href, label }) => <a href={href}>{label}</a>)}</nav>
+    <div class="footer-purpose"><p>Un museo para reconectar.<br />Una red para restituir.</p><a class="text-link" href="/contact/">Conecta con MoSA <span aria-hidden="true">↗</span></a></div>
+  </div>
+  <div class="container footer-bottom">
+    <p>Museum of Stolen Artefacts © {new Date().getFullYear()}.</p>
+    <div><p>Proyecto financiado por Open Call Fresh Perspectives 2024, Stimuleringsfonds Creatieve Industrie</p><img src="/images/funding-logo.webp" alt="Creative Industries Fund NL" width="3221" height="193" loading="lazy" /></div>
+  </div>
+</footer>

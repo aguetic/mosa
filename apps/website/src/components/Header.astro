@@ -1,0 +1,33 @@
+---
+import { navigation } from "../data/site";
+
+const path = Astro.url.pathname;
+---
+<header class="site-header container">
+  <a class="brand" href="/" aria-label="MoSA — Inicio">
+    <img src="/images/logo-dark.png" alt="Museum of Stolen Artefacts" width="303" height="162" />
+  </a>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" hidden>Menú <span aria-hidden="true">+</span></button>
+  <nav id="primary-navigation" aria-label="Navegación principal">
+    {navigation.map(({ href, label }) => <a href={href} aria-current={path === href ? "page" : undefined}>{label}</a>)}
+    <span class="language"><span class="sr-only">Idioma: español de Chile</span><span aria-hidden="true">ES</span></span>
+  </nav>
+</header>
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>(".menu-toggle");
+  const nav = document.querySelector<HTMLElement>("#primary-navigation");
+  if (toggle && nav) {
+    toggle.hidden = false;
+    nav.classList.add("collapsible");
+    const close = () => { toggle.setAttribute("aria-expanded", "false"); nav.classList.remove("is-open"); };
+    toggle.addEventListener("click", () => {
+      const open = toggle.getAttribute("aria-expanded") !== "true";
+      toggle.setAttribute("aria-expanded", String(open));
+      nav.classList.toggle("is-open", open);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") { close(); toggle.focus(); }
+    });
+    window.matchMedia("(min-width: 801px)").addEventListener("change", close);
+  }
+</script>
