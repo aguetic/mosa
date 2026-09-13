@@ -78,6 +78,11 @@ async function verifyDatabase(): Promise<void> {
     ["test", "db", "supabase/tests/database/explorer-reader-role.test.sql", "--local"],
     { cwd: projectRoot },
   );
+  await runCommand(
+    supabase,
+    ["test", "db", "supabase/tests/database/foregrounded-claims.test.sql", "--local"],
+    { cwd: projectRoot },
+  );
 
   // Runs last because it writes canonical rows the pgTAP fixtures tests
   // must not see.

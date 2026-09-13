@@ -54,6 +54,7 @@
 - Do not create predicate variants such as `possibly_made_at`, `probably_made_at` or `likely_made_at`.
 - `made_during` uses the same structured date-literal conventions as `occurred_during`, including precision, approximation, ranges and alternatives.
 - Item pages may project production and current-state claims prominently, but those projections remain disposable presentation views over attributed claims.
+- `presentation.foregrounded_claim` records MoSA's explicit editorial selection of individual claims for prominence. The active presentation projection retains claim attribution and evidence, does not rank truth or authority, and does not derive care, access, ownership, legality, or restitution conclusions from a classification.
 - Item-page projections may surface `qualifies` wording beside a claim value so the first reading does not sound more certain than the evidence.
 - Distinct `located_at` claims may use presentation labels such as broader location and display location; the underlying predicate remains `located_at`.
 - Distinguish event location from institutional recipient: for example, `occurred_at → Paris` and `transferred_to → Missionary Museum` answer different questions.

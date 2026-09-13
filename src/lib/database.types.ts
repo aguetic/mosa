@@ -467,6 +467,75 @@ export type Database = {
       [_ in never]: never
     }
   }
+  presentation: {
+    Tables: {
+      foregrounded_claim: {
+        Row: {
+          claim_id: string
+        }
+        Insert: {
+          claim_id: string
+        }
+        Update: {
+          claim_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "foregrounded_claim_claim_id_fkey"
+            columns: ["claim_id"]
+            isOneToOne: true
+            referencedRelation: "foregrounded_claim_details"
+            referencedColumns: ["claim_id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      foregrounded_claim_details: {
+        Row: {
+          asserted_by_agent_id: string | null
+          asserted_by_label: string | null
+          claim_id: string | null
+          created_at: string | null
+          created_by: string | null
+          literal_display_value: string | null
+          literal_language: string | null
+          literal_value: Json | null
+          notes: string | null
+          object_entity_id: string | null
+          object_entity_label: string | null
+          object_entity_type: string | null
+          predicate: string | null
+          status: string | null
+          subject_id: string | null
+          subject_label: string | null
+          subject_type: string | null
+          supersedes_claim_id: string | null
+          updated_at: string | null
+          updated_by: string | null
+          value_kind: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claim_supersedes_claim_id_fkey"
+            columns: ["supersedes_claim_id"]
+            isOneToOne: false
+            referencedRelation: "foregrounded_claim_details"
+            referencedColumns: ["claim_id"]
+          },
+        ]
+      }
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   provenance: {
     Tables: {
       event: {
@@ -921,6 +990,9 @@ export const Constants = {
     Enums: {},
   },
   knowledge: {
+    Enums: {},
+  },
+  presentation: {
     Enums: {},
   },
   provenance: {

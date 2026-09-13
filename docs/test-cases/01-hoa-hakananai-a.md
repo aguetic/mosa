@@ -43,6 +43,7 @@ The item has one stable identity, while all names, descriptions and associations
 - Some institutional claims are currently known only through Paula's note.
 - Secondary references use `mentions`; direct source evidence uses `supports`.
 - Direct catalogue field locators should replace or supplement secondary references when available.
+- The attributed `moai` classification is selected as an example foregrounded claim without changing the claim or its evidence.
 
 ## Result
 
