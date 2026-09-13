@@ -5,12 +5,12 @@ pre-commit:
   commands:
     biome:
       glob: "*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,json,jsonc,astro,css}"
-      run: mise x -- pnpm exec biome check --write --no-errors-on-unmatched {staged_files}
+      run: mise x -- just check-staged {staged_files}
       stage_fixed: true
 
 pre-push:
   commands:
     typecheck:
-      run: mise x -- pnpm run typecheck
+      run: mise x -- just typecheck
     unit:
-      run: mise x -- pnpm run test:unit
+      run: mise x -- just test-unit

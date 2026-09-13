@@ -9,9 +9,9 @@ It is intentionally not an authoring interface. It does not provide authenticati
 From the repository root:
 
 ```sh
-pnpm run db:start
-pnpm run db:fixtures
-pnpm run explorer:dev
+just db-start
+just db-fixtures
+just explorer-dev
 ```
 
 Open <http://localhost:4321>.

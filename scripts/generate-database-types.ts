@@ -60,14 +60,12 @@ async function checkGeneratedTypes(generated: string): Promise<void> {
   try {
     existing = await readFile(outputPath, "utf8");
   } catch {
-    throw new Error(
-      `${path.relative(projectRoot, outputPath)} is missing. Run \`pnpm run db:types\`.`,
-    );
+    throw new Error(`${path.relative(projectRoot, outputPath)} is missing. Run \`just db-types\`.`);
   }
 
   if (existing !== generated) {
     throw new Error(
-      `${path.relative(projectRoot, outputPath)} is out of date. Run \`pnpm run db:types\`.`,
+      `${path.relative(projectRoot, outputPath)} is out of date. Run \`just db-types\`.`,
     );
   }
 }

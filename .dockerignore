@@ -34,7 +34,9 @@ supabase/seed.sql
 # Local tooling / hooks
 .lefthook
 lefthook.yml
-biome.json
+biome.jsonc
+justfile
+mise.toml
 vitest.config.ts
 tsconfig.scripts.json
 scripts

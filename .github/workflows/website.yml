@@ -1,0 +1,96 @@
+name: Website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/website/**'
+      - 'apps/explorer/package.json'
+      - 'biome.jsonc'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'mise.toml'
+      - 'justfile'
+      - '.dockerignore'
+      - '.github/workflows/website.yml'
+  pull_request:
+    paths:
+      - 'apps/website/**'
+      - 'apps/explorer/package.json'
+      - 'biome.jsonc'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'mise.toml'
+      - 'justfile'
+      - '.dockerignore'
+      - '.github/workflows/website.yml'
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy the website to its configured Coolify application
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+jobs:
+  build:
+    name: Verify website and build image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
+        with:
+          cache: true
+      - name: Install dependencies
+        run: mise x -- just install
+      - name: Format and lint
+        run: mise x -- just check
+      - name: Check website
+        run: mise x -- just website-check
+      - name: Build website
+        run: mise x -- just website-build
+      - name: Build production image
+        run: mise x -- just website-image
+
+  deploy:
+    name: Deploy public website
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy && github.ref == 'refs/heads/main'
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: website-production
+    concurrency:
+      group: website-production-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Trigger website deployment
+        env:
+          DEPLOY_WEBHOOK: ${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+        run: |
+          if [ -z "$DEPLOY_WEBHOOK" ] || [ -z "$PRODUCTION_URL" ]; then
+            echo "Configure website-production deployment secrets first." >&2
+            exit 1
+          fi
+          curl --fail --show-error --silent --request GET "$DEPLOY_WEBHOOK"
+      - name: Smoke-test website
+        env:
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+        run: |
+          deadline=$((SECONDS + 180))
+          until curl --fail --show-error --silent --max-time 10 "$PRODUCTION_URL" >/dev/null; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "Website did not become reachable within 180s." >&2
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Website responds; confirm the deployed revision in Coolify." >> "$GITHUB_STEP_SUMMARY"

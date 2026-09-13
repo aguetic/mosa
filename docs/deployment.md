@@ -1,6 +1,6 @@
 # Deployment
 
-Secret-free checklist for deploying the MoSA explorer with Coolify and managed Supabase.
+Deployment configuration for the MoSA monorepo. Each application has its own Coolify target and can be rolled back independently. The explorer uses managed Supabase; the initial website is static.
 
 Do not put passwords, tokens, certificates, or live connection strings in this repository.
 
@@ -94,4 +94,21 @@ A staging project and PITR can wait until there is a demonstrated need.
    - representative explorer pages render
    - no secrets appear in build or application logs
 5. Point production DNS only after those checks pass.
-6. Enable or rely on the GitHub Actions `deploy` job on `main` (CI must pass `static`, `database`, and `docker` first).
+6. Enable or rely on the GitHub Actions `migrate` and `deploy-explorer` jobs on `main` (CI must pass `static`, `database`, and `docker` first).
+
+## Public website
+
+The `Website` workflow checks the website and builds its image on relevant changes. It does not need Supabase, database tests or database credentials. Publishing is a separate, manual action; no website deployment is enabled merely by merging the scaffold.
+
+1. Create a separate Coolify application connected to `radical-data/mosa`, branch `main`.
+2. Use Dockerfile build pack, repository/base directory `/`, Dockerfile `/apps/website/Dockerfile`, and internal port `8080`.
+3. Set the website domain and use `/` for the HTTP health check. No application secrets, persistent volumes or database connection are required.
+4. Disable automatic Git deployments. The workflow will trigger deployments explicitly.
+5. Create the GitHub environment `website-production`, restrict it to `main`, and set its own `COOLIFY_DEPLOY_WEBHOOK` and `PRODUCTION_URL` secrets. These names match the explorer's secrets but their values belong to the website target.
+6. Confirm the first deployment manually in Coolify. To deploy subsequently, run the `Website` workflow on `main` and enable its `deploy` input.
+
+The existing `production` environment and its explorer secrets remain valid. Keep the root Dockerfile selected for that application. After the repository rename, confirm Coolify's GitHub integration still points at the renamed repository.
+
+CI runs broad repository checks on all changes while the monorepo is small. The website workflow also builds its own container independently. Path-based CI optimisation and automatic public releases can be added when needed.
+
+The HTTP smoke checks establish reachability only; they cannot prove the latest revision finished deploying. Confirm the revision and deployment status in Coolify before considering a release complete.

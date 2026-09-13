@@ -1,79 +1,99 @@
-# MoSA Database
+# MoSA
 
-Local Supabase development environment for the MoSA entities, claims and evidence database.
+The Museum of Stolen Artefacts monorepo: a public Astro website, a research explorer, and the Supabase entities, claims and evidence database.
 
-## Requirements
+## Repository layout
 
-- [mise](https://mise.jdx.dev/)
-- Node.js 24, provisioned by mise
-- pnpm 11, provisioned by mise
-- Docker or another Docker-compatible container runtime
-- Git
+| Path | Responsibility |
+| --- | --- |
+| `apps/website/` | Public Astro website; independently built static site |
+| `apps/explorer/` | Astro research interface; server-rendered with database access |
+| `supabase/` | Database migrations, local configuration, fixtures and SQL tests |
+| `scripts/` | Imports, fixture loading and database verification |
+| `schemas/` and `packets/` | Import contracts and source packets |
+| `src/lib/database.types.ts` | Generated database types |
+| `docs/` | Architecture decisions and operational documentation |
 
-## Set up
+Each app owns its dependencies, routes, components and build output. Do not import another app's internals. Add a workspace package under `packages/` only when there is concrete shared code, and add `packages/*` to the workspace configuration then.
+
+## Tools and setup
+
+Install [mise](https://mise.jdx.dev/) and Git. mise pins Node.js, pnpm and [just](https://just.systems/). just is the command interface; pnpm manages JavaScript dependencies and app-local scripts. Docker is needed only for the local database and container builds.
 
 ```sh
+mise trust
 mise install
-mise x -- pnpm install --frozen-lockfile
-mise x -- pnpm run db:start
-mise x -- pnpm run db:reset
-mise x -- pnpm run db:fixtures
+mise exec -- just install
+mise exec -- just website-dev
 ```
 
-`db:reset` applies migrations without loading `seed.sql`. `db:fixtures` then loads the Phase 1 competency cases used by local exploration and database tests.
+With mise activated in your shell, use `just` directly. Otherwise prefix commands with `mise exec --`. Recipes also run their commands through mise so they use the pinned tools when invoked from a GUI or an unactivated shell.
 
-Local Supabase Studio: http://localhost:54323
+Public website: <http://localhost:4322>. It starts without Supabase, credentials or fixtures.
 
-View local service URLs and keys:
+## Research explorer and local database
 
 ```sh
-mise x -- pnpm exec supabase status
+just db-start
+just db-reset
+just db-fixtures
+just explorer-dev
 ```
 
-## Development
+Explorer: <http://localhost:4321>. Supabase Studio: <http://localhost:54323>.
 
-Create a migration:
+`db-reset` resets the local database and applies migrations without seed data. `db-fixtures` loads all three phases of synthetic test cases. Both are local development operations; never load fixtures into production.
 
 ```sh
-mise x -- pnpm exec supabase migration new describe_the_change
+just db-status
+just db-migration describe_the_change
+just db-types
+just db-stop
 ```
 
-Rebuild the local database and reload Phase 1 fixtures:
+### Existing checkouts renamed from mosa-db
+
+The repository and local Supabase project identifier are now `mosa`. This creates a separate local container/volume namespace; it does not rename or migrate existing local database volumes. If the old stack is running, stop it before starting the new one:
 
 ```sh
-mise x -- pnpm run db:reset
-mise x -- pnpm run db:fixtures
+just supabase stop --project-id mosa-db
 ```
 
-Run static checks (format, types, unit tests, build):
+This retains the old stack's data. Export any local data you need before moving to the new stack. `just db-start`, `just db-reset` and `just db-fixtures` initialise the new development database. The hosted Supabase project and its link are unchanged by this local identifier.
 
-```sh
-mise x -- pnpm run verify:static
-```
+## Everyday commands
 
-Run the full verification packet, including database tests and generated-type checking:
+Run `just` to list recipes.
 
-```sh
-mise x -- pnpm run verify
-```
+| Command | Purpose |
+| --- | --- |
+| `just dev` / `just website-dev` | Run the public website |
+| `just explorer-dev` | Run the research explorer |
+| `just website-build` / `just explorer-build` | Build one application |
+| `just build` | Build both applications |
+| `just website-preview` | Preview the website's existing production build |
+| `just check` | Check formatting and lint rules |
+| `just check-fix` | Apply formatting and lint fixes |
+| `just typecheck` | Check scripts and both applications |
+| `just test-unit` | Run unit tests |
+| `just verify-static` | All checks and app builds without Docker |
+| `just verify` | Full verification, including a local database reset and generated-type checks |
+| `just docker-build` | Build both production images |
 
-Regenerate TypeScript types from the local database:
+App and import recipes accept extra arguments, preserving quoting. For example, `just website-dev --host 127.0.0.1` or `just db-import-dossier-check "path with spaces/dossier.json"`. Use `just supabase ...` for other Supabase CLI operations.
 
-```sh
-mise x -- pnpm run db:types
-```
+Git hooks run through mise and just. `just install` reinstalls them after a clone, folder rename or hook update. Root package scripts contain only the dependency installation lifecycle hook; repository workflows live in `justfile`.
 
-Stop Supabase:
+## Application and publication boundaries
 
-```sh
-mise x -- pnpm exec supabase stop
-```
+The website currently contains a minimal holding page. It has no database connection and does not reuse the explorer's broad reader role. Before displaying collection data, define a publication-aware read interface with permissions for approved records and fields. Keep any database credentials in server/build environments. Research access and public publication are separate concerns.
 
-## Git hooks
+Database changes use committed migrations. Real or sensitive project data must not be committed as seed data.
 
-Git hooks run via [lefthook](https://lefthook.dev/). After cloning or pulling hook changes, run `mise x -- pnpm install` so `prepare` reinstalls them. Hooks use `mise x` for the tool versions in `mise.toml`, including when committing from a GUI client.
+## Deployment
 
-## Development principles
+The applications have separate images and Coolify applications. The root `Dockerfile` remains the explorer image to preserve the existing deployment configuration. `apps/website/Dockerfile` builds the static website and serves it on port 8080 without database credentials.
 
-- Database changes must be made through committed migrations.
-- Real or sensitive project data should not be committed as seed data.
+CI checks both apps. Explorer deployment follows database migration success; website deployment has its own workflow and can run without database checks or migrations. Website deployment is manual until a hosting target and launch decision are in place.
+
+See [deployment](docs/deployment.md), [operations](docs/operations.md) and the [monorepo decision](docs/adrs/014-monorepo-and-task-tooling.md).
